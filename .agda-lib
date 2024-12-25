@@ -1,0 +1,6 @@
+name: Foo
+include:
+  .
+depend:
+  standard-library
+  cubical
