@@ -53,11 +53,9 @@ module _ {ℓ : Agda.Primitive.Level} {X : Set} {A : X → Set ℓ} (R : ((x : X
     Ωη : {a : (x : X) → A x} (p : Path Ω a) (i : ● X) → ω (α p) i ≡ papp p i
     {-# REWRITE Ωη #-}
 
--- module _ {ℓ k : Agda.Primitive.Level}
---          {A B : Set ℓ} (R : A → B → Set ℓ)
---          {A' B' : Set k} (R' : A' → B' → Set k)
---          {f : A → A'} {g : B → B'}
---          (h : (a : A) (b : B) → R a b → R' (f a) (g b)) where
+module _ {ℓ : Agda.Primitive.Level} {X Y : Set} {A : Y → Set ℓ} (m : X → Y) (R : ((y : Y) → A y) → Set ℓ) where
+--  postulate
+--    Ωfunctor : (i : ● Y) → Ω R i → Ω ???  Set
 --   postulate
 --     Ωfunctor : (i : I) → Ω R i → Ω R' i
 --     ωfunctor : {a : A} {b : B} (r : R a b) (i : I) → Ωfunctor i (ω R r i) ≡ ω R' (h a b r) i
