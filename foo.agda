@@ -1,3 +1,12 @@
+-- this is almost entirely C.B. Aberlé's code, from here:
+-- https://mastodon.social/@jcreed/113705418476588154
+-- I massaged it only slightly to use more modules for argument brevity
+-- The point of copying it here is so that I can ask the question:
+--
+-- Is the fact that I seem stuck proving paramPhoas.param due
+-- to me going about the proof the wrong way, or is it
+-- a real obstacle?
+
 {-# OPTIONS --cubical --rewriting #-}
 -- open import Cubical.Foundations.Prelude
 -- open import Cubical.Core.Primitives
