@@ -71,8 +71,35 @@ module _ {ℓ k : Agda.Primitive.Level}
     ωfunctor1 : (b : B) → Ωfunctor i1 b ≡ g b
     {-# REWRITE ωfunctor1 #-}
 
-  coΩfunctor : {a : A} {b : B} (k : (i : I) → Ω R i → Ω R' i) (r : R a b) → R' (k i0 a) (k i1 b)
-  coΩfunctor k r = α R' (pabs λ i → k i (ω R r i))
+module _ {ℓ k : Agda.Primitive.Level}
+         {A B : Set ℓ} (R : A → B → Set ℓ)
+         {A' B' : Set k} (R' : A' → B' → Set k)
+         where
+  α2 : {f : A → A'} {g : B → B'} (p : Path (λ i → Ω R i → Ω R' i) f g) → (a : A) (b : B) (r : R a b) → (R' (f a) (g b))
+  α2 p a b r = α R' (pabs λ i → papp p i (ω R r i))
+
+  ω2 : {f : A → A'} {g : B → B'} (h : (a : A) (b : B) (r : R a b) → (R' (f a) (g b))) → (i : I) → Ω R i → Ω R' i
+  ω2 h = Ωfunctor R R' h
+
+  Ωβ2 : {f : A → A'} {g : B → B'} (h : (a : A) (b : B) (r : R a b) → (R' (f a) (g b))) → α2 (pabs (ω2 h)) ≡ h
+  Ωβ2 h = refl -- this is true by ωfunctor and Ωβ reductions
+
+  -- postulate?
+  Ωη2 : {f : A → A'} {g : B → B'} (p : Path (λ i → Ω R i → Ω R' i) f g) (i : I) → ω2 (α2 p) i ≡ papp p i
+  Ωη2 = {!!}
+
+  coΩfunctor : (j : (i : I) → Ω R i → Ω R' i) → ((a : A) (b : B) → (r : R a b) → R' (j i0 a) (j i1 b))
+  coΩfunctor j a b r = α R' (pabs λ i → j i (ω R r i))
+
+  cof-f : (f : A → A') (g : B → B')
+          (h : (a : A) (b : B) → R a b → R' (f a) (g b))
+          (a : A) (b : B) (r : R a b)
+          → coΩfunctor (Ωfunctor R R' h) a b r ≡ h a b r
+  cof-f f g h a b r = refl -- this is true by ωfunctor and Ωβ reductions
+
+  f-cof : (j : (i : I) → Ω R i → Ω R' i) (i : I)
+          → Ωfunctor R R' (coΩfunctor j) i ≡ j i
+  f-cof j = Ωη2 (pabs j)
 
 module paramNat (F : (X : Set) → X → (X → X) → X)
                 (A B : Set) (R : A → B → Set)
