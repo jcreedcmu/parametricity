@@ -102,20 +102,6 @@ module push {ℓ : Agda.Primitive.Level} {A B Q : Set ℓ} (R : A → B → Set 
 -- Here I'm trying to think of Ω as being... a dependent pushout??
 
 module dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
-         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
-         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
-         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
-         where
-  postulate
-    pmap : (i : I) → Ω R i → Q i
-    p0 : pmap i0 ≡ qa
-    p1 : pmap i1 ≡ qb
-    pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
-    -- missing: uniqueness of the induced map. probably related to various η principles
-
--- Here I'm trying to think of Ω as being... a dependent pushout??
-
-module better-dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
          (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) → Path Q (qa a) (qb b))
          where
   postulate
@@ -125,7 +111,6 @@ module better-dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set 
     pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ papp (qf r) i
     -- missing: uniqueness of the induced map. probably related to various η principles
 
-
 -- dependent pushout implies Ωfunctor
 
 module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
@@ -134,17 +119,10 @@ module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
             {f : A → A'} {g : B → B'}
             (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
   Ωf : (i : I) → Ω R i → Ω R' i
-  Ωf i  = dpush.pmap {Q = Ω R'} R f g (ω R' ∘ h) (λ _ _ _ → refl) (λ _ _ _ → refl) i
+  Ωf i  = dpush.pmap R f g (pabs ∘ ω R' ∘ h) i
 
--- better dependent pushout implies Ωfunctor
-
-module Ωfunctor-from-better-dpush {ℓ  : Agda.Primitive.Level}
-            {A B : Set ℓ} (R : A → B → Set ℓ)
-            {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
-            {f : A → A'} {g : B → B'}
-            (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
-  Ωf : (i : I) → Ω R i → Ω R' i
-  Ωf i  = better-dpush.pmap R f g (pabs ∘ ω R' ∘ h) i
+  ωf : {a : A} {b : B} (r : R a b) (i : I) → dpush.pmap R f g (pabs ∘ ω R' ∘ h) i (ω R r i) ≡ ω R' (h r) i
+  ωf = dpush.pf R f g (pabs ∘ ω R' ∘ h) _ _
 
 -- coextent and extentβ imply Ωfunctor and ωfunctor
 
@@ -154,7 +132,7 @@ fixup : ∀ {ℓ} {Q : I → Set ℓ} {x0 y0 : Q i0} {x1 y1 : Q i1} (e0 : y0 ≡
 fixup refl refl p = p
 
 
-module better-dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+module dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
          (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) → Path Q (qa a) (qb b))
          where
 
@@ -166,7 +144,6 @@ module better-dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {
   p1 = refl
   pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ papp (qf r) i
   pf a b r i = extentβ' qa qb (λ v → qf (α R (pabs v))) (ω R r) i
-
 
 -- coextent and extentβ imply Ωfunctor and ωfunctor
 
