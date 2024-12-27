@@ -73,17 +73,14 @@ module _ {ℓ : Agda.Primitive.Level} {V : I → Set ℓ} {W : I → Set ℓ}
             → Path (λ i → V i → W i) f g
     redβ : (f : V i0 → W i0) (g : V i1 → W i1)
               → (vv : (v : (i : I) → V i) → Path W (f (v i0)) (g (v i1)))
-              → (v : (i : I) → V i)
-              → red (cored f g vv) v ≡ vv v
+              → red (cored f g vv) ≡ vv
 
   redβ' : (f : V i0 → W i0) (g : V i1 → W i1)
           → (vv : (v' : (i : I) → V i) → Path W (f (v' i0)) (g (v' i1)))
           → (v : (i : I) → V i)
           → (i : I)
           → papp (cored f g vv) i (v i) ≡ papp (vv v) i
-  redβ' f g vv v i = ap (λ x → papp x i) (redβ f g vv v)
-
-
+  redβ' f g vv v i = ap (λ x → papp (x v) i) (redβ f g vv)
 
 module _ {ℓ  : Agda.Primitive.Level}
          {A B : Set ℓ} (R : A → B → Set ℓ)
