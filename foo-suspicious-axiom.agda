@@ -113,6 +113,19 @@ module dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R
     pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
     -- missing: uniqueness of the induced map. probably related to various η principles
 
+-- Here I'm trying to think of Ω as being... a dependent pushout??
+
+module better-dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) → Path Q (qa a) (qb b))
+         where
+  postulate
+    pmap : (i : I) → Ω R i → Q i
+    p0 : pmap i0 ≡ qa
+    p1 : pmap i1 ≡ qb
+    pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ papp (qf r) i
+    -- missing: uniqueness of the induced map. probably related to various η principles
+
+
 -- dependent pushout implies Ωfunctor
 
 module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
@@ -131,29 +144,25 @@ fixup : ∀ {ℓ} {Q : I → Set ℓ} {x0 y0 : Q i0} {x1 y1 : Q i1} (e0 : y0 ≡
 fixup refl refl p = p
 
 
-module dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
-         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
-         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
-         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+module better-dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) → Path Q (qa a) (qb b))
          where
 
   pmap : (i : I) → Ω R i → Q i
-  pmap i = papp (coextent qa qb λ v → fixup (qae (v i0) (v i1) (α R (pabs v)))
-                                             (qbe (v i0) (v i1) (α R (pabs v)))
-                                             (pabs (qf (α R (pabs v))))) i
+  pmap i = papp (coextent qa qb λ v → qf (α R (pabs v))) i
   p0 : pmap i0 ≡ qa
   p0 = refl
   p1 : pmap i1 ≡ qb
   p1 = refl
 
-  pf' : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡
-         papp ((fixup (qae ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
-                      (qbe ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
-                      (pabs (qf r))) ) i
-  pf' a b r i = extentβ' qa qb (λ v → fixup (qae (v i0) (v i1) (α R (pabs v))) (qbe (v i0) (v i1) (α R (pabs v))) (pabs (qf (α R (pabs v))))) (ω R r) i
+  -- pf' : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡
+  --        papp ((fixup (qae ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
+  --                     (qbe ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
+  --                     (pabs (qf r))) ) i
+  -- pf' a b r i = extentβ' qa qb (λ v → fixup (qae (v i0) (v i1) (α R (pabs v))) (qbe (v i0) (v i1) (α R (pabs v))) (pabs (qf (α R (pabs v))))) (ω R r) i
 
-  -- stuck?
-  pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
+
+  pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ papp (qf r) i
   pf a b r i = {!!}
 
 
