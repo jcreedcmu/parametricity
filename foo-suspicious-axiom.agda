@@ -60,6 +60,9 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
 ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
 ap f refl = refl
 
+-- This is where I try implementing a version of ecavallo's "extent"
+-- primitive; it is called cored here for I forget what reason
+
 module _ {ℓ : Agda.Primitive.Level} {V : I → Set ℓ} {W : I → Set ℓ}
        where
   red : {f : V i0 → W i0} {g : V i1 → W i1}
@@ -82,6 +85,8 @@ module _ {ℓ : Agda.Primitive.Level} {V : I → Set ℓ} {W : I → Set ℓ}
           → papp (cored f g vv) i (v i) ≡ papp (vv v) i
   redβ' f g vv v i = ap (λ x → papp (x v) i) (redβ f g vv)
 
+-- cored and redβ imply Ωfunctor and ωfunctor
+
 module _ {ℓ  : Agda.Primitive.Level}
          {A B : Set ℓ} (R : A → B → Set ℓ)
          {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
@@ -92,6 +97,9 @@ module _ {ℓ  : Agda.Primitive.Level}
 
   ωf : {a : A} {b : B} (r : R a b) (i : I) → Ωf i (ω R r i) ≡ ω R' (h a b r) i
   ωf r i = redβ' f g (λ v → pabs (ω R' (h (v i0) (v i1) (α R (pabs v))))) (ω R r) i
+
+-- vestigial postulating of Ωfunctor and ωfunctor, so
+-- I can use rewriting
 
 module _ {ℓ k : Agda.Primitive.Level}
          {A B : Set ℓ} (R : A → B → Set ℓ)
@@ -106,6 +114,9 @@ module _ {ℓ k : Agda.Primitive.Level}
     {-# REWRITE ωfunctor0 #-}
     ωfunctor1 : (b : B) → Ωfunctor i1 b ≡ g b
     {-# REWRITE ωfunctor1 #-}
+
+-- Thinking about η principle that corresponds to Ωfunctor's role
+-- as a β principle
 
 module _ {ℓ k : Agda.Primitive.Level}
          {A B : Set ℓ} (R : A → B → Set ℓ)
@@ -137,6 +148,8 @@ module _ {ℓ k : Agda.Primitive.Level}
           → Ωfunctor R R' (coΩfunctor j) i ≡ j i
   f-cof j = Ωη2 (pabs j)
 
+-- Parametricity for church nats
+
 module paramNat (F : (X : Set) → X → (X → X) → X)
                 (A B : Set) (R : A → B → Set)
                 (a : A) (b : B) (r : R a b)
@@ -146,7 +159,8 @@ module paramNat (F : (X : Set) → X → (X → X) → X)
   param : R (F A a f) (F B b g)
   param = α R (pabs λ i → F (Ω R i) (ω R r i) (Ωfunctor R R h i))
 
-
+-- Parametricity for a phoas-like type, not sure
+-- how to prove
 
 module paramPhoas (F : (X : Set) → ((X → X) → X) → X)
                 (A B : Set) (R : A → B → Set)
