@@ -111,6 +111,7 @@ module dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R
     p0 : pmap i0 ≡ qa
     p1 : pmap i1 ≡ qb
     pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
+    -- missing: uniqueness of the induced map. probably related to various η principles
 
 -- dependent pushout implies Ωfunctor
 
@@ -121,6 +122,40 @@ module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
             (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
   Ωf : (i : I) → Ω R i → Ω R' i
   Ωf i  = dpush.pmap {Q = Ω R'} R f g (ω R' ∘ h) (λ _ _ _ → refl) (λ _ _ _ → refl) i
+
+-- coextent and extentβ imply Ωfunctor and ωfunctor
+
+fixup : ∀ {ℓ} {Q : I → Set ℓ} {x0 y0 : Q i0} {x1 y1 : Q i1} (e0 : y0 ≡ x0) (e1 : y1 ≡ x1)
+    → Path Q x0 x1
+    → Path Q y0 y1
+fixup refl refl p = p
+
+
+module dpush-from-coextent {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
+         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
+         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+         where
+
+  pmap : (i : I) → Ω R i → Q i
+  pmap i = papp (coextent qa qb λ v → fixup (qae (v i0) (v i1) (α R (pabs v)))
+                                             (qbe (v i0) (v i1) (α R (pabs v)))
+                                             (pabs (qf (α R (pabs v))))) i
+  p0 : pmap i0 ≡ qa
+  p0 = refl
+  p1 : pmap i1 ≡ qb
+  p1 = refl
+
+  pf' : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡
+         papp ((fixup (qae ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
+                      (qbe ((ω R r) i0) ((ω R r) i1) (α R (pabs (ω R r))))
+                      (pabs (qf r))) ) i
+  pf' a b r i = extentβ' qa qb (λ v → fixup (qae (v i0) (v i1) (α R (pabs v))) (qbe (v i0) (v i1) (α R (pabs v))) (pabs (qf (α R (pabs v))))) (ω R r) i
+
+  -- stuck?
+  pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
+  pf a b r i = {!!}
+
 
 -- coextent and extentβ imply Ωfunctor and ωfunctor
 
