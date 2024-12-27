@@ -35,6 +35,8 @@ module _ {ℓ : Agda.Primitive.Level} {A : I → Set ℓ} where
     pβ1 : {a0 : A i0} {a1 : A i1} (p : Path A a0 a1) → papp p i1 ≡ a1
     {-# REWRITE pβ1 #-}
     pη : {a0 : A i0} {a1 : A i1} (p : Path A a0 a1) → pabs (λ i → papp p i) ≡ p
+    {-# REWRITE pη #-}
+
 
 module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
   postulate
