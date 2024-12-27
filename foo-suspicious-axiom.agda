@@ -12,6 +12,7 @@
 -- open import Cubical.Core.Primitives
 open import Agda.Builtin.Equality
 open import Agda.Builtin.Equality.Rewrite
+open import Function.Base
 
 module foo-suspicious-axiom where
 
@@ -57,11 +58,48 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
     Ωη : {a : A} {b : B} (p : Path Ω a b) (i : I) → ω (α p) i ≡ papp p i
     {-# REWRITE Ωη #-}
 
-ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
-ap f refl = refl
+-- Here I'm trying to think of Ω as being a certain pushout
+
+module _ {ℓ : Agda.Primitive.Level} {A B Q : Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q) (qb : B → Q) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q)
+         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
+         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+         where
+  postulate
+    pushout-map : (i : I) → Ω R i → Q
+    pushout-0 : pushout-map i0 ≡ qa
+    pushout-1 : pushout-map i1 ≡ qb
+    pushout-f : (a : A) (b : B) (r : R a b) (i : I) → pushout-map i (ω R r i) ≡ qf r i
+
+-- Here I'm trying to think of Ω as being... a dependent pushout??
+
+module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
+         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
+         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+         where
+  postulate
+    dpushout-map : (i : I) → Ω R i → Q i
+    dpushout-0 : dpushout-map i0 ≡ qa
+    dpushout-1 : dpushout-map i1 ≡ qb
+    dpushout-f : (a : A) (b : B) (r : R a b) (i : I) → dpushout-map i (ω R r i) ≡ qf r i
+
+-- This is where I try to implement Ωf in terms of the dependent pushout:
+
+module nope {ℓ  : Agda.Primitive.Level}
+            {A B : Set ℓ} (R : A → B → Set ℓ)
+            {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
+            {f : A → A'} {g : B → B'}
+            (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
+  Ωf : (i : I) → Ω R i → Ω R' i
+  Ωf i  = dpushout-map {Q = Ω R'} R f g (ω R' ∘ h) (λ _ _ _ → refl) (λ _ _ _ → refl) i
+
 
 -- This is where I try implementing a version of ecavallo's "extent"
 -- primitive; it is called cored here for I forget what reason
+
+ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
+ap f refl = refl
 
 module _ {ℓ : Agda.Primitive.Level} {V : I → Set ℓ} {W : I → Set ℓ}
        where
