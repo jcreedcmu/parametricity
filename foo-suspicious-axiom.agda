@@ -58,83 +58,82 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
     Ωη : {a : A} {b : B} (p : Path Ω a b) (i : I) → ω (α p) i ≡ papp p i
     {-# REWRITE Ωη #-}
 
--- Here I'm trying to think of Ω as being a certain pushout
-
-module _ {ℓ : Agda.Primitive.Level} {A B Q : Set ℓ} (R : A → B → Set ℓ)
-         (qa : A → Q) (qb : B → Q) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q)
-         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
-         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
-         where
-  postulate
-    pushout-map : (i : I) → Ω R i → Q
-    pushout-0 : pushout-map i0 ≡ qa
-    pushout-1 : pushout-map i1 ≡ qb
-    pushout-f : (a : A) (b : B) (r : R a b) (i : I) → pushout-map i (ω R r i) ≡ qf r i
-
--- Here I'm trying to think of Ω as being... a dependent pushout??
-
-module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
-         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
-         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
-         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
-         where
-  postulate
-    dpushout-map : (i : I) → Ω R i → Q i
-    dpushout-0 : dpushout-map i0 ≡ qa
-    dpushout-1 : dpushout-map i1 ≡ qb
-    dpushout-f : (a : A) (b : B) (r : R a b) (i : I) → dpushout-map i (ω R r i) ≡ qf r i
-
--- This is where I try to implement Ωf in terms of the dependent pushout:
-
-module nope {ℓ  : Agda.Primitive.Level}
-            {A B : Set ℓ} (R : A → B → Set ℓ)
-            {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
-            {f : A → A'} {g : B → B'}
-            (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
-  Ωf : (i : I) → Ω R i → Ω R' i
-  Ωf i  = dpushout-map {Q = Ω R'} R f g (ω R' ∘ h) (λ _ _ _ → refl) (λ _ _ _ → refl) i
-
-
 -- This is where I try implementing a version of ecavallo's "extent"
--- primitive; it is called cored here for I forget what reason
+-- primitive; it is called coextent here for I forget what reason
 
 ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
 ap f refl = refl
 
 module _ {ℓ : Agda.Primitive.Level} {V : I → Set ℓ} {W : I → Set ℓ}
        where
-  red : {f : V i0 → W i0} {g : V i1 → W i1}
+  extent : {f : V i0 → W i0} {g : V i1 → W i1}
         → (h : Path (λ i → V i → W i) f g)
         → (v : (i : I) → V i) → Path W (f (v i0)) (g (v i1))
-  red h v = pabs λ i → papp h i (v i)
+  extent h v = pabs λ i → papp h i (v i)
 
   postulate
-    cored : (f : V i0 → W i0) (g : V i1 → W i1)
+    coextent : (f : V i0 → W i0) (g : V i1 → W i1)
             → ((v : (i : I) → V i) → Path W (f (v i0)) (g (v i1)))
             → Path (λ i → V i → W i) f g
-    redβ : (f : V i0 → W i0) (g : V i1 → W i1)
+    extentβ : (f : V i0 → W i0) (g : V i1 → W i1)
               → (vv : (v : (i : I) → V i) → Path W (f (v i0)) (g (v i1)))
-              → red (cored f g vv) ≡ vv
+              → extent (coextent f g vv) ≡ vv
 
-  redβ' : (f : V i0 → W i0) (g : V i1 → W i1)
+  extentβ' : (f : V i0 → W i0) (g : V i1 → W i1)
           → (vv : (v' : (i : I) → V i) → Path W (f (v' i0)) (g (v' i1)))
           → (v : (i : I) → V i)
           → (i : I)
-          → papp (cored f g vv) i (v i) ≡ papp (vv v) i
-  redβ' f g vv v i = ap (λ x → papp (x v) i) (redβ f g vv)
+          → papp (coextent f g vv) i (v i) ≡ papp (vv v) i
+  extentβ' f g vv v i = ap (λ x → papp (x v) i) (extentβ f g vv)
 
--- cored and redβ imply Ωfunctor and ωfunctor
+-- Here I'm trying to think of Ω as being a certain pushout
 
-module _ {ℓ  : Agda.Primitive.Level}
+module push {ℓ : Agda.Primitive.Level} {A B Q : Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q) (qb : B → Q) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q)
+         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
+         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+         where
+  postulate
+    pmap : (i : I) → Ω R i → Q
+    p0 : pmap i0 ≡ qa
+    p1 : pmap i1 ≡ qb
+    pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
+
+-- Here I'm trying to think of Ω as being... a dependent pushout??
+
+module dpush {ℓ : Agda.Primitive.Level} {A B : Set ℓ} {Q : I → Set ℓ} (R : A → B → Set ℓ)
+         (qa : A → Q i0) (qb : B → Q i1) (qf : {a : A} {b : B} (r : R a b) (i : I) → Q i)
+         (qae : (a : A) (b : B) (r : R a b) → qa a ≡ qf r i0)
+         (qbe : (a : A) (b : B) (r : R a b) → qb b ≡ qf r i1)
+         where
+  postulate
+    pmap : (i : I) → Ω R i → Q i
+    p0 : pmap i0 ≡ qa
+    p1 : pmap i1 ≡ qb
+    pf : (a : A) (b : B) (r : R a b) (i : I) → pmap i (ω R r i) ≡ qf r i
+
+-- dependent pushout implies Ωfunctor
+
+module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
+            {A B : Set ℓ} (R : A → B → Set ℓ)
+            {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
+            {f : A → A'} {g : B → B'}
+            (h : {a : A} {b : B} → R a b → R' (f a) (g b)) where
+  Ωf : (i : I) → Ω R i → Ω R' i
+  Ωf i  = dpush.pmap {Q = Ω R'} R f g (ω R' ∘ h) (λ _ _ _ → refl) (λ _ _ _ → refl) i
+
+-- coextent and extentβ imply Ωfunctor and ωfunctor
+
+module Ωfunctor-from-coextent {ℓ  : Agda.Primitive.Level}
          {A B : Set ℓ} (R : A → B → Set ℓ)
          {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
          {f : A → A'} {g : B → B'}
          (h : (a : A) (b : B) → R a b → R' (f a) (g b)) where
   Ωf : (i : I) → Ω R i → Ω R' i
-  Ωf i  = papp (cored f g λ v → pabs (ω R' (h (v i0) (v i1) (α R (pabs v))))) i
+  Ωf i  = papp (coextent f g λ v → pabs (ω R' (h (v i0) (v i1) (α R (pabs v))))) i
 
   ωf : {a : A} {b : B} (r : R a b) (i : I) → Ωf i (ω R r i) ≡ ω R' (h a b r) i
-  ωf r i = redβ' f g (λ v → pabs (ω R' (h (v i0) (v i1) (α R (pabs v))))) (ω R r) i
+  ωf r i = extentβ' f g (λ v → pabs (ω R' (h (v i0) (v i1) (α R (pabs v))))) (ω R r) i
 
 -- vestigial postulating of Ωfunctor and ωfunctor, so
 -- I can use rewriting
