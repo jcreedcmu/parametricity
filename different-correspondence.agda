@@ -9,19 +9,22 @@ open import Function.Base
 
 module different-correspondence where
 
-postulate
-  I : Set
-  i0 i1 : I
-
-module _ {ℓ : Agda.Primitive.Level} (A : I → Set ℓ) where
-  postulate
-    Bridge : A i0 → A i1 → Set ℓ
+-- a little equality lemma without importing the whole lib
 
 ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
 ap f refl = refl
 
-trans : ∀ {ℓ} {A : Set ℓ} {a a' a'' : A} → a ≡ a' → a' ≡ a'' → a ≡ a''
-trans refl p = p
+-- The interval
+
+postulate
+  I : Set
+  i0 i1 : I
+
+-- Convenience type for maps 𝕀 → A with specified endpoints
+
+module _ {ℓ : Agda.Primitive.Level} (A : I → Set ℓ) where
+  postulate
+    Bridge : A i0 → A i1 → Set ℓ
 
 module _ {ℓ : Agda.Primitive.Level} {A : I → Set ℓ} where
   postulate
@@ -35,7 +38,6 @@ module _ {ℓ : Agda.Primitive.Level} {A : I → Set ℓ} where
     {-# REWRITE pβ1 #-}
     pη : {a0 : A i0} {a1 : A i1} (p : Bridge A a0 a1) → pabs (λ i → papp p i) ≡ p
     {-# REWRITE pη #-}
-
 
 -- below we assert that this is a left and right inverse of K : A → (I → A)
 -- as pdβ and pdη, not the most elegant way of doing it, but eh.
@@ -53,7 +55,13 @@ module _ {ℓ : Agda.Primitive.Level} {A B : I → Set ℓ} (R : {i : I} → A i
     Gel1 : Gel i1 ≡ B i1
     {-# REWRITE Gel1 #-}
 
-    gel' : {a : (i : I) → (A i)} {b : (i : I) → (B i)} (r : (i : I) → R (a i) (b i))
+    -- Here we assert that, for any {a : (i : I) → (A i)} {b : (i : I) → (B i)}
+    -- that there is an equivalence of
+    -- (r : (i : I) → R (a i) (b i))
+    -- and
+    -- Bridge Gel (a i0) (b i1)
+    gel' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
+         (r : (i : I) → R (a i) (b i))
          → Bridge Gel (a i0) (b i1)
     ungel' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
          → Bridge Gel (a i0) (b i1) → ((i : I) → R (a i) (b i))
@@ -66,16 +74,19 @@ module _ {ℓ : Agda.Primitive.Level} {A B : I → Set ℓ} (R : {i : I} → A i
           (g : Bridge Gel (a i0) (b i1)) → gel' (ungel' {a} {b} g) ≡ g
     {-# REWRITE Gelη' #-}
 
--- degenerate down to non-dependent relations
+-- Now we investigate how this assumption reduces in the non-dependent case
 module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
 
-  -- Gel intro
+  -- We can define Gel intro
   gel : {a : A} {b : B} → R a b → (i : I) → Gel R i
   gel r i = papp (gel' R (λ _ → r)) i
   gel0 : {a : A} {b : B} (r : R a b) → gel r i0 ≡ a
   gel0 r = refl
   gel1 : {a : A} {b : B} (r : R a b) → gel r i1 ≡ b
   gel1 r = refl
+
+  -- But defining the elim rule, and establishing β and η, requires
+  -- assuming that R is bridge discrete.
 
   module _ (pdr : bridge-discrete-rel R) where
     postulate
