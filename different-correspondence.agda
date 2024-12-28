@@ -3,15 +3,11 @@
 -- https://mastodon.social/@jcreed/113725334771993306
 
 {-# OPTIONS --cubical --rewriting #-}
-open import Cubical.Core.Primitives renaming (_≡_ to _≡c_) hiding (I ; i0 ; i1)
 open import Agda.Builtin.Cubical.Equiv using (isEquiv)
-open import Cubical.Foundations.Isomorphism using (isoToIsEquiv)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
 open import Agda.Builtin.Equality
 open import Agda.Builtin.Equality.Rewrite
-open import Function.Base
-import Cubical.Foundations.Prelude
-open import Cubical.Data.Equality.Conversion using (eqToPath ; pathToEq)
+open import Cubical.Data.Equality.Conversion using (pathToEq)
 
 module different-correspondence where
 
