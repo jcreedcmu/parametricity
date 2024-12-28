@@ -52,28 +52,33 @@ path-discrete A = (I → A) → A
 path-discrete-rel : ∀ {ℓ} {A B : Set ℓ} (R : A → B → Set ℓ) → Set ℓ
 path-discrete-rel {A = A} {B} R = {a : A} {b : B} → path-discrete (R a b)
 
-module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
+module _ {ℓ : Agda.Primitive.Level} {A B : I → Set ℓ} (R : {i : I} → A i → B i → Set ℓ) where
   postulate
     Ω : (i : I) → Set ℓ
-    Ω0 : Ω i0 ≡ A
+    Ω0 : Ω i0 ≡ A i0
     {-# REWRITE Ω0 #-}
-    Ω1 : Ω i1 ≡ B
+    Ω1 : Ω i1 ≡ B i1
     {-# REWRITE Ω1 #-}
 
-    ω' : {a : I → A} {b : I → B} (r : (i : I) → R (a i) (b i))
+    ω' : {a : (i : I) → (A i)} {b : (i : I) → (B i)} (r : (i : I) → R (a i) (b i))
          → Path Ω (a i0) (b i1)
-    α' : {a : I → A} {b : I → B}
+    α' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
          → Path Ω (a i0) (b i1) → ((i : I) → R (a i) (b i))
 
   postulate
-    Ωβ' : {a : I → A} {b : I → B} (r : (i : I) → R (a i) (b i)) → α' (ω' r) ≡ r
+    Ωβ' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
+          (r : (i : I) → R (a i) (b i)) → α' (ω' r) ≡ r
     {-# REWRITE Ωβ' #-}
-    Ωη' : {a : I → A} {b : I → B} (g : Path Ω (a i0) (b i1)) → ω' (α' {a} {b} g) ≡ g
+    Ωη' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
+          (g : Path Ω (a i0) (b i1)) → ω' (α' {a} {b} g) ≡ g
     {-# REWRITE Ωη' #-}
 
+-- degenerate down to non-dependent relations
+module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
+
   -- Ω intro
-  ω : {a : A} {b : B} → R a b → (i : I) → Ω i
-  ω r i = papp (ω' (λ _ → r)) i
+  ω : {a : A} {b : B} → R a b → (i : I) → Ω R i
+  ω r i = papp (ω' R (λ _ → r)) i
   ω0 : {a : A} {b : B} (r : R a b) → ω r i0 ≡ a
   ω0 r = refl
   ω1 : {a : A} {b : B} (r : R a b) → ω r i1 ≡ b
@@ -85,12 +90,12 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
       pdη : {a : A} {b : B} (f : (i : I) → R a b) → (λ _ → pdr f) ≡ f
 
     -- Ω elim
-    α : {a : A} {b : B} →  Path Ω a b → R a b
-    α = pdr ∘ α'
+    α : {a : A} {b : B} →  Path (Ω R) a b → R a b
+    α = pdr ∘ (α' R)
 
     -- Ω properties
     Ωβ : {a : A} {b : B} (r : R a b) → α (pabs (ω r)) ≡ r
     Ωβ r = pdβ r
 
-    Ωη : {a : A} {b : B} (p : Path Ω a b) (i : I) → ω (α p) i ≡ papp p i
-    Ωη p i = ap (λ z → papp (ω' z) i) (pdη (α' p))
+    Ωη : {a : A} {b : B} (p : Path (Ω R) a b) (i : I) → ω (α p) i ≡ papp p i
+    Ωη p i = ap (λ z → papp ((ω' R) z) i) (pdη (α' R p))
