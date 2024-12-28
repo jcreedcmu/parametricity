@@ -28,9 +28,9 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
     {-# REWRITE gel1 #-}
 
     -- Gel elim
-    ungel : {a : A} {b : B} (g : (i : I) → Gel i) → R (g i0) (g i1)
+    ungel : (g : (i : I) → Gel i) → R (g i0) (g i1)
 
 I-collapse : i0 ≡ i1
-I-collapse = ungel _≡_ {a = i0} {b = i1} (λ i → gel _≡_ (refl {x = i}) i)
---                                                                  ^   ^
---                                                   here i is used twice
+I-collapse = ungel _≡_ (λ i → gel _≡_ (refl {x = i}) i)
+--                                                ^   ^
+--                                    here i is used twice
