@@ -12,15 +12,6 @@ postulate
   I : Set
   i0 i1 : I
 
-module _ {ℓ : Agda.Primitive.Level} (A : I → Set ℓ) where
-  postulate
-    Bridge : A i0 → A i1 → Set ℓ
-
-module _ {ℓ : Agda.Primitive.Level} {A : I → Set ℓ} where
-  postulate
-    pabs : (f : (i : I) → A i) → Bridge A (f i0) (f i1)
-    papp : {a0 : A i0} {a1 : A i1} → Bridge A a0 a1 → (i : I) → A i
-
 module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
   postulate
     Gel : (i : I) → Set ℓ
@@ -37,10 +28,9 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
     {-# REWRITE gel1 #-}
 
     -- Gel elim
-    ungel : {a : A} {b : B} → Bridge Gel a b → R a b
-
-I-surprise : (R : I → I → Set) (R-refl : (i : I) → R i i) → R i0 i1
-I-surprise R R-refl = ungel R (pabs λ i → gel R (R-refl i) i)
+    ungel : {a : A} {b : B} (g : (i : I) → Gel i) → R (g i0) (g i1)
 
 I-collapse : i0 ≡ i1
-I-collapse = I-surprise _≡_ (λ _ → refl)
+I-collapse = ungel _≡_ {a = i0} {b = i1} (λ i → gel _≡_ (refl {x = i}) i)
+--                                                                  ^   ^
+--                                                   here i is used twice
