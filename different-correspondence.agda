@@ -3,16 +3,17 @@
 -- https://mastodon.social/@jcreed/113725334771993306
 
 {-# OPTIONS --cubical --rewriting #-}
+open import Cubical.Core.Primitives renaming (_≡_ to _≡c_) hiding (I ; i0 ; i1)
+open import Agda.Builtin.Cubical.Equiv using (isEquiv)
+open import Cubical.Foundations.Isomorphism using (isoToIsEquiv)
+open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
 open import Agda.Builtin.Equality
 open import Agda.Builtin.Equality.Rewrite
 open import Function.Base
+import Cubical.Foundations.Prelude
+open import Cubical.Data.Equality.Conversion using (eqToPath ; pathToEq)
 
 module different-correspondence where
-
--- a little equality lemma without importing the whole lib
-
-ap : ∀ {ℓ} {A B : Set ℓ} {a a' : A} (f : A → B) → a ≡ a' → f a ≡ f a'
-ap f refl = refl
 
 -- The interval
 
@@ -39,11 +40,12 @@ module _ {ℓ : Agda.Primitive.Level} {A : I → Set ℓ} where
     pη : {a0 : A i0} {a1 : A i1} (p : Bridge A a0 a1) → pabs (λ i → papp p i) ≡ p
     {-# REWRITE pη #-}
 
--- below we assert that this is a left and right inverse of K : A → (I → A)
--- as pdβ and pdη, not the most elegant way of doing it, but eh.
+-- A type is bridge discrete if the constant combinator A → I → A is
+-- an equivalence
 bridge-discrete : ∀ {ℓ} (A : Set ℓ) → Set ℓ
-bridge-discrete A = (I → A) → A
+bridge-discrete A = isEquiv λ (a : A) (i : I) → a
 
+-- A relation is bridge discrete if for every a, b the type R a b is.
 bridge-discrete-rel : ∀ {ℓ} {A B : Set ℓ} (R : A → B → Set ℓ) → Set ℓ
 bridge-discrete-rel {A = A} {B} R = {a : A} {b : B} → bridge-discrete (R a b)
 
@@ -60,6 +62,9 @@ module _ {ℓ : Agda.Primitive.Level} {A B : I → Set ℓ} (R : {i : I} → A i
     -- (r : (i : I) → R (a i) (b i))
     -- and
     -- Bridge Gel (a i0) (b i1)
+
+    -- This is a little more dependent than I'm used to seeing, but
+    -- maybe has already been studied?
     gel' : {a : (i : I) → (A i)} {b : (i : I) → (B i)}
          (r : (i : I) → R (a i) (b i))
          → Bridge Gel (a i0) (b i1)
@@ -89,17 +94,13 @@ module _ {ℓ : Agda.Primitive.Level} {A B : Set ℓ} (R : A → B → Set ℓ) 
   -- assuming that R is bridge discrete.
 
   module _ (pdr : bridge-discrete-rel R) where
-    postulate
-      pdβ : {a : A} {b : B} (r : R a b) → pdr (λ _ → r) ≡ r
-      pdη : {a : A} {b : B} (f : (i : I) → R a b) → (λ _ → pdr f) ≡ f
-
     -- Gel elim
     ungel : {a : A} {b : B} →  Bridge (Gel R) a b → R a b
-    ungel = pdr ∘ (ungel' R)
+    ungel b = invIsEq pdr (ungel' R b)
 
     -- Gel properties
     Gelβ : {a : A} {b : B} (r : R a b) → ungel (pabs (gel r)) ≡ r
-    Gelβ r = pdβ r
+    Gelβ r = pathToEq (retIsEq pdr r)
 
     Gelη : {a : A} {b : B} (p : Bridge (Gel R) a b) (i : I) → gel (ungel p) i ≡ papp p i
-    Gelη p i = ap (λ z → papp ((gel' R) z) i) (pdη (ungel' R p))
+    Gelη p i = pathToEq (λ t → papp (gel' R (secIsEq pdr (ungel' R p) t)) i)
