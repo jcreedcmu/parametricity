@@ -8,7 +8,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transp ) renaming (_≡_ to _≡c_ ; i0 to ci0)
+open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
@@ -94,8 +94,40 @@ module sfunc {ℓ : Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
        pmap .i1 (gel1p b r i) = qb b
 
   -- Trying to show that Gel i0 is A
+
+  postulate
+    cvtA : A → (i0 ≡c i0) → A
+    cvtA/ : (a : A) → cvtA a (λ _ → i0) ≡c a
+    cvtB : B → (i1 ≡c i0) → A
+    cvt : {a : A} {b : B} → R a b → Bridge (λ i → i ≡c i0 → A) (cvtA a) (cvtB b)
+
+  fore : (i : I) → Gel i → (i ≡c i0) → A
+  fore i (gel r .i) p = papp (cvt r) i p
+  fore .i0 (gel0 a) p = cvtA a p
+  fore .i1 (gel1 b) p = cvtB b p
+  fore .i0 (gel0p a r i) p = cvtA a p
+  fore .i1 (gel1p b r i) p = cvtB b p
+
+  fore' : Gel i0 → A
+  fore' g = fore i0 g (λ _ → i0)
+
+  retract' : (i : I) (a : Gel i) (p : i ≡c i0) → gel0 (fore i a p) ≡c transport (λ t → Gel (p t)) a
+  retract' i (gel r .i) p = {!!}
+  retract' .i0 (gel0 a) p = {!!}
+  retract' .i1 (gel1 b) p = {!!}
+  retract' .i0 (gel0p a r i) p = {!!}
+  retract' .i1 (gel1p b r i) p = {!!}
+
+  retract : (a : Gel i0) → gel0 (fore i0 a (λ _ → i0)) ≡c a
+  retract a = retract' i0 a (λ _ → i0) ∙ Cubical.Foundations.Prelude.transportRefl a
+
+  Gel0≡A' : Gel i0 ≅ A
+  Gel0≡A' = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore' gel0 cvtA/ retract)
+
+
   abort : (p : i1 ≡c i0) {A : Set ℓ} → A
   abort p {A} = Cubical.Data.Empty.elim {A = λ _ → A} (Bridge-nontriv p)
+
 
   Gel0≡A-fore-case : (i : I) → Gel i → i ≡c i0 → A
   Gel0≡A-fore-case .i (gel {a} r i) p = a
@@ -129,19 +161,16 @@ module sfunc {ℓ : Level} {A B : Set ℓ} (R : A → B → Set ℓ) where
   Gel0≡A : Gel i0 ≅ A
   Gel0≡A = isoToEquiv (Cubical.Foundations.Isomorphism.iso Gel0≡A-fore gel0 (λ b _ → b) retr)
 
-
-module Ωfunctor-from-dpush {ℓ  : Agda.Primitive.Level}
+module functoriality-from-dpush {ℓ  : Agda.Primitive.Level}
             {A B : Set ℓ} (R : A → B → Set ℓ)
             {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
             {f : A → A'} {g : B → B'}
             (h : {a : A} {b : B} → R a b → R' (f a) (g b))
             (bd : bridge-discrete (sfunc.total R)) where
   open sfunc
-  Gelf : (i : I) → Gel R i → Gel R' i
-  Gelf i  = dpush.pmap R bd (gel0 ∘ f) (gel1 ∘ g) (bgel R' ∘ h) i
 
-  ωf-lem : {a : A} {b : B} (r : R a b) → papp (transp (λ j → Bridge (Gel R') (gel0p (f a) (h r) j) (gel1p (g b) (h r) j)) ci0 (pabs (gel (h r)))) ≡c gel {R = R'} (h r)
-  ωf-lem = {!!}
+  Gel-f : (i : I) → Gel R i → Gel R' i
+  Gel-f i  = dpush.pmap R bd (gel0 ∘ f) (gel1 ∘ g) (bgel R' ∘ h) i
 
-  ωf : {a : A} {b : B} (r : R a b) (i : I) → Gelf i (gel r i) ≡c gel (h r) i
-  ωf r i t = ωf-lem r t i
+  gel-f : {a : A} {b : B} (r : R a b) (i : I) → Gel-f i (gel r i) ≡c gel (h r) i
+  gel-f r i t = papp (transp (λ t' → Bridge (Gel R') (gel0p _ (h r) (t' ∧ ~ t)) (gel1p _ (h r) (t' ∧ ~ t))) t (pabs (gel (h r)))) i
