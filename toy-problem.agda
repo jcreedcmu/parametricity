@@ -21,6 +21,12 @@ module _ {ℓ : Level} (A R I : Set ℓ) (i0 : I) (f : R → A) where
     gel0 : (a : A) → Gel i0
     gel0p : (r : R) → gel r i0 ≡c gel0 (f r)
 
+  postulate
+    cvt : (i : I) → (i ≡ i0) → A → A
+    cvt/fact :  (a : A) (p : i0 ≡ i0) →
+      gel0 (cvt i0 p a) ≡c
+      transport (λ t → Gel (eqToPath p t)) (gel0 a)
+
   ind : (C : I → Set ℓ) (g : (r : R) (i : I) → C i)
         (g0 : (a : A) → C i0) (g0p : (r : R) → g r i0 ≡ g0 (f r)) → (i : I) → Gel i → C i
   ind C g g0 g0p i (gel r .i) = g r i
@@ -37,15 +43,20 @@ module _ {ℓ : Level} (A R I : Set ℓ) (i0 : I) (f : R → A) where
   rec P g g0 g0p i (gel0p r i₁) = g0p r i₁
 
   fore : (i : I) → i ≡ i0 → Gel i → A
-  fore i p g = ind (λ _ → A) (λ r _ → f r) (λ x → x) (λ r → refl) i g
+  fore i p g = cvt i p (ind (λ _ → A) (λ r _ → f r) (λ x → x) (λ r → refl) i g)
 
-  comb : (i : I) → i ≡ i0 → Gel i → A
-  comb i p (gel r .i) = f r
-  comb i p (gel0 a) = a
-  comb i p (gel0p r i₁) = f r
+
+
+  lemma : (r : R) (i : I) (p : i ≡ i0) →
+      gel0 (cvt i p (f r)) ≡c
+      transport (λ t → Gel (eqToPath p t)) (gel r i)
+  lemma r i refl =  cvt/fact (f r) refl ∙ (λ t → transport (λ t → Gel i0) (gel0p r (~ t)))
+
+
 
   retract' : (i : I) (a : Gel i) (p : i ≡ i0) → gel0 (fore i p a) ≡c transport (λ t → Gel ((eqToPath p) t)) a
-  retract' = {!!}
+  retract' = rec (λ i a → (p : i ≡ i0) → gel0 (fore i p a) ≡c transport (λ t → Gel ((eqToPath p) t)) a)
+             lemma cvt/fact {!lemma3!}
 
   retract : (a : Gel i0) → gel0 (fore i0 refl a) ≡c a
   retract a = retract' i0 a refl ∙ Cubical.Foundations.Prelude.transportRefl a
