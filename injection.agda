@@ -104,14 +104,14 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       Gelη : {a : (x : X) → A x} (p : Bridge Gel (gelι ∘ a)) (i : I) → bgel (ungel p) ≡ p
       Gelη p i = pathToEq (secIsEq bgel-isEquiv p)
 
-    extract-lemma : (x y : X) (a : (x : X) → A x) (p : ι y ≡c ι x) →
-             a x ≡c transport (λ t → A (invIsEq (ι-cong-equiv y x) p t)) (a y)
-    extract-lemma = {!!}
+    extract-lemma : {x y : X} (a : (x : X) → A x) (p : y ≡c x) →
+              transport (λ t → A (p t)) (a y) ≡c a x
+    extract-lemma a p u = transp (λ t → A (p (t ∨ u))) u (a (p u))
 
     extract' : (x : X) (i : I) → Gel i → (i ≡c ι x) → A x
     extract' x i (gel {a} r .i) p = a x
     extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (invIsEq (ι-cong-equiv y x) p t)) ay
-    extract' x .(ι y) (gelιp y a r i) p = extract-lemma x y a p i
+    extract' x .(ι y) (gelιp y a r u) p = extract-lemma a (λ t → invIsEq (ι-cong-equiv y x) p t) (~ u)
 
     extract : {x : X} → Gel (ι x) → A x
     extract {x} g = extract' x (ι x) g (λ _ → ι x)
