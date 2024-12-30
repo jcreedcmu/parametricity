@@ -22,7 +22,7 @@ transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
 transport-nat : ∀ {ℓ0 ℓ1 ℓ2} {I : Set ℓ0} {A : I → Set ℓ1} {B : I → Set ℓ2} →
                 (f : {i : I} → A i → B i) {i j : I} (p : i ≡c j) (a : A i) →
                 f (transport (λ t → A (p t)) a) ≡c transport (λ t → B (p t)) (f a)
-transport-nat = {!!}
+transport-nat {A = A} {B} f p a u = transp (λ t → B (p (t ∨ ~ u))) (~ u) (f (transp (λ t → A (p (t ∧ ~ u))) u a))
 
 -- The interval
 
@@ -85,12 +85,11 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       -- And we assert that inℓ (r, i) ≡ inr (x, aₓ) when i ≡ ι x and aₓ = πₓ r,
       -- i.e. i is the actual endpoing in I corresponding to x,
       -- and aₓ is the projection of r to the x'th arm of the relation
-      -- CLEANUP: x implicit?
-      gelιp : (x : X) (a : (x : X) → A x) (r : R a) → gelι (a x) ≡c gel r (ι x)
+      gelιp : {x : X} (a : (x : X) → A x) (r : R a) → gelι (a x) ≡c gel r (ι x)
 
     -- gel, but make a bridge
     bgel : {a : (x : X) → A x} (r : R a) → Bridge Gel (gelι ∘ a)
-    bgel {a} r = transport (λ t → Bridge Gel λ x → gelιp x a r (~ t)) (pabs (gel r))
+    bgel {a} r = transport (λ t → Bridge Gel λ x → gelιp a r (~ t)) (pabs (gel r))
 
     module _ (bd : bridge-discrete total) where
 
@@ -123,14 +122,13 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
     iret : {x y : X} (p : x ≡c y) → iback (ifore p) ≡c p
     iret {x} {y} p = retIsEq (ι-cong-equiv x y) p
 
-    -- Unused?
     isec : {x y : X} (p : ι x ≡c ι y) → ifore (iback p) ≡c p
     isec {x} {y} p = secIsEq (ι-cong-equiv x y) p
 
     extract' : (x : X) (i : I) → Gel i → (i ≡c ι x) → A x
     extract' x i (gel {a} r .i) p = a x
     extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (iback p t)) ay
-    extract' x .(ι y) (gelιp y a r u) p = transport-func a (iback p) u
+    extract' x i (gelιp a r u) p = transport-func a (iback p) u
 
     extract : {x : X} → Gel (ι x) → A x
     extract {x} g = extract' x (ι x) g (λ _ → ι x)
@@ -142,11 +140,11 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
     section x ax = (λ u → transport (λ t → A (section-lemma x u t)) ax) ∙ transportRefl ax
 
     retract2 : {x : X} {i : I} (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
-    retract2 {x} (gel {a} r i) p = gelιp x a r ∙ λ u → transport-func (gel r) p (~ u)
+    retract2 {x} (gel {a} r i) p = gelιp a r ∙ λ u → transport-func (gel r) p (~ u)
     retract2 (gelι {y} ay) p = transport-nat gelι (iback p) ay
            ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι ay))
 
-    retract2 {x} (gelιp y a r i) p = {!!}
+    retract2 {x} (gelιp a r i) p = {!!}
 
     retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
     retract x g = retract2  g (λ _ → ι x) ∙ transportRefl g
