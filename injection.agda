@@ -152,18 +152,15 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       rhs = gelιp a r ∙ (λ u → transport-func (gel r) p (~ u))
 
       out : PathP across lhs rhs
-      out = {!across ci0!}
+      out = {!!}
 
     retract2 : {x : X} {i : I} (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
     retract2 {x} (gel {a} r i) p = gelιp a r ∙ λ u → transport-func (gel r) p (~ u)
     retract2 (gelι {y} ay) p = transport-nat gelι (iback p) ay ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι ay))
-    retract2 {x} (gelιp {y} a r i) p = {!!} -- retract2-lemma.out p a r i
+    retract2 {x} (gelιp {y} a r i) p = retract2-lemma.out p a r i
 
     retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
     retract x g = retract2  g (λ _ → ι x) ∙ transportRefl g
 
     Gel-endpoints : (x : X) → Gel (ι x) ≅ A x
     Gel-endpoints x = isoToEquiv (Cubical.Foundations.Isomorphism.iso extract gelι (section x) (retract x))
-
-
--- functoriality?
