@@ -8,7 +8,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
+open import Cubical.Foundations.Prelude using (PathP ; sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
@@ -139,12 +139,25 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
     section : (x : X) (ax : A x) → extract (gelι ax) ≡c ax
     section x ax = (λ u → transport (λ t → A (section-lemma x u t)) ax) ∙ transportRefl ax
 
+    module retract2-lemma {x y : X} (p : ι y ≡c ι x) (a : (x : X) → A x) (r : R a) where
+      across : cI → Set ℓ
+      across t = gelι (transport-func a (iback p) t) ≡c transport (λ t → Gel (p t)) (gelιp a r t)
+
+      -- lhs : across ci0
+      lhs : gelι (transport (λ t → A (iback p t)) (a y)) ≡c transport (λ t → Gel (p t)) (gelι (a y))
+      lhs = transport-nat gelι (iback p) (a y) ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι (a y)))
+
+      -- lhs : across ci1
+      rhs : gelι (a x) ≡c transport (λ t → Gel (p t)) (gel r (ι y))
+      rhs = gelιp a r ∙ (λ u → transport-func (gel r) p (~ u))
+
+      out : PathP across lhs rhs
+      out = {!across ci0!}
+
     retract2 : {x : X} {i : I} (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
     retract2 {x} (gel {a} r i) p = gelιp a r ∙ λ u → transport-func (gel r) p (~ u)
-    retract2 (gelι {y} ay) p = transport-nat gelι (iback p) ay
-           ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι ay))
-
-    retract2 {x} (gelιp a r i) p = {!!}
+    retract2 (gelι {y} ay) p = transport-nat gelι (iback p) ay ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι ay))
+    retract2 {x} (gelιp {y} a r i) p = {!!} -- retract2-lemma.out p a r i
 
     retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
     retract x g = retract2  g (λ _ → ι x) ∙ transportRefl g
