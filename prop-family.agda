@@ -8,7 +8,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (PathP ; sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
+open import Cubical.Foundations.Prelude using (isProp ; isProp→isSet ; isPropIsProp ; PathP ; sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
@@ -29,9 +29,11 @@ module _ where
 
   -- assert E i is a proposition
   postulate
-    E-isProp : {i : I} (x y : E i) → x ≡c y
-    E-isContr : {i : I} (x : E i) → E-isProp x x ≡ (λ _ → x)
-    {-# REWRITE E-isContr #-}
+    E-isProp : {i : I} → isProp (E i)
+
+  E-redRefl : {i : I} (x : E i) → E-isProp x x ≡ (λ _ → x)
+  E-redRefl {i} x  = pathToEq ((isProp→isSet E-isProp x x) (E-isProp x x) (λ _ → x))
+  {-# REWRITE E-redRefl #-}
 
   module pushout {ℓ : Level} {A : {i : I} (e : E i) → Set ℓ} (R : ({i : I} (e : E i) → A e) → Set ℓ) where
 
