@@ -104,26 +104,40 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       Gelη : {a : (x : X) → A x} (p : Bridge Gel (gelι ∘ a)) (i : I) → bgel (ungel p) ≡ p
       Gelη p i = pathToEq (secIsEq bgel-isEquiv p)
 
+    ifore : {x y : X} → x ≡c y → ι x ≡c ι y
+    ifore {x} {y} p t = ι (p t)
+
+    iback : {x y : X} → ι x ≡c ι y → x ≡c y
+    iback {x} {y} p t = invIsEq (ι-cong-equiv x y) p t
+
     extract-lemma : {x y : X} (a : (x : X) → A x) (p : y ≡c x) →
               transport (λ t → A (p t)) (a y) ≡c a x
     extract-lemma a p u = transp (λ t → A (p (t ∨ u))) u (a (p u))
 
     extract' : (x : X) (i : I) → Gel i → (i ≡c ι x) → A x
     extract' x i (gel {a} r .i) p = a x
-    extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (invIsEq (ι-cong-equiv y x) p t)) ay
-    extract' x .(ι y) (gelιp y a r u) p = extract-lemma a (λ t → invIsEq (ι-cong-equiv y x) p t) u
+    extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (iback p t)) ay
+    extract' x .(ι y) (gelιp y a r u) p = extract-lemma a (iback p) u
 
     extract : {x : X} → Gel (ι x) → A x
     extract {x} g = extract' x (ι x) g (λ _ → ι x)
 
-    section-lemma : (x : X) → invIsEq (ι-cong-equiv x x) (λ _ → ι x) ≡c (λ _ → x)
-    section-lemma x = (λ t → invIsEq (ι-cong-equiv x x) (λ _ → ι x)) ∙ retIsEq (ι-cong-equiv x x) (λ _ → x)
+    section-lemma : (x : X) → iback (λ _ → ι x) ≡c (λ _ → x)
+    section-lemma x = retIsEq (ι-cong-equiv x x) (λ _ → x)
 
     section : (x : X) (ax : A x) → extract (gelι ax) ≡c ax
     section x ax = (λ u → transport (λ t → A (section-lemma x u t)) ax) ∙ transportRefl ax
 
+    retract2-lemma-endpoint : (x y : X) (p : x ≡c y) (ax : A x) →
+      gelι (transport (λ t → A (p t)) ax)
+      ≡c transport (λ t → Gel (ι (p t))) (gelι ax)
+    retract2-lemma-endpoint = {!!}
+
     retract2 : (x : X) (i : I) (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
-    retract2 x a = {!!}
+    retract2 x i (gel r .i) p = {!!}
+    retract2 x .(ι _) (gelι {y} ax) p = {!retract2-lemma-endpoint!} where
+       pp = invIsEq (ι-cong-equiv y x) p
+    retract2 x .(ι x₁) (gelιp x₁ a r i) p = {!!}
 
     retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
     retract x g = retract2 x (ι x) g (λ _ → ι x) ∙ transportRefl g
