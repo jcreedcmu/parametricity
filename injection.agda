@@ -8,7 +8,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0)
+open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
@@ -95,49 +95,41 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       postulate
         bgel-isEquiv : {a : (x : X) → A x} → isEquiv (bgel {a})
 
-      ungel : {a : A} {b : B} → Bridge Gel (gel0 a) (gel1 b) → R a b
+      ungel : {a : (x : X) → A x} → Bridge Gel (gelι ∘ a) → R a
       ungel p = invIsEq bgel-isEquiv p
 
-  --     Gelβ : {a : A} {b : B} (r : R a b) → ungel (bgel r) ≡ r
-  --     Gelβ r = pathToEq (retIsEq bgel-isEquiv r)
+      Gelβ : {a : (x : X) → A x} (r : R a) → ungel (bgel r) ≡ r
+      Gelβ r = pathToEq (retIsEq bgel-isEquiv r)
 
-  --     Gelη : {a : A} {b : B} (p : Bridge Gel (gel0 a) (gel1 b)) (i : I) → bgel (ungel p) ≡ p
-  --     Gelη p i = pathToEq (secIsEq bgel-isEquiv p)
+      Gelη : {a : (x : X) → A x} (p : Bridge Gel (gelι ∘ a)) (i : I) → bgel (ungel p) ≡ p
+      Gelη p i = pathToEq (secIsEq bgel-isEquiv p)
 
-  --     module dpush {Q : I → Set ℓ} (qa : A → Q i0) (qb : B → Q i1)
-  --                  (qf : {a : A} {b : B} (r : R a b) → Bridge Q (qa a) (qb b)) where
-  --        pmap : (i : I) → Gel i → Q i
-  --        pmap i (gel r .i) = papp (qf r) i
-  --        pmap .i0 (gel0 a) = qa a
-  --        pmap .i1 (gel1 b) = qb b
-  --        pmap .i0 (gel0p a r i) = qa a
-  --        pmap .i1 (gel1p b r i) = qb b
+    extract-lemma : (x y : X) (a : (x : X) → A x) (p : ι y ≡c ι x) →
+             a x ≡c transport (λ t → A (invIsEq (ι-cong-equiv y x) p t)) (a y)
+    extract-lemma = {!!}
 
-  --   -- Trying to show that Gel i0 is A
+    extract' : (x : X) (i : I) → Gel i → (i ≡c ι x) → A x
+    extract' x i (gel {a} r .i) p = a x
+    extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (invIsEq (ι-cong-equiv y x) p t)) ay
+    extract' x .(ι y) (gelιp y a r i) p = extract-lemma x y a p i
 
-  --   postulate
-  --     cvtA : A → (i0 ≡c i0) → A
-  --     cvtA/ : (a : A) → cvtA a (λ _ → i0) ≡c a
-  --     cvtB : B → (i1 ≡c i0) → A
-  --     cvt : {a : A} {b : B} → R a b → Bridge (λ i → i ≡c i0 → A) (cvtA a) (cvtB b)
+    extract : {x : X} → Gel (ι x) → A x
+    extract {x} g = extract' x (ι x) g (λ _ → ι x)
 
-  --   fore : (i : I) → Gel i → (i ≡c i0) → A
-  --   fore i (gel r .i) p = papp (cvt r) i p
-  --   fore .i0 (gel0 a) p = cvtA a p
-  --   fore .i1 (gel1 b) p = cvtB b p
-  --   fore .i0 (gel0p a r i) p = cvtA a p
-  --   fore .i1 (gel1p b r i) p = cvtB b p
+    section-lemma : (x : X) → invIsEq (ι-cong-equiv x x) (λ _ → ι x) ≡c (λ _ → x)
+    section-lemma x = (λ t → invIsEq (ι-cong-equiv x x) (λ _ → ι x)) ∙ retIsEq (ι-cong-equiv x x) (λ _ → x)
 
-  --   fore' : Gel i0 → A
-  --   fore' g = fore i0 g (λ _ → i0)
+    section : (x : X) (ax : A x) → extract (gelι ax) ≡c ax
+    section x ax = (λ u → transport (λ t → A (section-lemma x u t)) ax) ∙ transportRefl ax
 
-  --   retract' : (i : I) (a : Gel i) (p : i ≡c i0) → gel0 (fore i a p) ≡c transport (λ t → Gel (p t)) a
-  --   retract' i (gel r .i) p = {!!}
-  --   retract' .i0 (gel0 a) p = {!!}
-  --   retract' .i1 (gel1 b) p = {!!}
-  --   retract' .i0 (gel0p a r i) p = {!!}
-  --   retract' .i1 (gel1p b r i) p = {!!}
+    retract2 : (x : X) (i : I) (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
+    retract2 x a = {!!}
 
+    retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
+    retract x g = retract2 x (ι x) g (λ _ → ι x) ∙ transportRefl g
+
+    Gel-endpoints : (x : X) → Gel (ι x) ≅ A x
+    Gel-endpoints x = isoToEquiv (Cubical.Foundations.Isomorphism.iso extract gelι (section x) (retract x))
   --   retract : (a : Gel i0) → gel0 (fore i0 a (λ _ → i0)) ≡c a
   --   retract a = retract' i0 a (λ _ → i0) ∙ Cubical.Foundations.Prelude.transportRefl a
 
