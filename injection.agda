@@ -8,12 +8,21 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0)
+open import Cubical.Foundations.Prelude using (sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
 
 module injection where
+
+transport-func : ∀ {ℓ k} {I : Set ℓ} {Z : I → Set k} (f : (i : I) → Z i) {i j : I} (p : i ≡c j) →
+     transport (λ t → Z (p t)) (f i) ≡c f j
+transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
+
+transport-nat : ∀ {ℓ0 ℓ1 ℓ2} {I : Set ℓ0} {A : I → Set ℓ1} {B : I → Set ℓ2} →
+                (f : {i : I} → A i → B i) {i j : I} (p : i ≡c j) (a : A i) →
+                f (transport (λ t → A (p t)) a) ≡c transport (λ t → B (p t)) (f a)
+transport-nat = {!!}
 
 -- The interval
 
@@ -76,6 +85,7 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
       -- And we assert that inℓ (r, i) ≡ inr (x, aₓ) when i ≡ ι x and aₓ = πₓ r,
       -- i.e. i is the actual endpoing in I corresponding to x,
       -- and aₓ is the projection of r to the x'th arm of the relation
+      -- CLEANUP: x implicit?
       gelιp : (x : X) (a : (x : X) → A x) (r : R a) → gelι (a x) ≡c gel r (ι x)
 
     -- gel, but make a bridge
@@ -110,93 +120,39 @@ module _ (X : Set) where -- X is the shape of the interval, e.g. 2 for binary re
     iback : {x y : X} → ι x ≡c ι y → x ≡c y
     iback {x} {y} p t = invIsEq (ι-cong-equiv x y) p t
 
-    extract-lemma : {x y : X} (a : (x : X) → A x) (p : y ≡c x) →
-              transport (λ t → A (p t)) (a y) ≡c a x
-    extract-lemma a p u = transp (λ t → A (p (t ∨ u))) u (a (p u))
+    iret : {x y : X} (p : x ≡c y) → iback (ifore p) ≡c p
+    iret {x} {y} p = retIsEq (ι-cong-equiv x y) p
+
+    -- Unused?
+    isec : {x y : X} (p : ι x ≡c ι y) → ifore (iback p) ≡c p
+    isec {x} {y} p = secIsEq (ι-cong-equiv x y) p
 
     extract' : (x : X) (i : I) → Gel i → (i ≡c ι x) → A x
     extract' x i (gel {a} r .i) p = a x
     extract' x .(ι _) (gelι {y} ay) p = transport (λ t → A (iback p t)) ay
-    extract' x .(ι y) (gelιp y a r u) p = extract-lemma a (iback p) u
+    extract' x .(ι y) (gelιp y a r u) p = transport-func a (iback p) u
 
     extract : {x : X} → Gel (ι x) → A x
     extract {x} g = extract' x (ι x) g (λ _ → ι x)
 
     section-lemma : (x : X) → iback (λ _ → ι x) ≡c (λ _ → x)
-    section-lemma x = retIsEq (ι-cong-equiv x x) (λ _ → x)
+    section-lemma x = iret (λ _ → x)
 
     section : (x : X) (ax : A x) → extract (gelι ax) ≡c ax
     section x ax = (λ u → transport (λ t → A (section-lemma x u t)) ax) ∙ transportRefl ax
 
-    retract2-lemma-endpoint : (x y : X) (p : x ≡c y) (ax : A x) →
-      gelι (transport (λ t → A (p t)) ax)
-      ≡c transport (λ t → Gel (ι (p t))) (gelι ax)
-    retract2-lemma-endpoint = {!!}
+    retract2 : {x : X} {i : I} (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
+    retract2 {x} (gel {a} r i) p = gelιp x a r ∙ λ u → transport-func (gel r) p (~ u)
+    retract2 (gelι {y} ay) p = transport-nat gelι (iback p) ay
+           ∙ (λ u → transport (λ t → Gel (isec p u t)) (gelι ay))
 
-    retract2 : (x : X) (i : I) (g : Gel i) (p : i ≡c ι x) → gelι (extract' x i g p) ≡c transport (λ t → Gel (p t)) g
-    retract2 x i (gel r .i) p = {!!}
-    retract2 x .(ι _) (gelι {y} ax) p = {!retract2-lemma-endpoint!} where
-       pp = invIsEq (ι-cong-equiv y x) p
-    retract2 x .(ι x₁) (gelιp x₁ a r i) p = {!!}
+    retract2 {x} (gelιp y a r i) p = {!!}
 
     retract : (x : X) (g : Gel (ι x)) → gelι (extract g) ≡c g
-    retract x g = retract2 x (ι x) g (λ _ → ι x) ∙ transportRefl g
+    retract x g = retract2  g (λ _ → ι x) ∙ transportRefl g
 
     Gel-endpoints : (x : X) → Gel (ι x) ≅ A x
     Gel-endpoints x = isoToEquiv (Cubical.Foundations.Isomorphism.iso extract gelι (section x) (retract x))
-  --   retract : (a : Gel i0) → gel0 (fore i0 a (λ _ → i0)) ≡c a
-  --   retract a = retract' i0 a (λ _ → i0) ∙ Cubical.Foundations.Prelude.transportRefl a
-
-  --   Gel0≡A' : Gel i0 ≅ A
-  --   Gel0≡A' = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore' gel0 cvtA/ retract)
 
 
-  --   abort : (p : i1 ≡c i0) {A : Set ℓ} → A
-  --   abort p {A} = Cubical.Data.Empty.elim {A = λ _ → A} (Bridge-nontriv p)
-
-
-  --   Gel0≡A-fore-case : (i : I) → Gel i → i ≡c i0 → A
-  --   Gel0≡A-fore-case .i (gel {a} r i) p = a
-  --   Gel0≡A-fore-case .i0 (gel0 a) p = a
-  --   Gel0≡A-fore-case .i1 (gel1 b) p = abort p
-  --   Gel0≡A-fore-case .i0 (gel0p a r i) p = a
-  --   Gel0≡A-fore-case .i1 (gel1p {a} b r i) p = abort p {a ≡c abort p} i
-
-  --   Gel0≡A-fore : Gel i0 → A
-  --   Gel0≡A-fore g = Gel0≡A-fore-case i0 g (λ _ → i0)
-
-  --   retr-lemma2 : (i : I) {G : I → Set ℓ} {g : (i : I) → G i} (p : i ≡c i0) →  g i0 ≡c transport (λ t → G (p t)) (g i)
-  --   retr-lemma2 = {!!}
-
-  --   refli0 : i0 ≡c i0
-  --   refli0 t = i0
-
-  --   postulate
-  --     i0-noloop : (p : i0 ≡c i0) → p ≡c refli0
-
-  --   retr-case : (i : I) (a : Gel i) (p : i ≡c i0) → gel0 (Gel0≡A-fore-case i a p) ≡c transport (λ t → Gel (p t)) a
-  --   retr-case i (gel {a} r .i) p = (sym (gel0p a r) ) ∙ retr-lemma2 i {g = gel r} p
-  --   retr-case .i0 (gel0 a) p = {!!} -- stuck here, need to use noloop property somehow?
-  --   retr-case .i1 (gel1 b) p = abort p
-  --   retr-case .i0 (gel0p a r i) p = {!!}
-  --   retr-case .i1 (gel1p b r i) p = {!!}
-
-  --   retr : (a : Gel i0) → gel0 (Gel0≡A-fore-case i0 a (λ _ → i0)) ≡c a
-  --   retr a =  retr-case i0 a (λ _ → i0) ∙ Cubical.Foundations.Prelude.transportRefl a
-
-  --   Gel0≡A : Gel i0 ≅ A
-  --   Gel0≡A = isoToEquiv (Cubical.Foundations.Isomorphism.iso Gel0≡A-fore gel0 (λ b _ → b) retr)
-
-  -- module functoriality-from-dpush {ℓ  : Agda.Primitive.Level}
-  --             {A B : Set ℓ} (R : A → B → Set ℓ)
-  --             {A' B' : Set ℓ} (R' : A' → B' → Set ℓ)
-  --             {f : A → A'} {g : B → B'}
-  --             (h : {a : A} {b : B} → R a b → R' (f a) (g b))
-  --             (bd : bridge-discrete (sfunc.total R)) where
-  --   open sfunc
-
-  --   Gel-f : (i : I) → Gel R i → Gel R' i
-  --   Gel-f i  = dpush.pmap R bd (gel0 ∘ f) (gel1 ∘ g) (bgel R' ∘ h) i
-
-  --   gel-f : {a : A} {b : B} (r : R a b) (i : I) → Gel-f i (gel r i) ≡c gel (h r) i
-  --   gel-f r i t = papp (transp (λ t' → Bridge (Gel R') (gel0p _ (h r) (t' ∧ ~ t)) (gel1p _ (h r) (t' ∧ ~ t))) t (pabs (gel (h r)))) i
+-- functoriality?
