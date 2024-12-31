@@ -24,16 +24,10 @@ foo : ∀ {ℓ} (A : Set ℓ) (a b : A) (f : a ≡c b) → PathP (λ i → a ≡
 foo A a b f t u = f (t ∧ u)
 
 -- The interval
-module _ (I : Set) (E : I → Set) where
+module _ (I : Set) (E : I → Set) (E-isProp : {i : I} → isProp (E i)) where
 
-  -- assert E i is a proposition. If we take it as a module argument,
-  -- rewriting doesn't work.
-  postulate
-    E-isProp : {i : I} → isProp (E i)
-
-  E-redRefl : {i : I} (x : E i) → E-isProp x x ≡ (λ _ → x)
-  E-redRefl {i} x  = pathToEq ((isProp→isSet E-isProp x x) (E-isProp x x) (λ _ → x))
-  {-# REWRITE E-redRefl #-}
+  E-redRefl : {i : I} (x : E i) → E-isProp x x ≡c (λ _ → x)
+  E-redRefl {i} x = ((isProp→isSet E-isProp x x) (E-isProp x x) (λ _ → x))
 
   module pushout {ℓ : Level} {A : {i : I} (e : E i) → Set ℓ} (R : ({i : I} (e : E i) → A e) → Set ℓ) where
 
@@ -47,10 +41,14 @@ module _ (I : Set) (E : I → Set) where
     extract {i} {e} (gelι {e = e'} ae) = transport (λ t → A (E-isProp e' e t)) ae
 --    extract {i} {e} (gelιp {e = e'} a r t) = transport-func a (E-isProp e' e) t
 --    expanding def'n of transport-func:
-    extract {i} {e} (gelιp {e = e'} a r t) = transp (λ t' → A (E-isProp e' e (t' ∨ t))) t (a (E-isProp e' e t))
+    extract {i} {e} (gelιp {e = e'} a r t) =  transp (λ t' → A (E-isProp e' e (t' ∨ t))) t (a (E-isProp e' e t))
+
+    section-lemma : {i : I} (e : E i) (ae : A e) →
+      transport (λ t → A (E-isProp e e t)) ae ≡c transport (λ t → A e) ae
+    section-lemma e ae u = transport ((λ t → A (E-redRefl e u t))) ae
 
     section : {i : I} (e : E i) (ae : A e) → extract (gelι ae) ≡c ae
-    section x ax = transportRefl ax
+    section e ae = section-lemma e ae ∙ transportRefl ae
 
     retract : {i : I} (e : E i) (g : Gel i) → gelι {i} {e} (extract g) ≡c g
     retract e (gel {a} r _) = gelιp a r
