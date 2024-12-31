@@ -29,44 +29,6 @@ lemma' : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡c e1) (g : G)
   PathP (λ t → h e0 ≡c q e1 t) (λ u → h (p u)) (λ u → q e0 u)
 lemma' e0 e1 p g h q t u = lemma8 (h e0) (h e1) g (λ u → q e0 u) (λ u → h (p u)) (λ t → q e1 t) (λ u → q (p u)) u t
 
-presE : {ℓ k : Level} {E : Set ℓ} {A B : E → Set k} (f : (Σ[ e ∈ E ] A e) → (Σ[ e ∈ E ] B e)) → Set (ℓ-max ℓ k)
-presE {E = E} {A = A} f = (e : E) (a : A e) → fst (f (e , a)) ≡c e
-
-module presLem {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e))
-    (presFun : presE (funIsEq (snd sumeq))) (presInv : presE (invIsEq (snd sumeq)))
-    where
-
-    sumIsEq : isEquiv (equivFun sumeq)
-    sumIsEq = snd sumeq
-    fs = funIsEq sumIsEq
-    ns = invIsEq sumIsEq
-
-    fore : {e : E} → A e → B e
-    fore {e} a = let (e' , b) = fs (e , a) in transport (λ t → B (presFun e a t)) b
-
-    back : {e : E} → B e → A e
-    back {e} b = let (e' , a) = ns (e , b) in transport (λ t → A (presInv e b t)) a
-
-
-
-
-
-
-    -- out : (e : E) → A e ≅ B e
-    -- out e = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section {!!})
-
-    out : (e : E) → A e ≅ B e
-    out = {!!}
-
-module propLem {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
-    presFun : presE (funIsEq (snd sumeq))
-    presFun e a = E-isProp (fst (funIsEq (snd sumeq) (e , a))) e
-
-    presInv : presE (invIsEq (snd sumeq))
-    presInv e a = E-isProp (fst (invIsEq (snd sumeq) (e , a))) e
-
-    out : (e : E) → A e ≅ B e
-    out = presLem.out E A B sumeq presFun presInv
 
 module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
     sumIsEq : isEquiv (equivFun sumeq)
@@ -155,4 +117,4 @@ module _ (I : Set) (E : I → Set) (E-isProp : {i : I} → isProp (E i)) where
     sumeq = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section retract)
 
     G-endpoints : {i : I} (e : E i) → Gel i ≅ A e
-    G-endpoints {i} e = propLem.out (E i) (λ _ → Gel i) A E-isProp sumeq e
+    G-endpoints {i} e = propLem2.out (E i) (λ _ → Gel i) A E-isProp sumeq e
