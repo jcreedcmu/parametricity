@@ -20,8 +20,10 @@ transport-func : ∀ {ℓ k} {I : Set ℓ} {Z : I → Set k} (f : (i : I) → Z 
      transport (λ t → Z (p t)) (f i) ≡c f j
 transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
 
--- The interval
+foo : ∀ {ℓ} (A : Set ℓ) (a b : A) (f : a ≡c b) → PathP (λ i → a ≡c (f i)) (λ _ → a) f
+foo A a b f t u = f (t ∧ u)
 
+-- The interval
 module _ (I : Set) (E : I → Set) where
 
   -- assert E i is a proposition. If we take it as a module argument,
@@ -43,14 +45,16 @@ module _ (I : Set) (E : I → Set) where
     extract : {i : I} {e : E i} → Gel i → A e
     extract {i} {e} (gel {a} r .i) = a e
     extract {i} {e} (gelι {e = e'} ae) = transport (λ t → A (E-isProp e' e t)) ae
-    extract {i} {e} (gelιp {e = e'} a r t) = transport-func a (E-isProp e' e) t
+--    extract {i} {e} (gelιp {e = e'} a r t) = transport-func a (E-isProp e' e) t
+--    expanding def'n of transport-func:
+    extract {i} {e} (gelιp {e = e'} a r t) = transp (λ t' → A (E-isProp e' e (t' ∨ t))) t (a (E-isProp e' e t))
 
     section : {i : I} (e : E i) (ae : A e) → extract (gelι ae) ≡c ae
     section x ax = transportRefl ax
 
     retract : {i : I} (e : E i) (g : Gel i) → gelι {i} {e} (extract g) ≡c g
     retract e (gel {a} r _) = gelιp a r
-    retract {i} e (gelι {e = e'} ae') u = gelι (transp (λ t → A (E-isProp e' (E-isProp e e' u) t)) u ae')
+    retract {i} e (gelι {e = e'} ae') u = gelι (transp (λ t → A (E-isProp e' e (t ∧ ~ u))) u ae')
     -- Goal: Gel i
     -- ———— Boundary (wanted) —————————————————————————————————————
     -- u = ci0 ⊢ gelι (transport-func a (E-isProp e' e) t)
