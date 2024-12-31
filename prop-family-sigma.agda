@@ -29,15 +29,9 @@ lemma' : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡c e1) (g : G)
   PathP (λ t → h e0 ≡c q e1 t) (λ u → h (p u)) (λ u → q e0 u)
 lemma' e0 e1 p g h q t u = lemma8 (h e0) (h e1) g (λ u → q e0 u) (λ u → h (p u)) (λ t → q e1 t) (λ u → q (p u)) u t
 
-
-module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
-    sumIsEq : isEquiv (equivFun sumeq)
-    sumIsEq = snd sumeq
-    fs = funIsEq sumIsEq
-    ns = invIsEq sumIsEq
-
-    Eip : {x y : E} → x ≡c y
-    Eip {x} {y} = E-isProp x y
+module propLem3 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E)
+       (fs : (Σ[ e ∈ E ] A e) → (Σ[ e ∈ E ] B e)) (ns : (Σ[ e ∈ E ] B e) → (Σ[ e ∈ E ] A e))
+       (section-in : (eb : Σ[ e ∈ E ] B e) → fs (ns eb) ≡c eb) where
 
     cvt : (AorB : E → Set k) (src : E) (tgt : E) → AorB src → AorB tgt
     cvt AorB src tgt x = transport (λ t → AorB (E-isProp src tgt t)) x
@@ -62,15 +56,34 @@ module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : is
     section3 ea e' u = (E-isProp (ea .fst) e' (~ u)) , transp (λ t → A (E-isProp (ea .fst) e' (t ∧ ~ u))) u (snd ea)
 
     section2 : (eb : Σ[ e ∈ E ] B e) → (fs (eb .fst , cvt A (fst (ns eb)) (eb .fst) (snd (ns eb)))) ≡c eb
-    section2 eb  = (λ u → fs (section3 (ns eb) (eb .fst) u)) ∙ secIsEq sumIsEq eb
+    section2 eb  = (λ u → fs (section3 (ns eb) (eb .fst) u)) ∙ section-in eb
+
+    out : {e : E} (b : B e) → fore (back b) ≡c b
+    out {e} b u = section4 (section2 (e , b)) u
+
+module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
+    sumIsEq : isEquiv (equivFun sumeq)
+    sumIsEq = snd sumeq
+    fs = funIsEq sumIsEq
+    ns = invIsEq sumIsEq
+
+    cvt : (AorB : E → Set k) (src : E) (tgt : E) → AorB src → AorB tgt
+    cvt AorB src tgt x = transport (λ t → AorB (E-isProp src tgt t)) x
+
+    fore : {e : E} → A e → B e
+    fore {e} a = let (e' , b) = fs (e , a) in cvt B e' e b
+
+    back : {e : E} → B e → A e
+    back {e} b = let (e' , a) = ns (e , b) in cvt A e' e a
 
     section : {e : E} (b : B e) → fore (back b) ≡c b
-    section {e} b u = section4 (section2 (e , b)) u
+    section {e} b  = propLem3.out  E A B E-isProp fs ns (secIsEq sumIsEq) b
 
+    retract : {e : E} (a : A e) → back (fore a) ≡c a
+    retract {e} a  = propLem3.out  E B A E-isProp ns fs (retIsEq sumIsEq) a
 
     out : (e : E) → A e ≅ B e
-    out e = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section {!!})
-
+    out e = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section retract)
 
 -- The interval
 module _ (I : Set) (E : I → Set) (E-isProp : {i : I} → isProp (E i)) where
