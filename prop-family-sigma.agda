@@ -2,7 +2,7 @@
 
 open import Function.Base
 open import Cubical.Relation.Nullary.Base using (¬_)
-open import Agda.Builtin.Cubical.Equiv using (isEquiv)
+open import Agda.Builtin.Cubical.Equiv using (isEquiv ; equivFun)
 open import Agda.Builtin.Equality
 open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
@@ -15,12 +15,7 @@ open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
 
 module prop-family-sigma where
 
-
 -- couple of general lemmas
-transport-func : ∀ {ℓ k} {I : Set ℓ} {Z : I → Set k} (f : (i : I) → Z i) {i j : I} (p : i ≡c j) →
-     transport (λ t → Z (p t)) (f i) ≡c f j
-transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
-
 lemma8 : ∀ {ℓ} {G : Set ℓ} (a b c : G) (f : a ≡c c) (g : a ≡c b) (h : b ≡c c) →
    Square f h g (λ _ → c) → Square (λ _ → a) h g f
 lemma8 a b c f g h x u t = hcomp ((λ v → λ {
@@ -33,6 +28,86 @@ lemma8 a b c f g h x u t = hcomp ((λ v → λ {
 lemma' : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡c e1) (g : G) (h : E → G) (q : (e : E) → h e ≡c g) →
   PathP (λ t → h e0 ≡c q e1 t) (λ u → h (p u)) (λ u → q e0 u)
 lemma' e0 e1 p g h q t u = lemma8 (h e0) (h e1) g (λ u → q e0 u) (λ u → h (p u)) (λ t → q e1 t) (λ u → q (p u)) u t
+
+presE : {ℓ k : Level} {E : Set ℓ} {A B : E → Set k} (f : (Σ[ e ∈ E ] A e) → (Σ[ e ∈ E ] B e)) → Set (ℓ-max ℓ k)
+presE {E = E} {A = A} f = (e : E) (a : A e) → fst (f (e , a)) ≡c e
+
+module presLem {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e))
+    (presFun : presE (funIsEq (snd sumeq))) (presInv : presE (invIsEq (snd sumeq)))
+    where
+
+    sumIsEq : isEquiv (equivFun sumeq)
+    sumIsEq = snd sumeq
+    fs = funIsEq sumIsEq
+    ns = invIsEq sumIsEq
+
+    fore : {e : E} → A e → B e
+    fore {e} a = let (e' , b) = fs (e , a) in transport (λ t → B (presFun e a t)) b
+
+    back : {e : E} → B e → A e
+    back {e} b = let (e' , a) = ns (e , b) in transport (λ t → A (presInv e b t)) a
+
+
+
+
+
+
+    -- out : (e : E) → A e ≅ B e
+    -- out e = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section {!!})
+
+    out : (e : E) → A e ≅ B e
+    out = {!!}
+
+module propLem {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
+    presFun : presE (funIsEq (snd sumeq))
+    presFun e a = E-isProp (fst (funIsEq (snd sumeq) (e , a))) e
+
+    presInv : presE (invIsEq (snd sumeq))
+    presInv e a = E-isProp (fst (invIsEq (snd sumeq) (e , a))) e
+
+    out : (e : E) → A e ≅ B e
+    out = presLem.out E A B sumeq presFun presInv
+
+module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
+    sumIsEq : isEquiv (equivFun sumeq)
+    sumIsEq = snd sumeq
+    fs = funIsEq sumIsEq
+    ns = invIsEq sumIsEq
+
+    Eip : {x y : E} → x ≡c y
+    Eip {x} {y} = E-isProp x y
+
+    cvt : (AorB : E → Set k) (src : E) (tgt : E) → AorB src → AorB tgt
+    cvt AorB src tgt x = transport (λ t → AorB (E-isProp src tgt t)) x
+
+    fore : {e : E} → A e → B e
+    fore {e} a = let (e' , b) = fs (e , a) in cvt B e' e b
+
+    back : {e : E} → B e → A e
+    back {e} b = let (e' , a) = ns (e , b) in cvt A e' e a
+
+    section6 : {x y : Σ[ e ∈ E ] B e} (p : y ≡c x) → transport (λ t → B (fst (p t))) (snd y) ≡c snd x
+    section6 {x} {y} p u = transp (λ t → B (fst (p (t ∨ u)))) u (snd (p u))
+
+    section5 : {x y : Σ[ e ∈ E ] B e} (p : y ≡c x) → (λ t → fst (p t)) ≡c E-isProp (fst y) (fst x)
+    section5 {x} {y} p  = isProp→isSet E-isProp (fst y) (fst x) (λ t → fst (p t)) (E-isProp (fst y) (fst x))
+
+    section4 : {x y : Σ[ e ∈ E ] B e} → y ≡c x → cvt B (fst y) (fst x) (snd y) ≡c snd x
+    -- section4 : {x y : Σ[ e ∈ E ] B e} → y ≡c x → transport (λ t → B (E-isProp (fst y) (fst x) t)) (snd y) ≡c snd x
+    section4 {x} {y} p  =  transport (λ v → (transport (λ t → B (section5 p v t)) (snd y) ≡c snd x)) (section6 p)
+
+    section3 : (ea : Σ[ e ∈ E ] A e) (e' : E) → (e' , cvt A (fst ea) e' (snd ea)) ≡c  ea
+    section3 ea e' u = (E-isProp (ea .fst) e' (~ u)) , transp (λ t → A (E-isProp (ea .fst) e' (t ∧ ~ u))) u (snd ea)
+
+    section2 : (eb : Σ[ e ∈ E ] B e) → (fs (eb .fst , cvt A (fst (ns eb)) (eb .fst) (snd (ns eb)))) ≡c eb
+    section2 eb  = (λ u → fs (section3 (ns eb) (eb .fst) u)) ∙ secIsEq sumIsEq eb
+
+    section : {e : E} (b : B e) → fore (back b) ≡c b
+    section {e} b u = section4 (section2 (e , b)) u
+
+
+    out : (e : E) → A e ≅ B e
+    out e = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section {!!})
 
 
 -- The interval
@@ -58,39 +133,26 @@ module _ (I : Set) (E : I → Set) (E-isProp : {i : I} → isProp (E i)) where
     extract (gelι ae) = ae
     extract {i} {e} (g @ (gelιp {e = e'} a r t)) = a (E-isProp e' e t)
 
-    section-lemma : {i : I} (e : E i) (ae : A e) →
-      transport (λ t → A (E-isProp e e t)) ae ≡c transport (λ t → A e) ae
-    section-lemma e ae u = transport ((λ t → A (E-redRefl e u t))) ae
+    fore : {i : I} → Σ[ e/ ∈ E i ] Gel i → Σ[ e/ ∈ E i ] A e/
+    fore (e/ , g/) = (extract-e {e = e/} g/ , extract g/ )
 
-    record PreBundle (i : I) : Set ℓ where
-      field
-        e/ : E i
-        g/ : Gel i
+    back : {i : I} → (Σ[ e/ ∈ E i ] A e/) → Σ[ e/ ∈ E i ] Gel i
+    back (e/ , a/) = e/ , (gelι a/)
 
-    record PostBundle (i : I) : Set ℓ where
-      field
-        e/ : E i
-        a/ : A e/
-
-    fore : {i : I} → PreBundle i → PostBundle i
-    fore record { e/ = e/ ; g/ = g/ } = record { e/ = extract-e {e = e/} g/ ; a/ = extract g/ }
-
-    back : {i : I} → PostBundle i → PreBundle i
-    back record { e/ = e/ ; a/ = a/ } = record { e/ = e/ ; g/ = gelι a/ }
-
-    section : {i : I} (b : PostBundle i) → fore (back b) ≡c b
+    section : {i : I} (b : Σ[ e/ ∈ E i ] A e/) → fore (back b) ≡c b
     section s t = s
-
 
     lemma : {a : {i : I} (e : E i) → A e} (r : R a) {i : I} (e/ e' : E i) (p : e' ≡c e/) →
       PathP (λ t → gelι (a e') ≡c gelιp {e = e/} a r t) (λ u → gelι (a (p u))) (λ u → gelιp {e = e'} a r u)
     lemma {a} r {i} e/ e' p = lemma' e' e/ p (gel r i) (gelι ∘ a) (λ x → gelιp {e = x} a r)
 
-    retract : {i : I} (b : PreBundle i) → back (fore b) ≡c b
-    retract record { e/ = e/ ; g/ = (gel {a} r _) } t = record { e/ = e/ ; g/ = gelιp {e = e/} a r t  }
-    retract record { e/ = e/ ; g/ = (gelι {e = e'} ae) } t = record { e/ = E-isProp e' e/ t ; g/ = gelι ae }
-    retract record { e/ = e/ ; g/ = (gelιp {e = e'} a r u) } t = record { e/ = E-isProp e' e/ (t ∨ u) ; g/ = lemma {a} r e/ e' (E-isProp e' e/) t u}
+    retract : {i : I} (b : Σ[ e/ ∈ E i ] Gel i) → back (fore b) ≡c b
+    retract (e/ , (gel {a} r i)) t = (e/ , gelιp {e = e/} a r t)
+    retract (e/ , (gelι {e = e'} ae)) t = (E-isProp e' e/ t ,  gelι ae)
+    retract (e/ , (gelιp {e = e'} a r u)) t = (E-isProp e' e/ (t ∨ u) , lemma {a} r e/ e' (E-isProp e' e/) t u)
 
+    sumeq : {i : I} → (Σ[ e ∈ E i ] Gel i) ≅ (Σ[ e ∈ E i ] A e)
+    sumeq = isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back section retract)
 
-    -- Gel-endpoints : {i : I} (e : E i) → Gel i ≅ A e
-    -- Gel-endpoints e = isoToEquiv (Cubical.Foundations.Isomorphism.iso extract gelι (section e) (retract e))
+    G-endpoints : {i : I} (e : E i) → Gel i ≅ A e
+    G-endpoints {i} e = propLem.out (E i) (λ _ → Gel i) A E-isProp sumeq e
