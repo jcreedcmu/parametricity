@@ -22,12 +22,10 @@ transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
 
 -- The interval
 
-module _ where
-  postulate
-    I : Set
-    E : I → Set
+module _ (I : Set) (E : I → Set) where
 
-  -- assert E i is a proposition
+  -- assert E i is a proposition. If we take it as a module argument,
+  -- rewriting doesn't work.
   postulate
     E-isProp : {i : I} → isProp (E i)
 
