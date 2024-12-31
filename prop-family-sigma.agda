@@ -8,7 +8,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Agda.Primitive using (Level)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq)
-open import Cubical.Foundations.Prelude using (isProp ; isProp→isSet ; isPropIsProp ; PathP ; sym ; _∙_ ; isContr ; transport ; transportRefl ; transp ; ~_ ; _∧_ ; _∨_ ) renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
+open import Cubical.Foundations.Prelude renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
 open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
@@ -21,21 +21,18 @@ transport-func : ∀ {ℓ k} {I : Set ℓ} {Z : I → Set k} (f : (i : I) → Z 
      transport (λ t → Z (p t)) (f i) ≡c f j
 transport-func {Z = Z} f p u = transp (λ t → Z (p (t ∨ u))) u (f (p u))
 
-
-lemma'' : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡ e1) (g : G) (h : E → G) (q : (e : E) → h e ≡c g) →
-  PathP (λ t → h e0 ≡c q e1 t) (λ u → h ((eqToPath p) u)) (λ u → q e0 u)
-lemma'' e0 .e0 refl g h q t u = q e0 (t ∧ u)
-
-
-lemma4 : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡c e1) (g : G) (h : E → G) (q : (e : E) → h e ≡c g) →
-  PathP (λ t → h e0 ≡c q e1 t) (λ u → h (eqToPath (pathToEq p) u)) (λ u → q e0 u)
-lemma4 e0 e1 p g h q t u = lemma'' e0 e1 (pathToEq p) g h q t u
-
+lemma8 : ∀ {ℓ} {G : Set ℓ} (a b c : G) (f : a ≡c c) (g : a ≡c b) (h : b ≡c c) →
+   Square f h g (λ _ → c) → Square (λ _ → a) h g f
+lemma8 a b c f g h x u t = hcomp ((λ v → λ {
+  (u = ci0) → f (~ v ∧ t) ;
+  (u = ci1) → h t ;
+  (t = ci0) → g u ;
+  (t = ci1) → f (~ v ∨ u)
+  })) (x u t)
 
 lemma' : ∀ {ℓ} {E : Set} {G : Set ℓ}  (e0 e1 : E) (p : e0 ≡c e1) (g : G) (h : E → G) (q : (e : E) → h e ≡c g) →
   PathP (λ t → h e0 ≡c q e1 t) (λ u → h (p u)) (λ u → q e0 u)
-lemma' e0 e1 p g h q t u = {!lemma'' e0 e1 (pathToEq p) g h q t u!}
-
+lemma' e0 e1 p g h q t u = lemma8 (h e0) (h e1) g (λ u → q e0 u) (λ u → h (p u)) (λ t → q e1 t) (λ u → q (p u)) u t
 
 
 -- The interval
