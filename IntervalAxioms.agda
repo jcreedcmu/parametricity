@@ -1,16 +1,12 @@
 {-# OPTIONS --cubical --rewriting #-}
 
-open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
-open import Agda.Builtin.Cubical.Equiv using (isEquiv ; equivFun)
-open import Agda.Primitive using (Level ; _⊔_)
-open import Cubical.Data.Empty using (⊥)
+open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
-open import Cubical.Relation.Nullary.Base using (¬_)
-open import Function.Base
+open import Cubical.Relation.Nullary
 
 module IntervalAxioms where
 
@@ -47,7 +43,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
     endIsEmbed : isEmbedding end
 
     -- ...which is not an equivalence
-    endNonTriv : isEquiv end → ⊥
+    endNonTriv : ¬ (isEquiv end)
 
     -- The type D is discrete with respect to the interval T.
     -- the only maps T → D are the constant maps.
@@ -76,7 +72,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   EndIsProp t = isEmbedding→hasPropFibers endIsEmbed t
 
    -- Not all points are endpoints
-  EndNonTriv : ((t : T) → End t) → ⊥
+  EndNonTriv : ¬ ((t : T) → End t)
   EndNonTriv surj = endNonTriv ( record { equiv-proof = fiberIsContr }) where
     fiberIsContr : (t : T) → isContr (fiber end t)
     fiberIsContr t = surj t , EndIsProp t (surj t)
