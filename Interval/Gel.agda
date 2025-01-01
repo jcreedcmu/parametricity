@@ -32,12 +32,20 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  --        gpoint : (a : A) → Gel t
  --        gpath : (r : R) {t : T} (e : E t) → gpoint (ra r e) ≡ gstrand r
 
- module _ {A : {t : T} (e : E t) → Set ℓ} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
+ R = D -- we want the relation to be bridge-discrete, so choose it to be
+       -- the direction of the interval
+
+ module _ {A : {t : T} (e : E t) → Set ℓ}  (f : (r : R) {t : T} (e : E t) → A e) where
 
    data Gel (t : T) : Set ℓ where
         gstrand : (r : R) → Gel t
         gpoint : {e : E t} (a : A e) → Gel t
         gpath : {e : E t} (r : R) → gpoint (f r e) ≡ gstrand r
+
+   data TotalGel : Set ℓ where
+        tstrand : (t : T) (r : R) → TotalGel
+        tpoint : (t : T) (e : E t) (a : A e) → TotalGel
+        tpath : (t : T) (e : E t) (r : R) → tpoint t e (f r e) ≡ tstrand t r
 
    record Atotal : Set ℓ where
     constructor tea
@@ -54,11 +62,14 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    PGel : Set ℓ
    PGel = Push {A = T × R} {B = Atotal} {C = Σ T E × R} ff gg
 
-   PGelPushMap : Push (λ k (t' : T) → ff (k t')) (λ k → gg ∘ k) → T → Push ff gg
+   PGelPushMap : Push (λ k → ff ∘ k) (λ k → gg ∘ k) → T → Push ff gg
    PGelPushMap = pushMap ff gg
 
    PGelCommute : isEquiv PGelPushMap
    PGelCommute = ▻Commute ff gg
+
+   PGelLift : (T → Push ff gg) → Push (λ k → ff ∘ k) (λ k → gg ∘ k)
+   PGelLift = invIsEq PGelCommute
 
    GelIsPGel : Σ T Gel ≅ PGel
    GelIsPGel = isoToEquiv (iso GelPGel PGelGel {!!} {!!}) where
@@ -77,15 +88,24 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    PGelπ (pinr (tea t e a)) = t
    PGelπ (ppath ((t , e) , r) i) = t
 
-   -- module _ (t : T) (f : Σ T E × R → T × R) (g : (E t) × R → T → Σ (E t) A)
-   --          where
-   --   PGelPushMap : (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
-   --   PGelPushMap p = pushMap f g p
+   module _ (g : (t : T) → Gel t) where
 
-   --   PGelCommute : isEquiv PGelPushMap
-   --   PGelCommute = ▻Commute f g
+     pg : T → PGel
+     pg t = funIsEq (GelIsPGel .snd) (t , g t)
 
-   -- module _ (g : (t : T) → Gel t) where
+     thing : Push (_∘_ ff) (_∘_ gg)
+     thing = PGelLift pg
 
-   --   ungel : R
-   --   ungel = {!GelIsPushout t!}
+     tgelOfGel : (t : T) → Gel t → TotalGel
+     tgelOfGel t (gstrand r) = tstrand t r
+     tgelOfGel t (gpoint a) = tpoint t _ a
+     tgelOfGel t (gpath {e} r i) = tpath t e r i
+
+
+     extract-r : Push (λ k (t : T) → ff (k t)) (_∘_ gg) → R
+     extract-r (pinl a) = invIsEq ▻Discrete (λ (t : T) → proj₂ (a t))
+     extract-r (pinr b) = {!pinr-lemma!}
+     extract-r (ppath c i) = {!!}
+
+     thing-r : R
+     thing-r = extract-r thing
