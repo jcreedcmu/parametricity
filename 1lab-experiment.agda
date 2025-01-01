@@ -16,49 +16,23 @@ open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
 
-data ⊤ {ℓ : Level}: Set ℓ where
-  * : ⊤
-
-Σ-⊤-triv : ∀ {ℓ} {B : ⊤ {ℓ} → Type ℓ} → (Σ ⊤ B) ≅ B *
-Σ-⊤-triv {B = B}  =
-  isoToEquiv (iso (λ { (* , b) → b }) (λ b → (* , b)) (λ b _ → b) λ { (* , b) _ → (* , b) })
-
-Σ-contr-⊤ : ∀ {ℓ} {A : Type ℓ} → isContr A → A ≡c ⊤
-Σ-contr-⊤ {A = A}  (center , paths) =
-  ua (isoToEquiv (iso (λ _ → *) (λ _ → center) (λ { * u → * }) paths))
-
-
 Σ-contr-eqv : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'}
   → (c : isContr A)
   → (Σ A B) ≅ B (c .fst)
-Σ-contr-eqv = {!ua!}
+Σ-contr-eqv {A = A} {B} (c@(a0 , cp)) = isoToEquiv (iso fore back section retract) where
+  fore : Σ A B → B (a0)
+  fore (a , b) = transport (λ t → B (cp a (~ t))) b
 
-Σ-contr-eqv2 : ∀ {ℓ} {A : Type ℓ} {B : A → Type ℓ}
-  → (c : isContr A)
-  → (Σ A B) ≅ B (c .fst)
-Σ-contr-eqv2 {ℓ} {A = A} c = (transport (λ t → map (goal (~ t))) Σ-⊤-triv) where
-  discard : (y : ⊤ {ℓ}) → * ≡c y
-  discard * _ = *
+  back : B (a0) → Σ A B
+  back b = (a0 , b)
 
-  A-bundle : Σ[ Z ∈ Set ℓ ] isContr Z
-  A-bundle = A , c
-  ⊤-bundle : Σ[ Z ∈ Set ℓ ] isContr Z
-  ⊤-bundle = ⊤ , * , discard
+  section : (b : B (a0)) → transport (λ t → B (cp a0 (~ t))) b ≡c b
+  section b = (λ v → transport (λ t → B (dontCare v (~ t))) b) ∙ transportRefl b where
+     dontCare : cp a0 ≡c (λ _ → a0)
+     dontCare = isProp→isSet (isContr→isProp c) a0 a0 (cp a0) (λ _ → a0)
 
-  typeq : A ≡c ⊤
-  typeq = Σ-contr-⊤ c
-
-  center-path : PathP (λ t → typeq t) (fst c) *
-  center-path u = transp (λ t → sym typeq (t ∧ ~ u)) u *
-
-  paths-path : PathP (λ t → (y : typeq t) → center-path t ≡c y) (snd c) discard
-  paths-path    = {!!}
-
-  goal : A-bundle ≡c ⊤-bundle
-  goal u = (Σ-contr-⊤ c u , center-path u , paths-path u)
-
-  map : (Σ[ Z ∈ Set ℓ ] isContr Z) → Set (ℓ-suc ℓ)
-  map (Z , (c , π)) = {B : Z → Set ℓ} → Σ Z B ≅ B c
+  retract : (s : Σ A B) → (a0 , transport (λ t → B (cp (fst s) (~ t))) (snd s)) ≡c s
+  retract (a , b) u = (cp a u) , (transp (λ t → B (cp a (~ t ∨ u))) u b)
 
 isProp∙→isContr : ∀ {ℓ} {A : Type ℓ} → isProp A → A → isContr A
 isProp∙→isContr prop x .fst = x
@@ -76,9 +50,6 @@ infixr 30 _e∙_
 infix 31 _e⁻¹
 
 module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
-
-  lemma2 : (Σ[ e ∈ E ] A e) ≡c (Σ[ e ∈ E ] B e) → (e : E) → A e ≡c B e
-  lemma2 h e = {!!}
 
   lemma : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e) → (e : E) → A e ≅ B e
   lemma h e = (Σ-contr-eqv (isProp∙→isContr E-isProp e) e⁻¹)
