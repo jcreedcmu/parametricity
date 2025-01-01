@@ -8,7 +8,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 
-module Interval.IntervalAxioms where
+module Interval.Axioms where
 
 data Push {ℓ1 ℓ2 ℓ3 : Level}
           {A : Type ℓ1} {B : Type ℓ2} {C : Type ℓ3}
@@ -20,7 +20,6 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
 postulate
   -- D ▻ S is an interval type of "direction" D and "shape S"
   _▻_ : {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) → Set (ℓ-max ℓ1 ℓ2)
-
 
 module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   private
