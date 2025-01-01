@@ -15,13 +15,13 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
           (f : C → A) (g : C → B) : Set (ℓ-max ℓ1 (ℓ-max ℓ2 ℓ3)) where
   pinl : (a : A) → Push f g
   pinr : (b : B) → Push f g
-  pe : (c : C) → pinl (f c) ≡ pinr (g c)
+  ppath : (c : C) → pinr (g c) ≡ pinl (f c)
 
 postulate
   -- D ▻ S is an interval type of "direction" D and "shape S"
   _▻_ : {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) → Set (ℓ-max ℓ1 ℓ2)
 
-module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
+module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
   private
     ℓ = ℓ-max ℓ1 ℓ2
     T = D ▻ S
@@ -29,10 +29,10 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   pushMap : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
             (f : C → T → A) (g : C → T → B)
-            (p : Push {A = T → A} f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
+            (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
   pushMap f g (pinl a) d = pinl (a d)
   pushMap f g (pinr b) d = pinr (b d)
-  pushMap f g (pe c i) d = pe c i
+  pushMap f g (ppath c i) d = ppath c i
 
   postulate
     -- The endpoints of the interval...
