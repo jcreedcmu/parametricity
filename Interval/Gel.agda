@@ -10,6 +10,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Interval.Axioms
+open import Function.Base
 
 -- Instead of postulating the Gel type, I'm trying to understand it as
 -- defined by pushout of copies of the interval
@@ -53,7 +54,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    PGel : Set ℓ
    PGel = Push {A = T × R} {B = Atotal} {C = Σ T E × R} ff gg
 
-   PGelPushMap = {!pushMap ff gg!}
+   PGelPushMap : Push (λ k (t' : T) → ff (k t')) (λ k → gg ∘ k) → T → Push ff gg
+   PGelPushMap = pushMap ff gg
+
+   PGelCommute : isEquiv PGelPushMap
+   PGelCommute = ▻Commute ff gg
 
    GelIsPGel : Σ T Gel ≅ PGel
    GelIsPGel = isoToEquiv (iso GelPGel PGelGel {!!} {!!}) where

@@ -7,6 +7,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
+open import Function.Base
 
 module Interval.Axioms where
 
@@ -28,11 +29,11 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
 
   pushMap : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → T → A) (g : C → T → B)
-            (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
-  pushMap f g (pinl a) d = pinl (a d)
-  pushMap f g (pinr b) d = pinr (b d)
-  pushMap f g (ppath c i) d = ppath c i
+            (f : C → A) (g : C → B)
+            (p : Push (λ k (t' : T) → f (k t')) (λ k → g ∘ k)) (t : T) → Push f g
+  pushMap f g (pinl a) t = pinl (a t)
+  pushMap f g (pinr b) t = pinr (b t)
+  pushMap f g (ppath c i) t = ppath (c t) i
 
   postulate
     -- The endpoints of the interval...
@@ -55,7 +56,7 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     -- is an equivalence.
     ▻Commute : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → T → A) (g : C → T → B)
+            (f : C → A) (g : C → B)
             → isEquiv (pushMap f g)
 
   -- For convenience, phrase these axioms equivalently in terms of an
