@@ -38,36 +38,49 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
         gpoint : {e : E t} (a : A e) → Gel t
         gpath : {e : E t} (r : R) → gpoint (f r e) ≡ gstrand r
 
-   PGel : T → Set ℓ
-   PGel t = Push {A = R} {B = Σ (E t) A} {C = (E t) × R} proj₂ λ {(e , r) → e , (f r e)}
+   record Atotal : Set ℓ where
+    constructor tea
+    field
+     at : T
+     ae : E at
+     aa : A ae
 
-   GelIsPushout : (t : T) → Gel t ≅ PGel t
-   GelIsPushout t = isoToEquiv (iso fore back sect retr) where
-     fore : Gel t → PGel t
-     fore (gstrand r) = pinl r
-     fore (gpoint {e} a) = pinr (e , a)
-     fore (gpath {e} r i) = ppath (e , r) i
+   ff : Σ T E × R → T × R
+   ff ((t , e) , r) = t , r
+   gg : Σ T E × R → Atotal
+   gg ((t , e) , r) = tea t e (f r e)
 
-     back : PGel t → Gel t
-     back (pinl r) = gstrand r
-     back (pinr (e , a)) = gpoint {e = e} a
-     back (ppath (e , r) i) = gpath {e = e} r i
+   PGel : Set ℓ
+   PGel = Push {A = T × R} {B = Atotal} {C = Σ T E × R} ff gg
 
-     sect : (g : PGel t) → fore (back g) ≡ g
-     sect (pinl a) _ = pinl a
-     sect (pinr b) _ = pinr b
-     sect (ppath (e , r) i) _ = ppath (e , r) i
+   PGelPushMap = {!pushMap ff gg!}
 
-     retr : (g : Gel t) → back (fore g) ≡ g
-     retr (gstrand r) _ = gstrand r
-     retr (gpoint a) _ = gpoint a
-     retr (gpath {e} r i) _ = gpath {e = e} r i
+   GelIsPGel : Σ T Gel ≅ PGel
+   GelIsPGel = isoToEquiv (iso GelPGel PGelGel {!!} {!!}) where
+     GelPGel : Σ T Gel → PGel
+     GelPGel (t , gstrand r) = pinl (t , r)
+     GelPGel (t , gpoint {e} a) = pinr (tea t e a)
+     GelPGel (t , gpath {e} r i) = ppath ((t , e) , r) i
 
-   module _ (t : T)
-            (f : (E t) × R → T → R) (g : (E t) × R → T → Σ (E t) A)
-            where
-     PGelPushMap : (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
-     PGelPushMap p = pushMap f g p
+     PGelGel : PGel → Σ T Gel
+     PGelGel (pinl (t , r)) = (t , gstrand r)
+     PGelGel (pinr (tea t e a)) = (t , gpoint {e = e} a)
+     PGelGel (ppath ((t , e) , r) i) = (t , gpath {e = e} r i)
 
-     PGelCommute : isEquiv PGelPushMap
-     PGelCommute = ▻Commute f g
+   PGelπ : PGel → T
+   PGelπ (pinl (t , r)) = t
+   PGelπ (pinr (tea t e a)) = t
+   PGelπ (ppath ((t , e) , r) i) = t
+
+   -- module _ (t : T) (f : Σ T E × R → T × R) (g : (E t) × R → T → Σ (E t) A)
+   --          where
+   --   PGelPushMap : (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
+   --   PGelPushMap p = pushMap f g p
+
+   --   PGelCommute : isEquiv PGelPushMap
+   --   PGelCommute = ▻Commute f g
+
+   -- module _ (g : (t : T) → Gel t) where
+
+   --   ungel : R
+   --   ungel = {!GelIsPushout t!}
