@@ -20,6 +20,7 @@ postulate
   * : 𝕀
 
 record SST-gen : Set₁ where
+ constructor ssg
  field
   St : Set
   Z : St → Set
@@ -42,7 +43,8 @@ module discrete (A : Set) where
   discrete : (A : Set) → SST-gen
   discrete A = record { St = St ; Z = Z ; S = S ; p = p }
 
-
+-- this is uninhabitable; might work if I add
+-- truncations
 data SST : Set₁ where
   mks : (Σ[ Z ∈ Set ] (Z → 𝕀 → SST)) → SST
 
@@ -55,3 +57,6 @@ data SST : Set₁ where
 postulate
   SSTβ : (s : SST) (z : πZ s) → πS s z * ≡p s
   {-# REWRITE SSTβ #-}
+
+Vertices : (g : SST-gen) (s : g .SST-gen.St) → Set
+Vertices (ssg St Z S p) s = Z s
