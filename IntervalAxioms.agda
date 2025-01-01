@@ -61,11 +61,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
   -- The endpoint predicate on the interval
   End : D ▻ S → Set ℓ
-  End t = Σ[ s ∈ S ] end s ≡ t
+  End = fiber end
 
   -- It is a mere proposition
   EndIsProp : (t : D ▻ S) → isProp (End t)
-  EndIsProp t (s1 , p1) (s2 , p2) i = invIsEq (endIsEmbed s1 s2) (p1 ∙ sym p2) i , {!!}
+  EndIsProp t = isEmbedding→hasPropFibers endIsEmbed t
 
    -- Not all points are endpoints
   EndNonTriv : ((t : D ▻ S) → End t) → ⊥
