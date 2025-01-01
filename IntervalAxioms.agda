@@ -29,52 +29,60 @@ postulate
 module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   private
     ℓ = ℓ-max ℓ1 ℓ2
+    T = D ▻ S
 
   pushMap : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → D ▻ S → A) (g : C → D ▻ S → B)
-            (p : Push {A = D ▻ S → A} f g) (d : D ▻ S) → Push (λ c → f c d) (λ c → g c d)
+            (f : C → T → A) (g : C → T → B)
+            (p : Push {A = T → A} f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
   pushMap f g (pinl a) d = pinl (a d)
   pushMap f g (pinr b) d = pinr (b d)
   pushMap f g (pe c i) d = pe c i
 
   postulate
-    -- The endpoints of the interval
-    end : S → D ▻ S
+    -- The endpoints of the interval...
+    end : S → T
 
-    -- ...constitute an embedding
+    -- ...constitute an embedding...
     endIsEmbed : isEmbedding end
 
     -- ...which is not an equivalence
     endNonTriv : isEquiv end → ⊥
 
-    -- The type D is discrete with respect to the interval D ▻ S
-    ▻Discrete : isEquiv (λ (d : D) (t : D ▻ S) → d)
+    -- The type D is discrete with respect to the interval T.
+    -- the only maps T → D are the constant maps.
+    ▻Discrete : isEquiv (λ (d : D) (t : T) → d)
 
-    -- The functor D ▻ S → — commutes with pushouts,
-    -- D ▻ S → (A +_C B) ≅ (D ▻ S → A) +_C (D ▻ S → B)
+    -- The functor T → — commutes with pushouts. The expected map
+    --   (T → A) +_C (T → B)
+    --   →
+    --   T → (A +_C B)
+    -- is an equivalence.
     ▻Commute : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → D ▻ S → A) (g : C → D ▻ S → B)
-            (p : Push {A = D ▻ S → A} f g) (d : D ▻ S) → Push (λ c → f c d) (λ c → g c d)
+            (f : C → T → A) (g : C → T → B)
+            (p : Push {A = T → A} f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
             → isEquiv (pushMap f g)
 
-  -- The endpoint predicate on the interval
-  End : D ▻ S → Set ℓ
+  -- For convenience, phrase these axioms equivalently in terms of an
+  -- endpoint predicate on the interval.
+
+  -- The predicate
+  End : T → Set ℓ
   End = fiber end
 
   -- It is a mere proposition
-  EndIsProp : (t : D ▻ S) → isProp (End t)
+  EndIsProp : (t : T) → isProp (End t)
   EndIsProp t = isEmbedding→hasPropFibers endIsEmbed t
 
    -- Not all points are endpoints
-  EndNonTriv : ((t : D ▻ S) → End t) → ⊥
+  EndNonTriv : ((t : T) → End t) → ⊥
   EndNonTriv surj = endNonTriv ( record { equiv-proof = fiberIsContr }) where
-    fiberIsContr : (t : D ▻ S) → isContr (fiber end t)
+    fiberIsContr : (t : T) → isContr (fiber end t)
     fiberIsContr t = surj t , EndIsProp t (surj t)
 
   -- The endpoints are isomorphic to S
-  EndIsS : Σ (D ▻ S) End ≅ S
+  EndIsS : Σ T End ≅ S
   EndIsS = isoToEquiv (iso
     (λ {(t , s , p) → s})
     (λ s → end s , s , (λ _ → end s))
