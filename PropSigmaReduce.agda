@@ -1,18 +1,14 @@
 {-# OPTIONS --cubical --rewriting #-}
 
-module 1labe-experiment where
+{- if E is a prop, then
+ - Σ E A ≅ Σ E B
+ - entails
+ - (e : E) → A e ≅ B e
+ -}
 
-open import Function.Base
-open import Cubical.Relation.Nullary.Base using (¬_)
-open import Agda.Builtin.Cubical.Equiv using (isEquiv ; equivFun )
-open import Agda.Builtin.Equality
-open import Agda.Builtin.Equality.Rewrite
-open import Agda.Primitive using (Level)
-open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
+module PropSigmaReduce where
 open import Cubical.Foundations.Equiv using (funIsEq ; invIsEq ; retIsEq ; secIsEq ; compEquiv ; invEquiv)
-open import Cubical.Foundations.Univalence using (ua)
 open import Cubical.Foundations.Prelude renaming (_≡_ to _≡c_ ; i0 to ci0 ; i1 to ci1 ; I to cI)
-open import Cubical.Data.Empty using (⊥)
 open import Cubical.Foundations.Isomorphism using (iso ; isoToEquiv)
 open import Agda.Builtin.Cubical.Equiv using () renaming (_≃_ to _≅_)
 
@@ -49,9 +45,9 @@ _e∙_ = compEquiv
 infixr 30 _e∙_
 infix 31 _e⁻¹
 
-module propLem2 {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
+module _ {ℓ k : Level} (E : Set ℓ) (A B : E → Set k) (E-isProp : isProp E) (sumeq : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e)) where
 
-  lemma : (Σ[ e ∈ E ] A e) ≅ (Σ[ e ∈ E ] B e) → (e : E) → A e ≅ B e
-  lemma h e = (Σ-contr-eqv (isProp∙→isContr E-isProp e) e⁻¹)
-                    e∙ h
+  thm : (e : E) → A e ≅ B e
+  thm e = (Σ-contr-eqv (isProp∙→isContr E-isProp e) e⁻¹)
+                    e∙ sumeq
                     e∙ Σ-contr-eqv (isProp∙→isContr E-isProp e)
