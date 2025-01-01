@@ -8,7 +8,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 
-module IntervalAxioms where
+module Interval.IntervalAxioms where
 
 data Push {ℓ1 ℓ2 ℓ3 : Level}
           {A : Type ℓ1} {B : Type ℓ2} {C : Type ℓ3}
