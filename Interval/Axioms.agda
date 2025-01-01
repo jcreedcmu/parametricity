@@ -56,7 +56,6 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     ▻Commute : {k1 k2 k3 : Level}
             {A : Type k1} {B : Type k2} {C : Type k3}
             (f : C → T → A) (g : C → T → B)
-            (p : Push {A = T → A} f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
             → isEquiv (pushMap f g)
 
   -- For convenience, phrase these axioms equivalently in terms of an

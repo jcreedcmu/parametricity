@@ -63,8 +63,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      retr (gpoint a) _ = gpoint a
      retr (gpath {e} r i) _ = gpath {e = e} r i
 
-   PGelPushMap : (t : T) →
+   module _ (t : T)
             (f : (E t) × R → T → R) (g : (E t) × R → T → Σ (E t) A)
-            (p : Push f g)
-            → (d : T) → Push (λ c → f c d) (λ c → g c d)
-   PGelPushMap t f g p d = pushMap f g p d
+            where
+     PGelPushMap : (p : Push f g) (d : T) → Push (λ c → f c d) (λ c → g c d)
+     PGelPushMap p = pushMap f g p
+
+     PGelCommute : isEquiv PGelPushMap
+     PGelCommute = ▻Commute f g
