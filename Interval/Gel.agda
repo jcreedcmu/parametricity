@@ -69,10 +69,13 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
            pA = abort contra ≡ isDiscrete .equiv-proof (ff ∘ c) .fst .fst
 
      gel : R → (t : T) → Gel t
-     gel r t = gstrand r
+     gel r t = gstrand {t} r
 
      ungel : (g : (t : T) → Gel t) → R
      ungel g = extract-r (invIsEq (▻DepCommute ff gg) (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
      gelβ g i t = {!!}
+
+     gelη : (r : R) → ungel (gel r) ≡ r
+     gelη r = (cong extract-r (retIsEq (▻DepCommute ff gg) (pinl (λ t → r)))) ∙ (retIsEq isDiscrete r)
