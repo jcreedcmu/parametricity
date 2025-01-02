@@ -67,8 +67,8 @@ module depMap {k1 k2 k3 : Level}
   prefix' (pinr b) = (pinr (λ t → t , b t)) , λ t → refl
   prefix' (ppath c i) = (ppath (λ t → t , c t) i) , λ t → refl
 
-  prefix'IsEquiv : isEquiv prefix'
-  prefix'IsEquiv = {!!}
+  prefixIsEquiv' : isEquiv prefix'
+  prefixIsEquiv' = {!!}
 
   prefix : Push {A = Π T A} (tlift f) (tlift g) →
            Push {A = T → Σ T A} (tlift ff) (tlift gg)
@@ -112,6 +112,11 @@ module depMap {k1 k2 k3 : Level}
   suffixIsEquiv : isEquiv suffix
   suffixIsEquiv = {!!}
 
+  areSame' : suffix' ∘ med ∘ prefix' ≡ outer
+  areSame' i (pinl a) t = {!!}
+  areSame' i (pinr b) t = {!!}
+  areSame' i (ppath c j) t = {!!}
+
   areSame : suffix ∘ inner ∘ prefix ≡ outer
   areSame i (pinl a) t = pinl (a t)
   areSame i (pinr b) t = pinr (b t)
@@ -131,6 +136,8 @@ module _ (T-commute : {k1 k2 k3 : Level}
             {A : T → Set k1} {B : T → Set k2} {C : T → Set k3}
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t) where
 
+    medIsEquiv : isEquiv (depMap.med (λ {t} → f {t}) g)
+    medIsEquiv = {!!}
 
 
     foo2 : isEquiv (depMap.suffix (λ {t} → f {t}) g ∘ depMap.inner f g ∘ depMap.prefix f g)
@@ -138,3 +145,9 @@ module _ (T-commute : {k1 k2 k3 : Level}
 
     main : isEquiv (depMap.outer {A = A} f g)
     main = subst isEquiv (depMap.areSame f g) foo2
+
+    foo2' : isEquiv (depMap.suffix' (λ {t} → f {t}) g ∘ depMap.med f g ∘ depMap.prefix' f g)
+    foo2' = (depMap.suffixIsEquiv' f g) isEq∙ medIsEquiv isEq∙ (depMap.prefixIsEquiv' f g)
+
+    main' : isEquiv (depMap.outer {A = A} f g)
+    main' = subst isEquiv (depMap.areSame f g) foo2
