@@ -1,5 +1,6 @@
 {-# OPTIONS --cubical --rewriting #-}
 
+open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Foundations.Equiv
@@ -10,6 +11,14 @@ open import Cubical.Relation.Nullary
 open import Function.Base
 
 module PushoutTest {ℓ : Level} (T : Set ℓ) where
+
+_isEq∙_ : ∀ {ℓ} {A B C : Set ℓ} {f : B → C} {g : A → B} →
+          isEquiv f → isEquiv g → isEquiv (f ∘ g)
+fe isEq∙ ge = {!!} -- surely this should be in a library somewhere
+infixr 30 _isEq∙_
+
+Π : ∀ {ℓ ℓ'} (A : Set ℓ) (B : A → Set ℓ') → Set (ℓ ⊔ ℓ')
+Π A B = (x : A) → B x
 
 data Push {ℓ1 ℓ2 ℓ3 : Level}
           {A : Set ℓ1} {B : Set ℓ2} {C : Set ℓ3}
@@ -41,15 +50,72 @@ module depMap {k1 k2 k3 : Level}
   gg : Σ T C → Σ T B
   gg (t , c) = (t , g c)
 
-  outer : Push (tlift (λ {t} → f {t = t})) (tlift g) →
-            (t : T) → Push f g
+  outer : Push {A = Π T A} (tlift f) (tlift g) →
+          (t : T) → Push {A = A t} f g
   outer (pinl a) t = pinl (a t)
   outer (pinr b) t = pinr (b t)
   outer (ppath c i) t = ppath (c t) i
 
-  inner : Push (tlift ff) (tlift gg) → T → Push ff gg
+  prefix-get : (Push {A = T → Σ T A} (tlift ff) (tlift gg)) → T → T
+  prefix-get (pinl a) = fst ∘ a
+  prefix-get (pinr b) = fst ∘ b
+  prefix-get (ppath c i) = fst ∘ c
+
+  prefix' : Push {A = Π T A} (tlift f) (tlift g) →
+           Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)
+  prefix' (pinl a) = (pinl (λ t → t , a t)) , λ t → refl
+  prefix' (pinr b) = (pinr (λ t → t , b t)) , λ t → refl
+  prefix' (ppath c i) = (ppath (λ t → t , c t) i) , λ t → refl
+
+  prefix'IsEquiv : isEquiv prefix'
+  prefix'IsEquiv = {!!}
+
+  prefix : Push {A = Π T A} (tlift f) (tlift g) →
+           Push {A = T → Σ T A} (tlift ff) (tlift gg)
+  prefix = {!!}
+
+  prefixIsEquiv : isEquiv prefix
+  prefixIsEquiv = {!!}
+
+  inner : Push {A = T → Σ T A} (tlift ff) (tlift gg) →
+          T → Push {A = Σ T A} ff gg
   inner = pushMap ff gg
 
+  suffix-get : Push {A = Σ T A} ff gg → T
+  suffix-get (pinl a) = fst a
+  suffix-get (pinr b) = fst b
+  suffix-get (ppath c i) = fst c
+
+  suffix-lemma : (x : Push {A = Σ T A} ff gg) → Push {A = A (suffix-get x)} f g
+  suffix-lemma (pinl a) = pinl (a .snd)
+  suffix-lemma (pinr b) = pinr (b .snd)
+  suffix-lemma (ppath c i) = ppath (c .snd) i
+
+  suffix' : (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t)) →
+            (t : T) → Push {A = A t} f g
+  suffix' (x , good) t  = subst (λ z → Push {A = A z} f g) (good t) (suffix-lemma (x t))
+
+  suffixIsEquiv' : isEquiv suffix'
+  suffixIsEquiv' = {!!}
+
+  med : (Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)) →
+        (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t))
+  med (pinl a , good) = pinl ∘ a , good
+  med (pinr b , good) = pinr ∘ b , good
+  med (ppath c i , good) = (λ t → ppath (c t) i) , good
+
+
+  suffix : (T → Push {A = Σ T A} ff gg) →
+           (t : T) → Push {A = A t} f g
+  suffix = {!!}
+
+  suffixIsEquiv : isEquiv suffix
+  suffixIsEquiv = {!!}
+
+  areSame : suffix ∘ inner ∘ prefix ≡ outer
+  areSame i (pinl a) t = pinl (a t)
+  areSame i (pinr b) t = pinr (b t)
+  areSame i (ppath c j) t = ppath (c t) j
 
 -- The functor T → — commutes with pushouts. The expected map
 --   (T → A) +_C (T → B)
@@ -65,5 +131,10 @@ module _ (T-commute : {k1 k2 k3 : Level}
             {A : T → Set k1} {B : T → Set k2} {C : T → Set k3}
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t) where
 
+
+
+    foo2 : isEquiv (depMap.suffix (λ {t} → f {t}) g ∘ depMap.inner f g ∘ depMap.prefix f g)
+    foo2 = (depMap.suffixIsEquiv f g) isEq∙ (T-commute (depMap.ff f g) (depMap.gg f g)) isEq∙ (depMap.prefixIsEquiv f g)
+
     main : isEquiv (depMap.outer {A = A} f g)
-    main = {!pushMap (depMap.ff f g) (depMap.gg f g)!}
+    main = subst isEquiv (depMap.areSame f g) foo2
