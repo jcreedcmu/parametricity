@@ -1,6 +1,7 @@
 {-# OPTIONS --cubical --rewriting #-}
 
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
+open import Agda.Primitive
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
@@ -23,6 +24,10 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
 postulate
   -- D ▻ S is an interval type of "direction" D and "shape S"
   _▻_ : {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) → Set (ℓ-max ℓ1 ℓ2)
+
+-- bridgeDiscrete A := A has no T-cohesion
+bridgeDiscrete : ∀ {ℓ0 ℓ1} (T : Set ℓ1) (A : Set ℓ0)→ Set (ℓ1 ⊔ ℓ0)
+bridgeDiscrete T A = isEquiv (λ (a : A) (t : T) → a)
 
 module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
   private
@@ -57,16 +62,19 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
 
     -- The type D is discrete with respect to the interval T.
     -- the only maps T → D are the constant maps.
-    ▻Discrete : isEquiv (λ (d : D) (t : T) → d)
+    ▻Discrete : bridgeDiscrete T D
 
-
-    -- The functor T → — commutes with T-dependent pushouts. The expected map
+    -- The functor T → — commutes with T-dependent pushouts, when all of the
+    -- fibers are path-discrete. The expected map
     --   ((t : T) → A t) +_((t:T) → C t) ((t : T) → B t)
     --   →
     --   (t : T) → (A t +_(C t) B t)
     -- is an equivalence.
     ▻DepCommute : {k1 k2 k3 : Level}
             {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
+            (Adisc : (t : T) → bridgeDiscrete T (A t))
+            (Bdisc : (t : T) → bridgeDiscrete T (B t))
+            (Cdisc : (t : T) → bridgeDiscrete T (C t))
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
             → isEquiv (depPushMap {A = A} f g)
 

@@ -1,5 +1,6 @@
 {-# OPTIONS --cubical --rewriting #-}
 
+open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Prod
@@ -59,23 +60,31 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      retr (gpoint a) i = gpoint a
      retr (gpath {e} r i) j = gpath {e = e} r i
 
-   module _ (isDiscrete : isEquiv (λ (r : R) (t : T) → r)) where
+   disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
+   disc A = bridgeDiscrete T A
+
+   module _ (Rdisc : disc R)
+            (EAdisc : (t : T) → disc (Σ (E t) A))
+            (ERdisc : (t : T) → disc ((E t) × R))
+     where
+
+     Commute = ▻DepCommute (λ _ → Rdisc) EAdisc ERdisc ff gg
 
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
-     extract-r (pinl a) = invIsEq isDiscrete a
+     extract-r (pinl a) = invIsEq Rdisc a
      extract-r (pinr b) = abort (EndNonSurj (fst ∘ b))
      extract-r (ppath c i) = abort {A = pA} contra i where
            contra = EndNonSurj (fst ∘ gg ∘ c)
-           pA = abort contra ≡ isDiscrete .equiv-proof (ff ∘ c) .fst .fst
+           pA = abort contra ≡ Rdisc .equiv-proof (ff ∘ c) .fst .fst
 
      gel : R → (t : T) → Gel t
      gel r t = gstrand {t} r
 
      ungel : (g : (t : T) → Gel t) → R
-     ungel g = extract-r (invIsEq (▻DepCommute ff gg) (λ t → funIsEq (GelIsPush t .snd) (g t)))
+     ungel g = extract-r (invIsEq Commute (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
      gelβ g i t = {!!}
 
      gelη : (r : R) → ungel (gel r) ≡ r
-     gelη r = (cong extract-r (retIsEq (▻DepCommute ff gg) (pinl (λ t → r)))) ∙ (retIsEq isDiscrete r)
+     gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
