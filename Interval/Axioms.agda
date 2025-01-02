@@ -35,6 +35,14 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
   pushMap f g (pinr b) t = pinr (b t)
   pushMap f g (ppath c i) t = ppath (c t) i
 
+  depPushMap : {k1 k2 k3 : Level}
+            {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
+            (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
+            (p : Push (λ k (t' : T) → f (k t')) (λ k → g ∘ k)) (t : T) → Push (f {t}) (g {t})
+  depPushMap f g (pinl a) t = pinl (a t)
+  depPushMap f g (pinr b) t = pinr (b t)
+  depPushMap f g (ppath c i) t = ppath (c t) i
+
   postulate
     -- The endpoints of the interval...
     end : S → T
@@ -58,6 +66,19 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
             {A : Type k1} {B : Type k2} {C : Type k3}
             (f : C → A) (g : C → B)
             → isEquiv (pushMap f g)
+
+    -- The functor T → — commutes with T-dependent pushouts. The expected map
+    --   ((t : T) → A t) +_((t:T) → C t) ((t : T) → B t)
+    --   →
+    --   (t : T) → (A t +_(C t) B t)
+    -- is an equivalence.
+    -- I believe this follows from ▻Commute, and I started trying to prove it in
+    -- ../PushoutTest.agda, and although I still think it's true,
+    -- I don't have the stomach for all the Σ path shenanigans right now.
+    ▻DepCommute : {k1 k2 k3 : Level}
+            {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
+            (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
+            → isEquiv (depPushMap {A = A} f g)
 
   -- For convenience, phrase these axioms equivalently in terms of an
   -- endpoint predicate on the interval.
