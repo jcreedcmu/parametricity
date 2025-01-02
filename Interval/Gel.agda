@@ -4,7 +4,7 @@ open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Prod
-open import Cubical.Data.Empty renaming (rec to abort)
+open import Cubical.Data.Empty renaming (rec to aborti)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
@@ -17,7 +17,14 @@ open import Function.Base
 -- Instead of postulating the Gel type, I'm trying to understand it as
 -- defined by pushout of copies of the interval
 
+
+
+
 module Interval.Gel where
+
+abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
+abort A ()
+
 
 module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
@@ -38,8 +45,8 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    gg : {t : T} →  (E t) × R → Σ (E t) A
    gg (e , r) = (e , f r e)
 
-   GelIsPush : (t : T) → Gel t ≅ Push (ff {t}) gg
-   GelIsPush t = isoToEquiv (iso fore back sect retr) where
+
+   module gip (t : T) where
      fore : Gel t → Push (ff {t}) gg
      fore (gstrand r) = pinl r
      fore (gpoint {e} a) = pinr (e , a)
@@ -60,6 +67,10 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      retr (gpoint a) i = gpoint a
      retr (gpath {e} r i) j = gpath {e = e} r i
 
+   GelIsPush : (t : T) → Gel t ≅ Push (ff {t}) gg
+   GelIsPush t = isoToEquiv (iso fore back sect retr) where
+     open gip t
+
    disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
    disc A = bridgeDiscrete T A
 
@@ -68,23 +79,49 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
             (ERdisc : (t : T) → disc ((E t) × R))
      where
 
+     Commute : isEquiv (depPushMap ff gg)
      Commute = ▻DepCommute (λ _ → Rdisc) EAdisc ERdisc ff gg
+
+     gel : R → ((t : T) → Gel t)
+     gel r t = gstrand {t} r
+
+     ≅1 : ((t : T) → Gel t) ≅ ((t : T) → Push (ff {t}) gg)
+     ≅1 = isoToEquiv (iso (λ g t → gip.fore t (g t)) (λ g t → gip.back t (g t))
+                          (λ b i t → gip.sect t (b t) i) (λ a i t → gip.retr t (a t) i))
+
+     ≅2 : ((t : T) → Push (ff {t}) gg) ≅ (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg))
+     ≅2 = isoToEquiv (iso (invIsEq Commute) (funIsEq Commute) (retIsEq Commute) (secIsEq Commute))
 
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
      extract-r (pinl a) = invIsEq Rdisc a
-     extract-r (pinr b) = abort (EndNonSurj (fst ∘ b))
-     extract-r (ppath c i) = abort {A = pA} contra i where
-           contra = EndNonSurj (fst ∘ gg ∘ c)
-           pA = abort contra ≡ Rdisc .equiv-proof (ff ∘ c) .fst .fst
+     extract-r (pinr b) = abort R (EndNonSurj (fst ∘ b))
+     extract-r (ppath c i) = get (get _ ≡ Rdisc .equiv-proof (ff ∘ c) .fst .fst) i where
+         get : ∀ {ℓ} (A : Set ℓ) → A
+         get A = abort A (EndNonSurj (fst ∘ gg ∘ c))
 
-     gel : R → (t : T) → Gel t
-     gel r t = gstrand {t} r
+     invert-r : R → Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)
+     invert-r r = pinl λ t → r
+
+     retr-r : (g : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)) → invert-r (extract-r g) ≡ g
+     retr-r (pinl a) i = pinl (secIsEq Rdisc a i)
+     retr-r (pinr b) = get (invert-r (get R) ≡ pinr b) where
+         get : ∀ {ℓ} (A : Set ℓ) → A
+         get A = abort A (EndNonSurj (fst ∘ b))
+     retr-r (ppath c i) = get pA i where
+         get : ∀ {ℓ} (A : Set ℓ) → A
+         get A = abort A (EndNonSurj (λ x → fst (gg (c x))))
+         pA = PathP (λ i → invert-r (get (get R ≡ Rdisc .equiv-proof (ff ∘ c) .fst .fst) i) ≡ ppath c i)
+           (λ j → get (invert-r (get R) ≡ pinr (gg ∘ c)) j)
+           (λ j → pinl (secIsEq Rdisc (ff ∘ c) j))
+
+     ≅3 : (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)) ≅ R
+     ≅3 = isoToEquiv (iso extract-r invert-r (retIsEq Rdisc) retr-r)
 
      ungel : (g : (t : T) → Gel t) → R
      ungel g = extract-r (invIsEq Commute (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
-     gelβ g i t = {!!}
+     gelβ g  = {!!}
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
