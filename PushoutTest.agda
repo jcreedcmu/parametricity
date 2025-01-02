@@ -69,8 +69,8 @@ module depMap {k1 k2 k3 : Level}
 
   prefix-inv : Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t) →
           Push {A = Π T A} (tlift f) (tlift g)
-  prefix-inv (pinl a , good) = pinl {!λ (t : T) → a t .snd!}
-  prefix-inv (pinr b , good) = {!pinl λ t → subst A (good t) (a t .snd)!}
+  prefix-inv (pinl a , good) = pinl λ t → subst A (good t) (a t .snd)
+  prefix-inv (pinr b , good) = pinr λ t → subst B (good t) (b t .snd)
   prefix-inv (ppath c i , good) = {! !}
 --
   prefixIsEquiv : isEquiv prefix
