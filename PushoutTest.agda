@@ -67,8 +67,14 @@ module depMap {k1 k2 k3 : Level}
   prefix (pinr b) = (pinr (λ t → t , b t)) , λ t → refl
   prefix (ppath c i) = (ppath (λ t → t , c t) i) , λ t → refl
 
+  prefix-inv : Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t) →
+          Push {A = Π T A} (tlift f) (tlift g)
+  prefix-inv (pinl a , good) = pinl {!λ (t : T) → a t .snd!}
+  prefix-inv (pinr b , good) = {!pinl λ t → subst A (good t) (a t .snd)!}
+  prefix-inv (ppath c i , good) = {! !}
+--
   prefixIsEquiv : isEquiv prefix
-  prefixIsEquiv = {!!}
+  prefixIsEquiv = isoToEquiv (iso prefix {!prefix-inv!} {!!} {!!}) .snd
 
   suffix-get : Push {A = Σ T A} ff gg → T
   suffix-get (pinl a) = fst a
@@ -85,7 +91,7 @@ module depMap {k1 k2 k3 : Level}
   suffix (x , good) t  = subst (λ z → Push {A = A z} f g) (good t) (suffix-lemma (x t))
 
   suffixIsEquiv : isEquiv suffix
-  suffixIsEquiv = {!!}
+  suffixIsEquiv = isoToEquiv (iso suffix {!!} {!!} {!!}) .snd
 
   med : (Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)) →
         (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t))
