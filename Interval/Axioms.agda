@@ -59,24 +59,12 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     -- the only maps T → D are the constant maps.
     ▻Discrete : isEquiv (λ (d : D) (t : T) → d)
 
-    -- The functor T → — commutes with pushouts. The expected map
-    --   (T → A) +_C (T → B)
-    --   →
-    --   T → (A +_C B)
-    -- is an equivalence.
-    ▻Commute : {k1 k2 k3 : Level}
-            {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → A) (g : C → B)
-            → isEquiv (pushMap f g)
 
     -- The functor T → — commutes with T-dependent pushouts. The expected map
     --   ((t : T) → A t) +_((t:T) → C t) ((t : T) → B t)
     --   →
     --   (t : T) → (A t +_(C t) B t)
     -- is an equivalence.
-    -- I believe this follows from ▻Commute, and I started trying to prove it in
-    -- ../PushoutTest.agda, and although I still think it's true,
-    -- I don't have the stomach for all the Σ path shenanigans right now.
     ▻DepCommute : {k1 k2 k3 : Level}
             {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
