@@ -27,9 +27,9 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  module _ {A : {t : T} (e : E t) → Set ℓ1} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
 
    data Gel (t : T) : Set ℓ where
-        gel : (r : R) → Gel t
-        gend : {e : E t} (a : A e) → Gel t
-        gpath : {e : E t} (r : R) → gend (f r e) ≡ gel r
+        gstrand : (r : R) → Gel t
+        gpoint : {e : E t} (a : A e) → Gel t
+        gpath : {e : E t} (r : R) → gpoint (f r e) ≡ gstrand r
 
    ff : {t : T} → (E t) × R → R
    ff (e , r) = r
@@ -40,13 +40,13 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    GelIsPush : (t : T) → Gel t ≅ Push (ff {t}) gg
    GelIsPush t = isoToEquiv (iso fore back sect retr) where
      fore : Gel t → Push (ff {t}) gg
-     fore (gel r) = pinl r
-     fore (gend {e} a) = pinr (e , a)
+     fore (gstrand r) = pinl r
+     fore (gpoint {e} a) = pinr (e , a)
      fore (gpath {e} r i) = ppath (e , r) i
 
      back : Push (ff {t}) gg → Gel t
-     back (pinl r) = (gel r)
-     back (pinr (e , a)) = (gend {e = e} a)
+     back (pinl r) = (gstrand r)
+     back (pinr (e , a)) = (gpoint {e = e} a)
      back (ppath (e , r) i) = (gpath {e = e} r i)
 
      sect : (x : Push (ff {t}) gg) → fore (back x) ≡ x
@@ -55,11 +55,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      sect (ppath (c1 , c2) i) j = (ppath (c1 , c2) i)
 
      retr : (x : Gel t) → back (fore x) ≡ x
-     retr (gel r) i = gel r
-     retr (gend a) i = gend a
+     retr (gstrand r) i = gstrand r
+     retr (gpoint a) i = gpoint a
      retr (gpath {e} r i) j = gpath {e = e} r i
 
-   module _ (g : (t : T) → Gel t) (isDiscrete : isEquiv (λ (r : R) (t : T) → r)) where
+   module _ (isDiscrete : isEquiv (λ (r : R) (t : T) → r)) where
 
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
      extract-r (pinl a) = invIsEq isDiscrete a
@@ -68,5 +68,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
            contra = EndNonSurj (fst ∘ gg ∘ c)
            pA = abort contra ≡ isDiscrete .equiv-proof (ff ∘ c) .fst .fst
 
-     ungel : R
-     ungel = extract-r (invIsEq (▻DepCommute ff gg) (λ t → funIsEq (GelIsPush t .snd) (g t)))
+     gel : R → (t : T) → Gel t
+     gel r t = gstrand r
+
+     ungel : (g : (t : T) → Gel t) → R
+     ungel g = extract-r (invIsEq (▻DepCommute ff gg) (λ t → funIsEq (GelIsPush t .snd) (g t)))
+
+     gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
+     gelβ g i t = {!!}
