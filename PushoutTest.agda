@@ -61,25 +61,14 @@ module depMap {k1 k2 k3 : Level}
   prefix-get (pinr b) = fst ∘ b
   prefix-get (ppath c i) = fst ∘ c
 
-  prefix' : Push {A = Π T A} (tlift f) (tlift g) →
-           Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)
-  prefix' (pinl a) = (pinl (λ t → t , a t)) , λ t → refl
-  prefix' (pinr b) = (pinr (λ t → t , b t)) , λ t → refl
-  prefix' (ppath c i) = (ppath (λ t → t , c t) i) , λ t → refl
-
-  prefixIsEquiv' : isEquiv prefix'
-  prefixIsEquiv' = {!!}
-
   prefix : Push {A = Π T A} (tlift f) (tlift g) →
-           Push {A = T → Σ T A} (tlift ff) (tlift gg)
-  prefix = {!!}
+           Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)
+  prefix (pinl a) = (pinl (λ t → t , a t)) , λ t → refl
+  prefix (pinr b) = (pinr (λ t → t , b t)) , λ t → refl
+  prefix (ppath c i) = (ppath (λ t → t , c t) i) , λ t → refl
 
   prefixIsEquiv : isEquiv prefix
   prefixIsEquiv = {!!}
-
-  inner : Push {A = T → Σ T A} (tlift ff) (tlift gg) →
-          T → Push {A = Σ T A} ff gg
-  inner = pushMap ff gg
 
   suffix-get : Push {A = Σ T A} ff gg → T
   suffix-get (pinl a) = fst a
@@ -91,12 +80,12 @@ module depMap {k1 k2 k3 : Level}
   suffix-lemma (pinr b) = pinr (b .snd)
   suffix-lemma (ppath c i) = ppath (c .snd) i
 
-  suffix' : (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t)) →
+  suffix : (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t)) →
             (t : T) → Push {A = A t} f g
-  suffix' (x , good) t  = subst (λ z → Push {A = A z} f g) (good t) (suffix-lemma (x t))
+  suffix (x , good) t  = subst (λ z → Push {A = A z} f g) (good t) (suffix-lemma (x t))
 
-  suffixIsEquiv' : isEquiv suffix'
-  suffixIsEquiv' = {!!}
+  suffixIsEquiv : isEquiv suffix
+  suffixIsEquiv = {!!}
 
   med : (Σ (Push {A = T → Σ T A} (tlift ff) (tlift gg)) (λ g → (t : T) → prefix-get g t ≡ t)) →
         (Σ[ g ∈ (T → Push {A = Σ T A} ff gg) ] ((t : T) → suffix-get (g t) ≡ t))
@@ -104,23 +93,12 @@ module depMap {k1 k2 k3 : Level}
   med (pinr b , good) = pinr ∘ b , good
   med (ppath c i , good) = (λ t → ppath (c t) i) , good
 
+  areSame : suffix ∘ med ∘ prefix ≡ outer
+  areSame = {!!}
+  -- areSame i (pinl a) t = {!!}
+  -- areSame i (pinr b) t = {!!}
+  -- areSame i (ppath c j) t = {!!}
 
-  suffix : (T → Push {A = Σ T A} ff gg) →
-           (t : T) → Push {A = A t} f g
-  suffix = {!!}
-
-  suffixIsEquiv : isEquiv suffix
-  suffixIsEquiv = {!!}
-
-  areSame' : suffix' ∘ med ∘ prefix' ≡ outer
-  areSame' i (pinl a) t = {!!}
-  areSame' i (pinr b) t = {!!}
-  areSame' i (ppath c j) t = {!!}
-
-  areSame : suffix ∘ inner ∘ prefix ≡ outer
-  areSame i (pinl a) t = pinl (a t)
-  areSame i (pinr b) t = pinr (b t)
-  areSame i (ppath c j) t = ppath (c t) j
 
 -- The functor T → — commutes with pushouts. The expected map
 --   (T → A) +_C (T → B)
@@ -136,18 +114,11 @@ module _ (T-commute : {k1 k2 k3 : Level}
             {A : T → Set k1} {B : T → Set k2} {C : T → Set k3}
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t) where
 
+    -- this is where I should use T-commute
     medIsEquiv : isEquiv (depMap.med (λ {t} → f {t}) g)
     medIsEquiv = {!!}
 
-
-    foo2 : isEquiv (depMap.suffix (λ {t} → f {t}) g ∘ depMap.inner f g ∘ depMap.prefix f g)
-    foo2 = (depMap.suffixIsEquiv f g) isEq∙ (T-commute (depMap.ff f g) (depMap.gg f g)) isEq∙ (depMap.prefixIsEquiv f g)
-
     main : isEquiv (depMap.outer {A = A} f g)
-    main = subst isEquiv (depMap.areSame f g) foo2
-
-    foo2' : isEquiv (depMap.suffix' (λ {t} → f {t}) g ∘ depMap.med f g ∘ depMap.prefix' f g)
-    foo2' = (depMap.suffixIsEquiv' f g) isEq∙ medIsEquiv isEq∙ (depMap.prefixIsEquiv' f g)
-
-    main' : isEquiv (depMap.outer {A = A} f g)
-    main' = subst isEquiv (depMap.areSame f g) foo2
+    main = subst isEquiv (depMap.areSame f g) composed where
+       composed : isEquiv (depMap.suffix (λ {t} → f {t}) g ∘ depMap.med f g ∘ depMap.prefix f g)
+       composed = (depMap.suffixIsEquiv f g) isEq∙ medIsEquiv isEq∙ (depMap.prefixIsEquiv f g)
