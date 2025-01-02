@@ -24,10 +24,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   T = D ▻ S
   E = End
 
- R = D -- we want the relation to be bridge-discrete, so choose it to be
-       -- the direction of the interval
-
- module _ {A : {t : T} (e : E t) → Set ℓ1}  (f : (r : R) {t : T} (e : E t) → A e) where
+ module _ {A : {t : T} (e : E t) → Set ℓ1} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
 
    data Gel (t : T) : Set ℓ where
         gstrand : (r : R) → Gel t
@@ -43,14 +40,14 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    GelIsPush : (t : T) → Gel t ≅ Push (ff {t}) gg
    GelIsPush = {!!}
 
-   module _ (g : (t : T) → Gel t) where
+   module _ (g : (t : T) → Gel t) (isDiscrete : isEquiv (λ (r : R) (t : T) → r)) where
 
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
-     extract-r (pinl a) = invIsEq ▻Discrete a
+     extract-r (pinl a) = invIsEq isDiscrete a
      extract-r (pinr b) = abort (EndNonSurj (fst ∘ b))
      extract-r (ppath c i) = abort {A = pA} contra i where
            contra = EndNonSurj (fst ∘ gg ∘ c)
-           pA = abort contra ≡ ▻Discrete .equiv-proof (ff ∘ c) .fst .fst
+           pA = abort contra ≡ isDiscrete .equiv-proof (ff ∘ c) .fst .fst
 
      ungel : R
      ungel = extract-r (invIsEq (▻DepCommute ff gg) (λ t → funIsEq (GelIsPush t .snd) (g t)))
