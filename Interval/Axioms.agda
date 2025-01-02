@@ -8,6 +8,8 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Function.Base
+open import Cubical.HITs.PropositionalTruncation as PT
+open import Cubical.Functions.Surjection
 
 module Interval.Axioms where
 
@@ -104,3 +106,6 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     (λ s → end s , s , (λ _ → end s))
     (λ s _ → s)
     (λ {(t , s , p) i → (p i) , (s , (λ j → p (i ∧ j)))}))
+
+  EndNonSurj : ¬ ((t : T) → fiber end t)
+  EndNonSurj surj = endNonTriv (isEmbedding×isSurjection→isEquiv (endIsEmbed , λ t → ∣ surj t ∣₁))
