@@ -13,6 +13,22 @@ open import Function.Base
 Π : ∀ {ℓ ℓ'} (A : Set ℓ) (B : A → Set ℓ') → Set (ℓ ⊔ ℓ')
 Π A B = (x : A) → B x
 
-ΠΣ-lemma : ∀ {ℓ ℓ'} {A : Set ℓ} {B : A → Set ℓ'} →
-           Π A B ≅ (Σ[ f ∈ (A → Σ A B) ] ((a : A) → f a .fst ≡ a))
-ΠΣ-lemma = {!!}
+module hide {ℓ ℓ' : Level} (A : Set ℓ) (B : A → Set ℓ') where
+  fore : Π A B → (Σ[ f ∈ (A → Σ A B) ] ((a : A) → f a .fst ≡ a))
+  fore f = (λ a → a , (f a)) , (λ a → refl)
+
+  back : (Σ[ f ∈ (A → Σ A B) ] ((a : A) → f a .fst ≡ a)) → Π A B
+  back (f , q) a = subst B (q a) (f a .snd)
+
+  sect : (s : Σ[ f ∈ (A → Σ A B) ] ((a : A) → f a .fst ≡ a)) → fore (back s) ≡ s
+  sect (f , q) i = (λ a → (q a (~ i)) ,
+                           transp (λ j → B (q a (j ∧ ~ i))) i (f a .snd)) ,
+                           λ a j → q a (j ∨ ~ i)
+
+  retr : (f : Π A B) → back (fore f) ≡ f
+  retr f i x = transportRefl (f x) i
+
+  ΠΣ-lemma : Π A B ≅ (Σ[ f ∈ (A → Σ A B) ] ((a : A) → f a .fst ≡ a))
+  ΠΣ-lemma = isoToEquiv (iso fore back sect retr)
+
+lemma = hide.ΠΣ-lemma
