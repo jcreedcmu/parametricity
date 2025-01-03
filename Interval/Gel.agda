@@ -75,8 +75,8 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
             (ERdisc : (t : T) → disc ((E t) × R))
      where
 
-     Commute : isEquiv (depPushMap ff gg)
-     Commute = ▻DepCommute (λ _ → Rdisc) EAdisc ERdisc ff gg
+     Commute : isEquiv (pushMap ff gg)
+     Commute = ▻Commute (λ _ → Rdisc) EAdisc ERdisc ff gg
 
      gel : R → ((t : T) → Gel t)
      gel r t = gstrand {t} r

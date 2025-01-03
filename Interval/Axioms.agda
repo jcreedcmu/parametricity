@@ -63,7 +63,7 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     --   →
     --   (t : T) → (A t +_(C t) B t)
     -- is an equivalence.
-    ▻DepCommute : {k1 k2 k3 : Level}
+    ▻Commute : {k1 k2 k3 : Level}
             {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
             (Adisc : (t : T) → bridgeDiscrete T (A t))
             (Bdisc : (t : T) → bridgeDiscrete T (B t))
