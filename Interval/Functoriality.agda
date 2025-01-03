@@ -15,6 +15,11 @@ open import Interval.Axioms
 open import Function.Base
 import Interval.Gel
 
+{-
+ - There remains some stuff to be formulated and proved here.
+ - Something like: a homomorphism between relations R1 and R2 is the same
+ - thing as a map (t : T) → Gel R1 t → Gel R2 t
+ -}
 module Interval.Functoriality where
 
 module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
@@ -49,12 +54,3 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
     fore : ((t : T) → Gel R1 f1 t → Gel R2 f2 t) → ((t : T) → Gel R1 f1 t) → ((t : T) → Gel R2 f2 t)
     fore um gm t = um t (gm t)
-
-    back : {amap : (t : T) (e : E t) → A1 e → A2 e}
-           (vv : ((t : T) → Gel R1 f1 t) → ((t : T) → Gel R2 f2 t))
-           (vvp : (v1 : (t : T) → Gel R1 f1 t) →
-           → ((t : T) → Gel R1 f1 t → Gel R2 f2 t)
-    back = {!!}
-    -- back g2m t (gstrand r) = g2m (λ t → gstrand r) t
-    -- back g2m t (gpoint a) = {!!}
-    -- back g2m t (gpath r i) = {!!}
