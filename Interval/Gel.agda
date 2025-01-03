@@ -123,8 +123,11 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
      gelβ g  = {!!}
 
-     gelβ' : (r : R) (t : T) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r t ≡  gstrand {t} r
-     gelβ' g t = λ i → gstrand g
+     gelβ' : (r : R) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r ≡ gel r
+     gelβ' r i = gel r
+
+     gelη' : (g : (t : T) → Gel t)  → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡  ungel g
+     gelη' g i = ungel g
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
