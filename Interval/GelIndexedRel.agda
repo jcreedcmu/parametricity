@@ -1,6 +1,8 @@
 {-# OPTIONS --cubical --rewriting #-}
 
 open import Agda.Primitive
+open import Agda.Builtin.Equality.Rewrite
+open import Agda.Builtin.Equality renaming (_≡_ to _≡p_)
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Prod
@@ -35,7 +37,7 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
  disc A = bridgeDiscrete T A
 
- module _ {A : {t : T} (e : E t) → Set ℓ1} (R : (as : {t : T} (e : E t) → A e) → Set ℓ)
+ module _ {A : {t : T} (e : E t) → Set ℓ} (R : (as : {t : T} (e : E t) → A e) → Set ℓ)
    where
 
    -- a vector of endpoints to index R by
@@ -142,3 +144,23 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
      gelη : (r : R') → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
+
+     geli : {as : AS} (r : R as) → (t : T) → Gel t
+     geli r t = gel (_ , r) t
+
+     endpoint-≅ : {t : T} (e : E t) → Gel t ≅ A e
+     endpoint-≅ = {!!}
+
+     endpoint-cvt : {t : T} {e : E t} → Gel t → A e
+     endpoint-cvt {t} {e} = funIsEq (endpoint-≅ e .snd)
+
+     ungeli-lemma-side : (g : (t : T) → Gel t) {t : T} (e : E t) → A e
+     ungeli-lemma-side g {t} = λ e → {!!}
+
+     -- ungeli-lemma : (g : (t : T) → Gel t) → fst (ungel g) ≡ (λ {t} e → endpoint-cvt (g t))
+     -- ungeli-lemma = ?
+
+     ungeli : (g : (t : T) → Gel t) → R (λ {t} e → endpoint-cvt (g t))
+     ungeli g = subst R ({!!}) (ungel g .snd) where
+       r' : R'
+       r' = ungel g
