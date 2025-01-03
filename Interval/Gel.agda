@@ -17,9 +17,6 @@ open import Function.Base
 -- Instead of postulating the Gel type, I'm trying to understand it as
 -- defined by pushout of copies of the interval
 
-
-
-
 module Interval.Gel where
 
 abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
@@ -44,7 +41,6 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
    gg : {t : T} →  (E t) × R → Σ (E t) A
    gg (e , r) = (e , f r e)
-
 
    module gip (t : T) where
      fore : Gel t → Push (ff {t}) gg
@@ -85,13 +81,6 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      gel : R → ((t : T) → Gel t)
      gel r t = gstrand {t} r
 
-     ≅1 : ((t : T) → Gel t) ≅ ((t : T) → Push (ff {t}) gg)
-     ≅1 = isoToEquiv (iso (λ g t → gip.fore t (g t)) (λ g t → gip.back t (g t))
-                          (λ b i t → gip.sect t (b t) i) (λ a i t → gip.retr t (a t) i))
-
-     ≅2 : ((t : T) → Push (ff {t}) gg) ≅ (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg))
-     ≅2 = isoToEquiv (iso (invIsEq Commute) (funIsEq Commute) (retIsEq Commute) (secIsEq Commute))
-
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
      extract-r (pinl a) = invIsEq Rdisc a
      extract-r (pinr b) = abort R (EndNonSurj (fst ∘ b))
@@ -114,37 +103,32 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
            (λ j → get (invert-r (get R) ≡ pinr (gg ∘ c)) j)
            (λ j → pinl (secIsEq Rdisc (ff ∘ c) j))
 
+     ≅1 : ((t : T) → Gel t) ≅ ((t : T) → Push (ff {t}) gg)
+     ≅1 = isoToEquiv (iso (λ g t → gip.fore t (g t)) (λ g t → gip.back t (g t))
+                          (λ b i t → gip.sect t (b t) i) (λ a i t → gip.retr t (a t) i))
+
+     ≅2 : ((t : T) → Push (ff {t}) gg) ≅ (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg))
+     ≅2 = isoToEquiv (iso (invIsEq Commute) (funIsEq Commute) (retIsEq Commute) (secIsEq Commute))
      ≅3 : (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)) ≅ R
      ≅3 = isoToEquiv (iso extract-r invert-r (retIsEq Rdisc) retr-r)
 
      ungel : (g : (t : T) → Gel t) → R
      ungel g = extract-r (invIsEq Commute (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
+     -- gelβ' : (r : R) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r ≡ gel r
+     -- gelβ' r i = gel r
 
-     gelβ' : (r : R) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r ≡ gel r
-     gelβ' r i = gel r
-
-     gelη' : (g : (t : T) → Gel t)  → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡  ungel g
-     gelη' g i = ungel g
-
-     gelβ1 : (g : (t : T) → Gel t) → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
-                                       (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g
-     gelβ1 g i = ungel g
-
-     gelβ2 : (g : (t : T) → Gel t) → (invIsEq (≅3 .snd)  ∘ funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
-                                       ( funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g
-     gelβ2 g = (retIsEq (≅3 .snd) (( funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g))
-
-     gelβ3 : (g : (t : T) → Gel t) → (invIsEq (≅2 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
-                                       (funIsEq (≅1 .snd)) g
-     gelβ3 g = (retIsEq (≅2 .snd)) (funIsEq (≅1 .snd) g)
-
-     gelβ4 : (g : (t : T) → Gel t) → (invIsEq (≅1 .snd) ∘ funIsEq (≅1 .snd)) g ≡
-                                       g
-     gelβ4 g = (retIsEq (≅1 .snd)) g
+     -- gelη' : (g : (t : T) → Gel t)  → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡  ungel g
+     -- gelη' g i = ungel g
 
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
-     gelβ g  = cong (invIsEq (≅1 .snd)) (cong (invIsEq (≅2 .snd)) (cong (invIsEq (≅3 .snd)) (gelβ1 g) ∙ gelβ2 g) ∙ gelβ3 g) ∙ gelβ4 g
+     gelβ g  =  cong (invIsEq (≅1 .snd))
+               (cong (invIsEq (≅2 .snd))
+               (cong (invIsEq (≅3 .snd))
+                 (λ i → ungel g)
+               ∙ (retIsEq (≅3 .snd)  ((funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g)))
+               ∙ (retIsEq (≅2 .snd)) ((funIsEq (≅1 .snd)) g))
+               ∙ (retIsEq (≅1 .snd)) g
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
