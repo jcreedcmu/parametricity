@@ -120,14 +120,31 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      ungel : (g : (t : T) → Gel t) → R
      ungel g = extract-r (invIsEq Commute (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
-     gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
-     gelβ g  = {!!}
 
      gelβ' : (r : R) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r ≡ gel r
      gelβ' r i = gel r
 
      gelη' : (g : (t : T) → Gel t)  → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡  ungel g
      gelη' g i = ungel g
+
+     gelβ1 : (g : (t : T) → Gel t) → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
+                                       (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g
+     gelβ1 g i = ungel g
+
+     gelβ2 : (g : (t : T) → Gel t) → (invIsEq (≅3 .snd)  ∘ funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
+                                       ( funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g
+     gelβ2 g = (retIsEq (≅3 .snd) (( funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g))
+
+     gelβ3 : (g : (t : T) → Gel t) → (invIsEq (≅2 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡
+                                       (funIsEq (≅1 .snd)) g
+     gelβ3 g = (retIsEq (≅2 .snd)) (funIsEq (≅1 .snd) g)
+
+     gelβ4 : (g : (t : T) → Gel t) → (invIsEq (≅1 .snd) ∘ funIsEq (≅1 .snd)) g ≡
+                                       g
+     gelβ4 g = (retIsEq (≅1 .snd)) g
+
+     gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
+     gelβ g  = cong (invIsEq (≅1 .snd)) (cong (invIsEq (≅2 .snd)) (cong (invIsEq (≅3 .snd)) (gelβ1 g) ∙ gelβ2 g) ∙ gelβ3 g) ∙ gelβ4 g
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
