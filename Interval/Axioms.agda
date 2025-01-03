@@ -35,29 +35,13 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
     T = D ▻ S
 
   pushMap : {k1 k2 k3 : Level}
-            {A : Type k1} {B : Type k2} {C : Type k3}
-            (f : C → A) (g : C → B)
-            (p : Push (λ k (t' : T) → f (k t')) (λ k → g ∘ k)) (t : T) → Push f g
+            {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
+            (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
+            (p : Push (λ k (t' : T) → f (k t')) (λ k → g ∘ k)) (t : T) → Push (f {t}) (g {t})
   pushMap f g (pinl a) t = pinl (a t)
   pushMap f g (pinr b) t = pinr (b t)
   pushMap f g (ppath c i) t = ppath (c t) i
 
-  depPushMap : {k1 k2 k3 : Level}
-            {A : T → Type k1} {B : T → Type k2} {C : T → Type k3}
-            (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
-            (p : Push (λ k (t' : T) → f (k t')) (λ k → g ∘ k)) (t : T) → Push (f {t}) (g {t})
-  depPushMap f g (pinl a) t = pinl (a t)
-  depPushMap f g (pinr b) t = pinr (b t)
-  depPushMap f g (ppath c i) t = ppath (c t) i
-
-  depPushMap' : {k1 k2 k3 k4 : Level}
-            {U : Type k4} (u : T → U)
-            {A : U → Type k1} {B : U → Type k2} {C : U → Type k3}
-            (f : {u : U} → C u → A u) (g : {u : U} → C u → B u)
-            (p : Push (λ k (t' : T) → f {u t'} (k t')) (λ k → g ∘ k)) (t : T) → Push (f {u t}) (g {u t})
-  depPushMap' u f g (pinl a) t = pinl (a t)
-  depPushMap' u f g (pinr b) t = pinr (b t)
-  depPushMap' u f g (ppath c i) t = ppath (c t) i
 
   postulate
     -- The endpoints of the interval...
@@ -85,16 +69,8 @@ module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
             (Bdisc : (t : T) → bridgeDiscrete T (B t))
             (Cdisc : (t : T) → bridgeDiscrete T (C t))
             (f : {t : T} → C t → A t) (g : {t : T} → C t → B t)
-            → isEquiv (depPushMap {A = A} f g)
+            → isEquiv (pushMap {A = A} f g)
 
-    ▻DepCommute' : {k1 k2 k3 k4 : Level}
-            {U : Type k4} (u : T → U)
-            {A : U → Type k1} {B : U → Type k2} {C : U → Type k3}
-            (Adisc : (u : U) → bridgeDiscrete T (A u))
-            (Bdisc : (u : U) → bridgeDiscrete T (B u))
-            (Cdisc : (u : U) → bridgeDiscrete T (C u))
-            (f : {u : U} → C u → A u) (g : {u : U} → C u → B u)
-            → isEquiv (depPushMap' u {A = A} f g)
   -- For convenience, phrase these axioms equivalently in terms of an
   -- endpoint predicate on the interval.
 
