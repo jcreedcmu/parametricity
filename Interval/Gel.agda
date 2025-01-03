@@ -22,12 +22,14 @@ module Interval.Gel where
 abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
 abort A ()
 
-
-module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
+module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
   ℓ = ℓ-max ℓ1 ℓ2
   T = D ▻ S
   E = End
+
+ disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
+ disc A = bridgeDiscrete T A
 
  module _ {A : {t : T} (e : E t) → Set ℓ1} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
 
@@ -67,8 +69,8 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    GelIsPush t = isoToEquiv (iso fore back sect retr) where
      open gip t
 
-   disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
-   disc A = bridgeDiscrete T A
+   gel : R → ((t : T) → Gel t)
+   gel r t = gstrand {t} r
 
    module _ (Rdisc : disc R)
             (EAdisc : (t : T) → disc (Σ (E t) A))
@@ -77,9 +79,6 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
      Commute : isEquiv (pushMap ff gg)
      Commute = ▻Commute (λ _ → Rdisc) EAdisc ERdisc ff gg
-
-     gel : R → ((t : T) → Gel t)
-     gel r t = gstrand {t} r
 
      extract-r : Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg) → R
      extract-r (pinl a) = invIsEq Rdisc a
