@@ -58,11 +58,12 @@ module twGel (A1 : X → Set) (R1 : ((x : X) → A1 x) → Set)
  data GoodFunc : Set where
    gfo : (f : (t : T) → m1.Gel t → m2.Gel t) → GoodFunc
 
- data MidFunc : Set where
-   mfo : (ah : ((x : X) → E1 x → E2 x))
-         (f : ((t : T) → m1.Gel t) → ((t : T) → m2.Gel t))
-         (compat : (g : (t : T) → m1.Gel t) (x : X) → ah x (g (η x)) ≡ f g (η x) )
-         → MidFunc
+ record MidFunc : Set where
+   constructor mfo
+   field
+     ah : ((x : X) → E1 x → E2 x)
+     f : ((t : T) → m1.Gel t) → ((t : T) → m2.Gel t)
+     compat : (g : (t : T) → m1.Gel t) (x : X) → ah x (g (η x)) ≡ f g (η x)
 
  goodToMid : GoodFunc → MidFunc
  goodToMid (gfo f) = mfo (f ∘ η) (λ g t → f t (g t)) λ g x i → f (η x) (g (η x))
@@ -70,18 +71,22 @@ module twGel (A1 : X → Set) (R1 : ((x : X) → A1 x) → Set)
  module _ where
   private
 
+   indf : (mf : MidFunc) (t : T) → m1.Gel t → m2.Gel t
+   indf mf t (m1.gstrand r) = mf .MidFunc.f (λ t → m1.gstrand r) t
+   indf mf .(η _) g@(m1.gpoint {x} a) = mf .MidFunc.ah x g
+   indf mf .(η _) (m1.gpath {x} aa r i) = (cong (mf .MidFunc.ah x) (m1.gpath aa r) ∙ mf .MidFunc.compat (λ t → m1.gstrand r) x) i
+
    back : MidFunc → GoodFunc
-   back (mfo ah f compat) = gfo indf where
-     indf : (t : T) → m1.Gel t → m2.Gel t
-     indf t (m1.gstrand r) = f (λ t → m1.gstrand r) t
-     indf .(η _) g@(m1.gpoint {x} a) = ah x g
-     indf .(η _) (m1.gpath {x} aa r i) = (cong (ah x) (m1.gpath aa r) ∙ compat (λ t → m1.gstrand r) x) i
+   back mf = gfo (indf mf)
 
    sect : (m : MidFunc) → goodToMid (back m) ≡ m
-   sect = {!!}
+   sect m i = mfo (λ x e1 → {!!}) {!!} {!!}
 
    retr : (f : GoodFunc) → back (goodToMid f) ≡ f
-   retr f = {!!}
-
+   retr (gfo f) i = gfo (indfp i) where
+     indfp : (indf (mfo (f ∘ η) (λ g t → f t (g t)) (λ g x _ → f (η x) (g (η x))))) ≡ f
+     indfp i t g@(mGel.gstrand r) = f t g
+     indfp i t g@(mGel.gpoint {x} a) = f t g
+     indfp i .(η _) (mGel.gpath aa r j) = {!!}
   thm : GoodFunc ≅ MidFunc
   thm = isoToEquiv (iso goodToMid back sect retr)
