@@ -69,7 +69,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
         ≡  u t (gpath {e = e} r j)
 -- cong f p  = λ i → f (p i)
 
-   foo u t e r j =  cong (λ q → q j) (sym (rUnit (λ k → u t (gpath {e = e} r k))))
+   foo u t e r j i = (sym (rUnit (λ k → u t (gpath {e = e} r k))) i) j
 
    retr : (u : (t : T) → Gel t → H t) → back (fore u) ≡ u
    retr u i t (gstrand r) = u t (gstrand r)
