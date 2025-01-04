@@ -55,25 +55,33 @@ module twGel (A1 : X → Set) (R1 : ((x : X) → A1 x) → Set)
  E2 : X → Set
  E2 x = m2.Gel (η x)
 
- data GoodFuncOver : ((x : X) → E1 x → E2 x) → Set where
-   gfo : (f : (t : T) → m1.Gel t → m2.Gel t) → GoodFuncOver (f ∘ η)
+ data GoodFunc : Set where
+   gfo : (f : (t : T) → m1.Gel t → m2.Gel t) → GoodFunc
 
- data MidFuncOver : ((x : X) → E1 x → E2 x) → Set where
+ data MidFunc : Set where
    mfo : (ah : ((x : X) → E1 x → E2 x))
          (f : ((t : T) → m1.Gel t) → ((t : T) → m2.Gel t))
          (compat : (g : (t : T) → m1.Gel t) (x : X) → ah x (g (η x)) ≡ f g (η x) )
-         → MidFuncOver ah
+         → MidFunc
 
- module _ (ah : (x : X) → E1 x → E2 x) where
+ goodToMid : GoodFunc → MidFunc
+ goodToMid (gfo f) = mfo (f ∘ η) (λ g t → f t (g t)) λ g x i → f (η x) (g (η x))
+
+ module _ where
   private
-   fore : GoodFuncOver ah → MidFuncOver ah
-   fore (gfo f) = mfo ah (λ g t → f t (g t)) λ g x i → f (η x) (g (η x))
 
-   back : MidFuncOver ah → GoodFuncOver ah
-   back (mfo .ah f compat) = subst GoodFuncOver {!!} (gfo indf) where
+   back : MidFunc → GoodFunc
+   back (mfo ah f compat) = gfo indf where
      indf : (t : T) → m1.Gel t → m2.Gel t
      indf t (m1.gstrand r) = f (λ t → m1.gstrand r) t
      indf .(η _) g@(m1.gpoint {x} a) = ah x g
      indf .(η _) (m1.gpath {x} aa r i) = (cong (ah x) (m1.gpath aa r) ∙ compat (λ t → m1.gstrand r) x) i
-  thm :  GoodFuncOver ah ≅ MidFuncOver ah
-  thm = isoToEquiv (iso fore back {!!} {!!})
+
+   sect : (m : MidFunc) → goodToMid (back m) ≡ m
+   sect = {!!}
+
+   retr : (f : GoodFunc) → back (goodToMid f) ≡ f
+   retr f = {!!}
+
+  thm : GoodFunc ≅ MidFunc
+  thm = isoToEquiv (iso goodToMid back sect retr)
