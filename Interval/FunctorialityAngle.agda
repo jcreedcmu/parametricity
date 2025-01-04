@@ -27,27 +27,46 @@ module Interval.FunctorialityAngle where
 
 postulate
  T : Set
- E Gel : T → Set
+ E Gel H : T → Set
 
 data View  (t : T) : Set where
  vstrand : (g : (t' : T) → Gel t') → View t
  vpoint : (e : E t) → Gel t → View t
- vpath : (e : E t) (g : (t' : T) → Gel t') → vpoint e (g t) ≡ vstrand {t} g
+ vpath : (e : E t) (g : (t' : T) → Gel t') → vstrand {t} g ≡ vpoint e (g t)
 
-data ViewRec  (t : T) : Set where
- vrstrand : (g : (t' : T) → ViewRec t') → ViewRec t
- vrpoint : (e : E t) → ViewRec t → ViewRec t
- vrpath : (e : E t) (g : (t' : T) → ViewRec t') → vrpoint e (g t) ≡ vrstrand {t} g
+View2Gel : (t : T) → View t → Gel t
+View2Gel t (vstrand g) = g t
+View2Gel t (vpoint e x) = x
+View2Gel t (vpath e g i) = g t
 
 postulate
- eq : (t : T) → Gel t ≅ View t
+ -- eq : (t : T) → Gel t ≅ View t
+ visEq : (t : T) → isEquiv (View2Gel t)
+ ah : (t : T) (e : E t) → Gel t → H t
 
-show : (t : T) → View t ≅ ViewRec t
-show t = isoToEquiv (iso (fore t) back {!!} {!!}) where
- fore : (t : T) → View t → ViewRec t
- fore t (vstrand g) = vrstrand λ t' → fore t' (equivFun (eq t') (g t'))
- fore t (vpoint e x) = {!!}
- fore t (vpath e g i) = {!!}
+Γ : (T → Set) → Set
+Γ H = (t : T) → H t
 
- back : ViewRec t → View t
- back = {!!}
+
+
+fore : ( (Σ[ f ∈ ((t : T) → Gel t → H t) ] ((t : T)(e : E t) → f t ≡ ah t e)))
+        → (Σ[ f ∈ (Γ Gel → Γ H) ] ((t : T) (e : E t) (g : Γ Gel) → f g t ≡ ah t e (g t)))
+
+fore (f , f') = (λ g t → f t (g t)) , λ t e g i → f' t e i (g t)
+
+processView : (f  : Γ Gel → Γ H) (f' : (t : T) (e : E t) (g : Γ Gel) → f g t ≡ ah t e (g t))
+              (t : T) (v : View t) → H t
+processView f f' t (vstrand g) = f g t
+processView f f' t (vpoint e g) = ah t e g
+processView f f' t (vpath e g i) = f' t e g i
+
+processView' : (f  : Γ Gel → Γ H) (f' : (t : T) (e : E t) (g : Γ Gel) → f g t ≡ ah t e (g t))
+              (t : T) (e : E t) (g : Gel t) → processView f f' t (invIsEq (visEq t) g) ≡ ah t e g
+processView' f f' t e g i with invIsEq (visEq t) g
+processView' f f' t e g i | vstrand g' = {!f' t e g' i!}
+processView' f f' t e g i | vpoint e' g' = {!!}
+processView' f f' t e g i | vpath e' g' j = {!!}
+
+back : (Σ[ f ∈ (Γ Gel → Γ H) ] ((t : T) (e : E t) (g : Γ Gel) → f g t ≡ ah t e (g t)))
+       → ( (Σ[ f ∈ ((t : T) → Gel t → H t) ] ((t : T)(e : E t) → f t ≡ ah t e)))
+back (f , f') = (λ t g → processView f f' t (invIsEq (visEq t) g)) , λ t e i g → processView' f f' t e g i
