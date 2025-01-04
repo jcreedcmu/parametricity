@@ -22,16 +22,17 @@ import Interval.Gel
  -}
 module Interval.Functoriality where
 
-module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
+module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
  private
-  ℓ = ℓ-max ℓ1 ℓ2
   T = D ▻ S
   E = End
 
-  open Interval.Gel.main {ℓ1} {ℓ2} D S
 
-  module _ {A1 : {t : T} (e : E t) → Set ℓ1}
-           {A2 : {t : T} (e : E t) → Set ℓ1}
+  module toOpen0 = Interval.Gel.main {ℓ} {ℓ} D S
+  open toOpen0
+
+  module _ {A1 : {t : T} (e : E t) → Set ℓ}
+           {A2 : {t : T} (e : E t) → Set ℓ}
            (R1 R2 : Set ℓ)
            (disc-R2 : disc R2)
            (disc-EA2 : (t : T) → disc (Σ (E t) A2))
@@ -41,16 +42,24 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
            (ah : {t : T} (e : E t) → A1 e → A2 e)
     where
 
-    relhom : Set (ℓ1 ⊔ ℓ2)
+    module toOpen1 = Interval.Gel.main.gel {ℓ} {ℓ} D S R1 f1
+    open toOpen1 renaming (Gel to Gel1 ; gstrand to gstrand1 ; gpoint to gpoint1 ; gpath to gpath1 ; gel to gel1 )
+    module toOpen2 = Interval.Gel.main.gel {ℓ} {ℓ} D S R2 f2
+    open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 )
+
+    ungel2 : ((t : T) → Gel2 t) → R2
+    ungel2 = toOpen2.ungel disc-R2 disc-EA2 disc-ER2
+
+    relhom : Set ℓ
     relhom = Σ[ rh ∈ (R1 → R2) ] ({t : T} (e : E t) (r1 : R1) → ah e (f1 r1 e) ≡ f2 (rh r1) e)
 
-    ungel2 = ungel R2 f2 disc-R2 disc-EA2 disc-ER2
 
-    interglobal→relhom : (((t : T) → Gel R1 f1 t) → ((t : T) → Gel R2 f2 t)) → relhom
-    interglobal→relhom igm = (λ r1 → ungel2 (igm (gel R1 f1 r1))) , {!!}
 
-    Igm : Set {!!}
-    Igm = Σ[ igm ∈ (((t : T) → Gel R1 f1 t) → ((t : T) → Gel R2 f2 t)) ] {! {t : T} (e : E t) → igm m1 t!}
+    interglobal→relhom : (((t : T) → Gel1 t) → ((t : T) → Gel2 t)) → relhom
+    interglobal→relhom igm = (λ r1 → ungel2 (igm (gel1 r1))) , {!!}
 
-    fore : ((t : T) → Gel R1 f1 t → Gel R2 f2 t) → ((t : T) → Gel R1 f1 t) → ((t : T) → Gel R2 f2 t)
+    Igm : Set (ℓ-max ℓ {!!})
+    Igm = Σ[ igm ∈ (((t : T) → Gel1 t) → ((t : T) → Gel2 t)) ] {! {t : T} (e : E t) → igm m1 t!}
+
+    fore : ((t : T) → Gel1 t → Gel2 t) → ((t : T) → Gel1 t) → ((t : T) → Gel2 t)
     fore um gm t = um t (gm t)
