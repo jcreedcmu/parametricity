@@ -64,14 +64,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    sect : (p : Pack) → fore (back p) ≡ p
    sect = {!!}
 
-   foo : (u : (t : T) → Gel t → H t) (t : T) (e : E t) (r : R) (j : I)
-         →  ((λ k → u t (gpath {e = e} r k)) ∙ refl) j -- this refl is actually (λ k → u t (gstrand r))
-        ≡  u t (gpath {e = e} r j)
--- cong f p  = λ i → f (p i)
-
-   foo u t e r j i = (sym (rUnit (λ k → u t (gpath {e = e} r k))) i) j
-
    retr : (u : (t : T) → Gel t → H t) → back (fore u) ≡ u
    retr u i t (gstrand r) = u t (gstrand r)
    retr u i t (gpoint a) = u t (gpoint a)
-   retr u i t (gpath {e} r j) = foo u t e r j i
+   retr u i t (gpath {e} r j) = (rUnit (λ k → u t (gpath {e = e} r k))) (~ i) j
