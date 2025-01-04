@@ -56,13 +56,16 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      compat : {t : T} (e : E t) (g : (t : T) → Gel t) → fine e (g t) ≡ coarse g t
      compat {t} e g i = u t (g t)
 
-   back : Pack → ((t : T) → Gel t → H t)
+   back : Pack → (t : T) → Gel t → H t
    back p t (gstrand r) = p .Pack.coarse  (λ t → gstrand r) t
    back p t g@(gpoint {e} a) = p .Pack.fine e g
    back p t (gpath {e} r i) = (cong (p .Pack.fine e) (gpath {e = e} r) ∙ p .Pack.compat e (λ t → gstrand r)) i
 
+   sectCoarse : {!!}
+   sectCoarse = {!!}
+
    sect : (p : Pack) → fore (back p) ≡ p
-   sect = {!!}
+   sect (pack coarse fine compat) i = pack (λ g t → {!!}) {!!} {!!}
 
    retr : (u : (t : T) → Gel t → H t) → back (fore u) ≡ u
    retr u i t (gstrand r) = u t (gstrand r)
