@@ -50,6 +50,12 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     ungel2 : ((t : T) → Gel2 t) → R2
     ungel2 = toOpen2.ungel disc-R2 disc-EA2 disc-ER2
 
+    postulate
+      epe1 : {t : T} (e : E t) → Gel1 t ≅ A1 e
+      epe2 : {t : T} (e : E t) → Gel2 t ≅ A2 e
+
+    -- data UniformMapAbove (ah : {t : T} (e : E t) → A1 e → A2 e) : Set where
+    --    uma : ((t : T) → Gel1 t → Gel2 t) → UniformMapAbove ? ?
     relhom : Set ℓ
     relhom = Σ[ rh ∈ (R1 → R2) ] ({t : T} (e : E t) (r1 : R1) → ah e (f1 r1 e) ≡ f2 (rh r1) e)
 
