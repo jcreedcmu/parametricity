@@ -62,11 +62,17 @@ sqMap : (c : C) → Square (λ x → pinr (g c))
                           (λ y → fore (back (ppath c y)))
                           (ppath c)
 sqMap c y x = hcomp (λ (z : I) → λ {
-       (x = i0) → hfill {!!}  {!→ pinl (into (f c))!} z ;
+       (x = i0) → {!!} ;
        (x = i1) → ppath c y ;
        (y = i0) → ppath c (~ x ∧ ~ z) ;
-       (y = i1) → {!!}
+       (y = i1) → pinl (secIsEq intoEq (into (f c)) (x ∨ ~ z))
      }) (ppath c (~ x ∨ y))
+
+-- z = i0 ⊢ pinl (into (f c))
+-- z = i1 ⊢ pinl (secIsEq intoEq (into (f c)) x)
+-- x = i0 ⊢ ?1 (A = A) (A' = A') (B = B) (C = C) (f = f) (g = g)
+--          (into = into) (intoEq = intoEq) (c = c) (y = i1) (z = z)
+-- x = i1 ⊢ pinl (into (f c))
 
 foo : (c : C) → pinr (g c) ≡ pinl (into (outo (into (f c)) ))
 foo c x = fore (back (ppath c x))
