@@ -42,27 +42,6 @@ back (pinl a) = pinl (invIsEq intoEq a)
 back (pinr b) = pinr b
 back (ppath c i) = (ppath c ∙ λ j → pinl (retIsEq intoEq (f c) (~ j)) ) i
 
-blah : (c : C) → {!(ppath c ∙ λ j → pinl (retIsEq intoEq (f c) (~ j)) )!}
-blah = {!!}
--- pinr (g c)
--- pinl (secIsEq intoEq (f c) i)
-
-foo = (c : C) →  {!(λ (i : I) →  pinl (secIsEq intoEq (into (f c)) i))!}
-foo2 = (c : C) →  {!( pinl (secIsEq intoEq (into (f c)) i0))!}
--- hardMap : (c : C) → PathP (λ i → {!Q  !} (λ i → pinr (g c)) (λ i →  pinl (secIsEq intoEq (into (f c)) i))
--- -- pinr (g c) ≡ pinl {f = into ∘ f} {g = g} (secIsEq intoEq (into (f c)) i)
--- hardMap = {!!}
-
-module _ (D : Q → Set)
-  (af : (a' : A') → D (pinl a'))
-  (bf : (b : B) → D (pinr b))
-  (cf : (c : C) → PathP (λ i → D (ppath c i)) (bf (g c)) (af (into (f c))))
-  where
- Qelim : (q : Q)  → D q
- Qelim (pinl a) = af a
- Qelim (pinr b) = bf b
- Qelim (ppath c i) = cf c i
-
 -- Square top bot left right = PathP (λ y → left y ≡ right y) top bot
 
 hardMap : (c : C) → PathP (λ i → fore (back (ppath c i)) ≡ (ppath c i))
@@ -81,5 +60,29 @@ sect (pinl a') i = pinl (secIsEq intoEq a' i)
 sect (pinr b) i = pinr b
 sect (ppath c i) = sqMap c i
 
+sqMap2 : (c : C) → Square ((λ i → pinr (g c))) (λ i → pinl (retIsEq intoEq (f c) i))
+  (λ i → back (fore (ppath c i))) (ppath c)
+sqMap2 = {!!}
+
+retr : (p : P) → back (fore p) ≡ p
+retr (pinl a) i = pinl (retIsEq intoEq a i)
+retr (pinr b) i = pinr b
+retr (ppath c j) i = sqMap2 c j i
+
 thm : P ≅ Q
-thm = isoToEquiv (iso fore back {!!} {!!})
+thm = isoToEquiv (iso fore back sect retr)
+
+-- i = i0 ⊢ (ppath c ∙ (λ j₁ → pinl (retIsEq intoEq (f c) (~ j₁)))) j
+-- i = i1 ⊢ ppath c j
+-- j = i0 ⊢ pinr (g c)
+-- j = i1 ⊢ pinl (retIsEq intoEq (f c) i)
+
+-- module _ (D : Q → Set)
+--   (af : (a' : A') → D (pinl a'))
+--   (bf : (b : B) → D (pinr b))
+--   (cf : (c : C) → PathP (λ i → D (ppath c i)) (bf (g c)) (af (into (f c))))
+--   where
+--  Qelim : (q : Q)  → D q
+--  Qelim (pinl a) = af a
+--  Qelim (pinr b) = bf b
+--  Qelim (ppath c i) = cf c i
