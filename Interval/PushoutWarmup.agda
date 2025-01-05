@@ -57,6 +57,8 @@ hardMap : (c : C) → PathP (λ i → fore (back (ppath c i)) ≡ (ppath c i))
        (λ i → pinl (secIsEq intoEq (into (f c)) i))
 hardMap = {!!}
 
+-- hfill (λ z → λ { (y = i0) → {!ppath c (~ z)!} ; (y = i1) → {!pinl (secIsEq intoEq (into (f c)) (~ z))!} }) (inS (pinl (into (f c)))) z
+
 sqMap : (c : C) → Square (λ x → pinr (g c))
                           (λ x → pinl (secIsEq intoEq (into (f c)) x))
                           (λ y → fore (back (ppath c y)))
