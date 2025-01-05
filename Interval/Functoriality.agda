@@ -91,3 +91,27 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
 
      thm : (Gel1 t → Gel2 t) ≅ Bundle t
      thm = isoToEquiv (iso fore back sect retr)
+
+    record Bundle2 : Set ℓ where
+     field
+      coarseMap : R1 → (t : T) → Gel2 t
+      boundaryMap : (t : T) (e : E t) (a1 : A1 e) → Gel2 t
+      compat : (t : T) (e : E t) (r1 : R1) → {!!}
+
+    module ≅2 where
+     open Interval.Gel.main.gel
+
+     fore : ((t : T) → Bundle t) → Bundle2
+     fore = {!!}
+
+     back : Bundle2 → ((t : T) → Bundle t)
+     back = {!!}
+
+     sect : (b : Bundle2) → fore (back b) ≡ b
+     sect = {!!}
+
+     retr : (u : (t : T) → Bundle t) → back (fore u) ≡ u
+     retr = {!!}
+
+     thm : ((t : T) → Bundle t) ≅ Bundle2
+     thm = isoToEquiv (iso fore back sect retr)
