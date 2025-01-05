@@ -24,6 +24,9 @@ module Interval.PushoutWarmup (A : Set) (A' : Set) (B : Set) (C : Set) (f : C �
   (into : A → A') (intoEq : isEquiv into)
   where
 
+outo : A' → A
+outo = invIsEq intoEq
+
 P : Set
 P = Push f g
 
@@ -38,9 +41,14 @@ fore (ppath c i) = ppath c i
 -- i = i0 ⊢ pinr (g c)
 -- i = i1 ⊢ pinl (invIsEq intoEq (into (f c)))
 back : Q → P
-back (pinl a) = pinl (invIsEq intoEq a)
+back (pinl a) = pinl (outo a)
 back (pinr b) = pinr b
-back (ppath c i) = (ppath c ∙ λ j → pinl (retIsEq intoEq (f c) (~ j)) ) i
+back (ppath c i) = hcomp (λ j → λ {
+     (i = i0) → ppath c (~ j) ;
+     (i = i1) → pinl (retIsEq intoEq (f c) (~ j))
+   }) (pinl (f c))
+
+-- (ppath c ∙ λ j → pinl (retIsEq intoEq (f c) (~ j)) ) i
 
 -- Square top bot left right = PathP (λ y → left y ≡ right y) top bot
 
@@ -52,16 +60,26 @@ hardMap = {!!}
 sqMap : (c : C) → Square (λ x → pinr (g c))
                           (λ x → pinl (secIsEq intoEq (into (f c)) x))
                           (λ y → fore (back (ppath c y)))
-                          (λ y → ppath c y)
-sqMap = {!!}
+                          (ppath c)
+sqMap c y x = hcomp (λ (z : I) → λ {
+       (x = i0) → hfill {!!}  {!→ pinl (into (f c))!} z ;
+       (x = i1) → ppath c y ;
+       (y = i0) → ppath c (~ x ∧ ~ z) ;
+       (y = i1) → {!!}
+     }) (ppath c (~ x ∨ y))
+
+foo : (c : C) → pinr (g c) ≡ pinl (into (outo (into (f c)) ))
+foo c x = fore (back (ppath c x))
 
 sect : (q : Q) → fore (back q) ≡ q
 sect (pinl a') i = pinl (secIsEq intoEq a' i)
 sect (pinr b) i = pinr b
 sect (ppath c i) = sqMap c i
 
-sqMap2 : (c : C) → Square ((λ i → pinr (g c))) (λ i → pinl (retIsEq intoEq (f c) i))
-  (λ i → back (fore (ppath c i))) (ppath c)
+sqMap2 : (c : C) → Square (λ x → pinr (g c))
+                           (λ x → pinl (retIsEq intoEq (f c) x))
+                           (λ y → back (fore (ppath c y)))
+                           (ppath c)
 sqMap2 = {!!}
 
 retr : (p : P) → back (fore p) ≡ p
