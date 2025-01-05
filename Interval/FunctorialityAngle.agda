@@ -94,7 +94,7 @@ module ≅1 where
   retr f i t (vpath e g j) = f t (vpath e g j)
 
   thm : ((t : T) → View t → H t) ≅ Γ PushRec2
-  thm = isoToEquiv (iso fore back sect retr) where
+  thm = isoToEquiv (iso fore back sect retr)
 
 
 -- pr1 t .PushRec1.pr1f t v ≡ ah t e v

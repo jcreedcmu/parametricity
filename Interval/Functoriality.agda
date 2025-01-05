@@ -27,7 +27,6 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
   T = D ▻ S
   E = End
 
-
   module toOpen0 = Interval.Gel.main {ℓ} {ℓ} D S
   open toOpen0
 
@@ -37,6 +36,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
            (disc-R2 : disc R2)
            (disc-EA2 : (t : T) → disc (Σ (E t) A2))
            (disc-ER2 : (t : T) → disc (E t × R2))
+           (disc-R1 : disc R1)
+           (disc-EA1 : (t : T) → disc (Σ (E t) A1))
+           (disc-ER1 : (t : T) → disc (E t × R1))
            (f1 : (r : R1) {t : T} (e : E t) → A1 e)
            (f2 : (r : R2) {t : T} (e : E t) → A2 e)
            (ah : {t : T} (e : E t) → A1 e → A2 e)
@@ -47,6 +49,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     module toOpen2 = Interval.Gel.main.gel {ℓ} {ℓ} D S R2 f2
     open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 )
 
+    ungel1 : ((t : T) → Gel1 t) → R1
+    ungel1 = toOpen1.ungel disc-R1 disc-EA1 disc-ER1
+
     ungel2 : ((t : T) → Gel2 t) → R2
     ungel2 = toOpen2.ungel disc-R2 disc-EA2 disc-ER2
 
@@ -54,18 +59,35 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
       epe1 : {t : T} (e : E t) → Gel1 t ≅ A1 e
       epe2 : {t : T} (e : E t) → Gel2 t ≅ A2 e
 
-    -- data UniformMapAbove (ah : {t : T} (e : E t) → A1 e → A2 e) : Set where
-    --    uma : ((t : T) → Gel1 t → Gel2 t) → UniformMapAbove ? ?
-    relhom : Set ℓ
-    relhom = Σ[ rh ∈ (R1 → R2) ] ({t : T} (e : E t) (r1 : R1) → ah e (f1 r1 e) ≡ f2 (rh r1) e)
+    record Bundle (t : T) : Set ℓ where
+     field
+      coarseMap : R1 → Gel2 t
+      boundaryMap : (e : E t) (a1 : A1 e) → Gel2 t
+      compat : (e : E t) (r1 : R1) → boundaryMap e (f1 r1 e) ≡ coarseMap r1
 
+    module ≅1 (t : T) where
+     open Bundle
+     open Interval.Gel.main.gel
 
+     fore : (Gel1 t → Gel2 t) → Bundle t
+     fore uniform = record {
+         coarseMap = λ r1 → uniform (gstrand r1) ;
+         boundaryMap = λ e a1 → uniform (gpoint a1) ;
+         compat = λ e r1 i → uniform (gpath {e = e} r1 i)
+         }
 
-    interglobal→relhom : (((t : T) → Gel1 t) → ((t : T) → Gel2 t)) → relhom
-    interglobal→relhom igm = (λ r1 → ungel2 (igm (gel1 r1))) , {!!}
+     back : Bundle t → (Gel1 t → Gel2 t)
+     back b (gstrand r1) = b .coarseMap r1
+     back b (gpoint {e} a1) = b .boundaryMap e a1
+     back b (gpath {e} r1 i) = b .compat e r1 i
 
-    Igm : Set (ℓ-max ℓ {!!})
-    Igm = Σ[ igm ∈ (((t : T) → Gel1 t) → ((t : T) → Gel2 t)) ] {! {t : T} (e : E t) → igm m1 t!}
+     sect : (b : Bundle t) → fore (back b) ≡ b
+     sect b i = b
 
-    fore : ((t : T) → Gel1 t → Gel2 t) → ((t : T) → Gel1 t) → ((t : T) → Gel2 t)
-    fore um gm t = um t (gm t)
+     retr : (u : Gel1 t → Gel2 t) → back (fore u) ≡ u
+     retr u i (gstrand r) = u (gstrand r)
+     retr u i (gpoint a) = u (gpoint a)
+     retr u i (gpath {e} r j) = u (gpath {e = e} r j)
+
+     thm : (Gel1 t → Gel2 t) ≅ Bundle t
+     thm = isoToEquiv (iso fore back sect retr)
