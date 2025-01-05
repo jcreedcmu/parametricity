@@ -63,15 +63,23 @@ module _ (D : Q → Set)
  Qelim (pinr b) = bf b
  Qelim (ppath c i) = cf c i
 
+-- Square top bot left right = PathP (λ y → left y ≡ right y) top bot
+
 hardMap : (c : C) → PathP (λ i → fore (back (ppath c i)) ≡ (ppath c i))
        (λ i → pinr (g c))
        (λ i → pinl (secIsEq intoEq (into (f c)) i))
 hardMap = {!!}
 
+sqMap : (c : C) → Square (λ x → pinr (g c))
+                          (λ x → pinl (secIsEq intoEq (into (f c)) x))
+                          (λ y → fore (back (ppath c y)))
+                          (λ y → ppath c y)
+sqMap = {!!}
+
 sect : (q : Q) → fore (back q) ≡ q
 sect (pinl a') i = pinl (secIsEq intoEq a' i)
 sect (pinr b) i = pinr b
-sect (ppath c i) = hardMap c i
+sect (ppath c i) = sqMap c i
 
 thm : P ≅ Q
 thm = isoToEquiv (iso fore back {!!} {!!})
