@@ -124,29 +124,28 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
       ≅R2 : isEquiv cvtR2
       ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
 
+    -- Relative to Bundle2 we've just changed coarseMap's type
     record Bundle3 : Set ℓ where
      field
       coarseMap : R1 → R2
-      boundaryMap : (t : T) (e : E t) (a1 : A1 e) → A2 e
-      compat : (t : T) (e : E t) (r1 : R1) → cvtA2 e (boundaryMap t e (f1 r1 e)) ≡ cvtR2 (coarseMap r1) t
+      boundaryMap : (t : T) (e : E t) (a1 : A1 e) → Gel2 t
+      compat : (t : T) (e : E t) (r1 : R1) → boundaryMap t e (f1 r1 e) ≡ cvtR2 (coarseMap r1) t
 
     module ≅3 where
      open Interval.Gel.main.gel
 
      fore : Bundle2 → Bundle3
-     fore b = record {
-       coarseMap = λ r1 → invIsEq ≅R2 (b .Bundle2.coarseMap r1) ;
-       boundaryMap = λ t e a1 → invIsEq (≅A2 e) (b .Bundle2.boundaryMap t e a1) ;
-       compat = λ t e r1 → {!cvtA2 e
-      (invIsEq (≅A2 e) (b .Bundle2.boundaryMap t e (f1 r1 e)))
-      ≡ cvtR2 (invIsEq ≅R2 (b .Bundle2.coarseMap r1)) t!}
+     fore b2 = record {
+       coarseMap = λ r1 → invIsEq ≅R2 (b2 .Bundle2.coarseMap r1) ;
+       boundaryMap = b2 .Bundle2.boundaryMap ;
+       compat = λ t e r1 → {!!}
        }
 
      back : Bundle3 → Bundle2
-     back b2 = record {
-       coarseMap = {!!} ;
-       boundaryMap = {!!} ;
-       compat = {!!}
+     back b3 = record {
+       coarseMap = λ r1 t → gstrand (b3 .Bundle3.coarseMap r1) ;
+       boundaryMap = b3 .Bundle3.boundaryMap ;
+       compat = b3 .Bundle3.compat
        }
 
      thm : Bundle2 ≅ Bundle3
