@@ -5,6 +5,8 @@ open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Prod
 open import Cubical.Data.Empty renaming (rec to aborti)
+open import Cubical.Foundations.Path
+open import Cubical.Foundations.Transport
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
@@ -59,6 +61,20 @@ PathP-to-transport {A} x y p i = transp (λ j → A (i ∧ ~ j)) (~ i) (p i)
 transport-to-PathP : {A : I → Set} (x : A i0) (y : A i1) → x ≡ transport (λ i → A (~ i)) y → PathP A x y
 transport-to-PathP {A} x y t i = {!!}
 
+retr-lemma5 : (a : A) → isec (into a) ≡ {!!}
+retr-lemma5 = {!!}
+
+retr-lemma4 : (a : A) → isec (into a) ≡ λ i → into (iret a i)
+retr-lemma4 = {!!}
+
+retr-lemma3 : (a : A) (d : D (into a)) →
+      transport (λ i → D ( (isec (into a)) (~ i))) d ≡
+      transport (λ i → D ( into (iret a (~ i)))) d
+retr-lemma3 a d j = transport (λ i → D ( retr-lemma4 a j (~ i) )) d
+
+retr-lemma2 : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
+retr-lemma2 a d = toPathP⁻ (retr-lemma3 a d)
+
 retr-lemma : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
 retr-lemma a d i = hcomp {!!} (transport  (λ j → D (snd (intoEq .equiv-proof (into a) .snd (a , (λ i₂ → into a)) i) (~ j)))  d)
 
@@ -80,7 +96,7 @@ sec-fact a' i = isec a'
 -- ctrP = symP (transport-filler (λ i → B (sym α i)) b)
 
 retr-mine : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
-retr-mine (a , d) i =  iret a i , retr (a , d) i .snd
+retr-mine (a , d) i =  iret a i , retr-lemma2 a d i
 -- fst (intoEq .equiv-proof (into (fst x)) .snd  (fst x , (λ i₁ → into (fst x))) i) , (retr x i .snd)
 
 mmap : Σ A (D ∘ into) → Σ A' D
