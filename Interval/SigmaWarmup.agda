@@ -35,7 +35,6 @@ isec = secIsEq intoEq
 iret : (a : A) → outo (into a) ≡ a
 iret = retIsEq intoEq
 
-
 fore : Σ A (D ∘ into) → Σ A' D
 fore (a , d) = into a , d
 
@@ -43,70 +42,31 @@ back : Σ A' D → Σ A (D ∘ into)
 back (a' , d) = (outo a') , subst D (sym (isec a')) d
 
 sect : (p : Σ A' D) → fore (back p) ≡ p
-sect x = secIsEq (Sprop.Σ-cong-equiv-fst {A = A} {B = D} (into , intoEq) .snd) x
-
-retr : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
-retr x = retIsEq (Sprop.Σ-cong-equiv-fst {A = A} {B = D} (into , intoEq) .snd) x
-
-sect-lemma : (a' : A') (d : D a') → PathP (λ i → D (isec a' i)) (subst D (sym (isec a')) d) d
-sect-lemma a' d i  = transp (λ j → D (isec a' (i ∨ ~ j))) i d
-
-sect-mine : (p : Σ A' D) → fore (back p) ≡ p
-sect-mine (a' , d) i = isec a' i , sect-lemma a' d i
-
-
-PathP-to-transport : {A : I → Set} (x : A i0) (y : A i1) → PathP A x y → x ≡ transport (λ i → A (~ i)) y
-PathP-to-transport {A} x y p i = transp (λ j → A (i ∧ ~ j)) (~ i) (p i)
-
-transport-to-PathP : {A : I → Set} (x : A i0) (y : A i1) → x ≡ transport (λ i → A (~ i)) y → PathP A x y
-transport-to-PathP {A} x y t i = {!!}
-
-retr-lemma5 : (a : A) → isec (into a) ≡ {!!}
-retr-lemma5 = {!!}
-
-retr-lemma4 : (a : A) → isec (into a) ≡ λ i → into (iret a i)
-retr-lemma4 = {!!}
-
-retr-lemma3 : (a : A) (d : D (into a)) →
-      transport (λ i → D ( (isec (into a)) (~ i))) d ≡
-      transport (λ i → D ( into (iret a (~ i)))) d
-retr-lemma3 a d j = transport (λ i → D ( retr-lemma4 a j (~ i) )) d
-
-retr-lemma2 : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
-retr-lemma2 a d = toPathP⁻ (retr-lemma3 a d)
+sect (a' , d) i = isec a' i , transp (λ j → D (isec a' (i ∨ ~ j))) i d
 
 retr-lemma : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
-retr-lemma a d i = hcomp {!!} (transport  (λ j → D (snd (intoEq .equiv-proof (into a) .snd (a , (λ i₂ → into a)) i) (~ j)))  d)
+retr-lemma a d = toPathP⁻ (λ j → transport (λ i → D ( commPathIsEq intoEq a j (~ i) )) d)
 
-blah : (a : A) → fst (intoEq .equiv-proof (into a)) ≡ (a , (λ _ → into a))
-blah a = intoEq .equiv-proof (into a) .snd (a , (λ _ → into a))
+retr : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
+retr (a , d) i =  iret a i ,  retr-lemma a d i
 
-blah' : (a : A) → fst (intoEq .equiv-proof (into a)) ≡ (a , (λ _ → into a))
-blah' a = {!intoEq .equiv-proof (into a) .snd !}
+thm : Σ A (D ∘ into) ≅ Σ A' D
+thm = isoToEquiv (iso fore back sect retr)
 
-out-fact : (a' : A') → outo a' ≡ intoEq .equiv-proof a' .fst .fst
-out-fact a' i = outo a'
+-- sect : (p : Σ A' D) → fore (back p) ≡ p
+-- sect x = secIsEq (Sprop.Σ-cong-equiv-fst {A = A} {B = D} (into , intoEq) .snd) x
 
-ret-fact : (a : A) → iret a ≡ λ i → fst (intoEq .equiv-proof (into a) .snd (a , (λ _ → into a)) i )
-ret-fact a i = iret a
+-- retr : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
+-- retr x = retIsEq (Sprop.Σ-cong-equiv-fst {A = A} {B = D} (into , intoEq) .snd) x
 
-sec-fact : (a' : A') → isec a' ≡ intoEq .equiv-proof a' .fst .snd
-sec-fact a' i = isec a'
+-- mmap : Σ A (D ∘ into) → Σ A' D
+-- mmap x = Sprop.Σ-cong-equiv-fst (into , intoEq) .fst x
 
--- ctrP = symP (transport-filler (λ i → B (sym α i)) b)
+-- mmapi : Σ A' D → Σ A (D ∘ into)
+-- mmapi x = invIsEq (Sprop.Σ-cong-equiv-fst (into , intoEq) .snd) x
 
-retr-mine : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
-retr-mine (a , d) i =  iret a i , retr-lemma2 a d i
--- fst (intoEq .equiv-proof (into (fst x)) .snd  (fst x , (λ i₁ → into (fst x))) i) , (retr x i .snd)
+-- foo : (x : Σ A' D) → mmapi x ≡ back x
+-- foo x = refl
 
-mmap : Σ A (D ∘ into) → Σ A' D
-mmap x = Sprop.Σ-cong-equiv-fst (into , intoEq) .fst x
-
-mmapi : Σ A' D → Σ A (D ∘ into)
-mmapi x = invIsEq (Sprop.Σ-cong-equiv-fst (into , intoEq) .snd) x
-
-foo : (x : Σ A' D) → mmapi x ≡ back x
-foo x = refl
-
-bar : (x : Σ A (D ∘ into)) → mmap x ≡ fore x
-bar x = refl
+-- bar : (x : Σ A (D ∘ into)) → mmap x ≡ fore x
+-- bar x = refl
