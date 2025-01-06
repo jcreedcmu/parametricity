@@ -60,9 +60,11 @@ module _ {ℓ : Level} (A A' : Set ℓ) (B : Set ℓ) (C : A → B → Set ℓ) 
  congA = isoToEquiv (iso fore back sect retr)
 
 module _ {ℓ : Level} (A : Set ℓ) (B B' : Set ℓ) (C : A → B → Set ℓ) -- needs more level flexibility? idk
-         (f : B' → B) (fEq : isEquiv f)
+         (fiso : B' ≅ B)
          where
  private
+  f = fiso .fst
+  fEq = fiso .snd
   finv = invIsEq fEq
 
   fore : Threep A B C → Threep A B' (λ a b → C a (f b))

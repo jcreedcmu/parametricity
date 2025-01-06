@@ -59,9 +59,20 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     Bundle0 : Set ℓ
     Bundle0 = Threep
        (R1 → (t : T) → Gel2 t)
-       ((t : T) → (e : E t) (a1 : A1 e) → Gel2 t)
+       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ cm r1 t)
 
+    -- The first move is mainly to just use the pushout UMP to understand
+    -- that, for each t, a map Gel1 t → ⋯ is the same thing as a pair of maps
+    -- (g : R1) → ⋯
+    -- (e : E t) (a1 : A1 e) → ⋯
+    -- that are suitably compatible at endpoints. Therefore a uniform map
+    -- (t : T) → Gel1 t → ⋯
+    -- is the same thing as a compatible pair of maps
+    -- (t : T) (g : R1) → ⋯
+    -- (t : T) (e : E t) (a1 : A1 e) → ⋯
+    -- In passing, we also commute the t-binder to the right of R1, which
+    -- we'll need for future steps.
     module ≅0 (t : T) where
      open Interval.Gel.main.gel
      open Threep
@@ -94,6 +105,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     cvtA2 : {t : T} (e : E t) → A2 e → Gel2 t
     cvtA2 e a2 = Gel2.gpoint a2
 
+    -- XXX these should be inputs, not postulates
     postulate
       ≅R2 : isEquiv cvtR2
       ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
@@ -116,13 +128,52 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     Bundle1 : Set ℓ
     Bundle1 = Threep
        (R1 → R2)
-       ((t : T) → (e : E t) (a1 : A1 e) → Gel2 t)
+       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ (Rfore cm) r1 t)
-
+    -- The next main step is replacing (t : T) → Gel2 t with R2
     thm01 : Bundle0 ≅ Bundle1
     thm01 = congA
        (R1 → (t : T) → Gel2 t)
        (R1 → R2)
-       ((t : T) → (e : E t) (a1 : A1 e) → Gel2 t)
+       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ cm r1 t)
        Riso
+
+    Afore : (((t : T) (e : E t) (a1 : A1 e) → A2 e))
+         → (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))
+    Afore k t e a1 = cvtA2 e (k t e a1)
+
+    Aback : (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))
+         → (((t : T) (e : E t) (a1 : A1 e) → A2 e))
+    Aback k t e a1 = invIsEq (≅A2 e) (k t e a1)
+
+    Asect : (z : (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))) → Afore (Aback z) ≡ z
+    Asect z i t e a1 = secIsEq (≅A2 e) (z t e a1) i
+
+    Aretr : (z : (((t : T) (e : E t) (a1 : A1 e) → A2 e))) → Aback (Afore z) ≡ z
+    Aretr z i t e a1 = retIsEq (≅A2 e) (z t e a1) i
+
+    Aiso : (((t : T) (e : E t) (a1 : A1 e) → A2 e))
+         ≅ (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))
+    Aiso = isoToEquiv (iso Afore Aback Asect Aretr)
+
+    Bundle2 : Set ℓ
+    Bundle2 = Threep
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → (Afore bm) t e (f1 r1 e) ≡ (Rfore cm) r1 t)
+
+    -- The next main step is replacing Gel2 t in the presence of e : E t with A2 e.
+    thm12 : Bundle1 ≅ Bundle2
+    thm12 = congB
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ (Rfore cm) r1 t)
+       Aiso
+
+    -- At this point we've got ((t : T) → Gel1 t → Gel2 t) isomorphic
+    -- to something that looks a lot like a relation homomorphism.
+    -- The only problem is the compatibility relation involves gel.
+    -- We should be able to apply some congruences and (co)units to get
+    -- rid of that.
