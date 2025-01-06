@@ -53,9 +53,31 @@ sect-mine : (p : Σ A' D) → fore (back p) ≡ p
 sect-mine (a' , d) i = isec a' i , sect-lemma a' d i
 
 
-retr-lemma : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
-retr-lemma a d = {!!}
+PathP-to-transport : {A : I → Set} (x : A i0) (y : A i1) → PathP A x y → x ≡ transport (λ i → A (~ i)) y
+PathP-to-transport {A} x y p i = transp (λ j → A (i ∧ ~ j)) (~ i) (p i)
 
+transport-to-PathP : {A : I → Set} (x : A i0) (y : A i1) → x ≡ transport (λ i → A (~ i)) y → PathP A x y
+transport-to-PathP {A} x y t i = {!!}
+
+retr-lemma : (a : A) (d : D (into a)) → PathP (λ i → (D ∘ into) (iret a i)) (subst D (sym (isec (into a))) d) d
+retr-lemma a d i = hcomp {!!} (transport  (λ j → D (snd (intoEq .equiv-proof (into a) .snd (a , (λ i₂ → into a)) i) (~ j)))  d)
+
+blah : (a : A) → fst (intoEq .equiv-proof (into a)) ≡ (a , (λ _ → into a))
+blah a = intoEq .equiv-proof (into a) .snd (a , (λ _ → into a))
+
+blah' : (a : A) → fst (intoEq .equiv-proof (into a)) ≡ (a , (λ _ → into a))
+blah' a = {!intoEq .equiv-proof (into a) .snd !}
+
+out-fact : (a' : A') → outo a' ≡ intoEq .equiv-proof a' .fst .fst
+out-fact a' i = outo a'
+
+ret-fact : (a : A) → iret a ≡ λ i → fst (intoEq .equiv-proof (into a) .snd (a , (λ _ → into a)) i )
+ret-fact a i = iret a
+
+sec-fact : (a' : A') → isec a' ≡ intoEq .equiv-proof a' .fst .snd
+sec-fact a' i = isec a'
+
+-- ctrP = symP (transport-filler (λ i → B (sym α i)) b)
 
 retr-mine : (p : Σ A (D ∘ into)) → back (fore p) ≡ p
 retr-mine (a , d) i =  iret a i , retr (a , d) i .snd
