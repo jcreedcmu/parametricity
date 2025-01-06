@@ -161,7 +161,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     Bundle2 = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → (Afore bm) t e (f1 r1 e) ≡ (Rfore cm) r1 t)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → Gel2.gpoint (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
 
     -- The next main step is replacing Gel2 t in the presence of e : E t with A2 e.
     thm12 : Bundle1 ≅ Bundle2
