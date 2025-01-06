@@ -62,90 +62,37 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
       boundaryMap : (e : E t) (a1 : A1 e) → Gel2 t
       compat : (e : E t) (r1 : R1) → boundaryMap e (f1 r1 e) ≡ coarseMap r1
 
-    BundleP : T → Set ℓ
-    BundleP t = Threep
-       (R1 → Gel2 t)
-       ((e : E t) (a1 : A1 e) → Gel2 t)
-       (λ cm bm → (e : E t) (r1 : R1) → bm e (f1 r1 e) ≡ cm r1)
+    BundleP : Set ℓ
+    BundleP = Threep
+       (R1 → (t : T) → Gel2 t)
+       ((t : T) → (e : E t) (a1 : A1 e) → Gel2 t)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ cm r1 t)
 
     module ≅0 (t : T) where
      open Interval.Gel.main.gel
      open Threep
 
-     fore : (Gel1 t → Gel2 t) → BundleP t
+     fore : ((t : T) → Gel1 t → Gel2 t) → BundleP
      fore uniform = record {
-         fa = λ r1 → uniform (gstrand r1) ;
-         fb = λ e a1 → uniform (gpoint a1) ;
-         fc = λ e r1 i → uniform (gpath {e = e} r1 i)
+         fa = λ r1 t → uniform t (gstrand r1) ;
+         fb = λ t e a1 → uniform t (gpoint a1) ;
+         fc = λ t e r1 i → uniform t (gpath {e = e} r1 i)
          }
-     back : BundleP t → (Gel1 t → Gel2 t)
-     back b (gstrand r1) = b .fa r1
-     back b (gpoint {e} a1) = b .fb e a1
-     back b (gpath {e} r1 i) = b .fc e r1 i
+     back : BundleP → (t : T) → (Gel1 t → Gel2 t)
+     back b t (gstrand r1) = b .fa r1 t
+     back b t (gpoint {e} a1) = b .fb t e a1
+     back b t (gpath {e} r1 i) = b .fc t e r1 i
 
-     sect : (b : BundleP t) → fore (back b) ≡ b
+     sect : (b : BundleP) → fore (back b) ≡ b
      sect b i = b
 
-     retr : (u : Gel1 t → Gel2 t) → back (fore u) ≡ u
-     retr u i (gstrand r) = u (gstrand r)
-     retr u i (gpoint a) = u (gpoint a)
-     retr u i (gpath {e} r j) = u (gpath {e = e} r j)
+     retr : (u : (t : T) → Gel1 t → Gel2 t) → back (fore u) ≡ u
+     retr u i t (gstrand r) = u t (gstrand r)
+     retr u i t (gpoint a) = u t (gpoint a)
+     retr u i t (gpath {e} r j) = u t (gpath {e = e} r j)
 
-     thm : (Gel1 t → Gel2 t) ≅ BundleP t
+     thm : ((t : T) → Gel1 t → Gel2 t) ≅ BundleP
      thm = isoToEquiv (iso fore back sect retr)
-
-    module ≅1 (t : T) where
-     open Bundle
-     open Interval.Gel.main.gel
-
-     fore : (Gel1 t → Gel2 t) → Bundle t
-     fore uniform = record {
-         coarseMap = λ r1 → uniform (gstrand r1) ;
-         boundaryMap = λ e a1 → uniform (gpoint a1) ;
-         compat = λ e r1 i → uniform (gpath {e = e} r1 i)
-         }
-
-     back : Bundle t → (Gel1 t → Gel2 t)
-     back b (gstrand r1) = b .coarseMap r1
-     back b (gpoint {e} a1) = b .boundaryMap e a1
-     back b (gpath {e} r1 i) = b .compat e r1 i
-
-     sect : (b : Bundle t) → fore (back b) ≡ b
-     sect b i = b
-
-     retr : (u : Gel1 t → Gel2 t) → back (fore u) ≡ u
-     retr u i (gstrand r) = u (gstrand r)
-     retr u i (gpoint a) = u (gpoint a)
-     retr u i (gpath {e} r j) = u (gpath {e = e} r j)
-
-     thm : (Gel1 t → Gel2 t) ≅ Bundle t
-     thm = isoToEquiv (iso fore back sect retr)
-
-    record Bundle2 : Set ℓ where
-     field
-      coarseMap : R1 → (t : T) → Gel2 t
-      boundaryMap : (t : T) (e : E t) (a1 : A1 e) → Gel2 t
-      compat : (t : T) (e : E t) (r1 : R1) → boundaryMap t e (f1 r1 e) ≡ coarseMap r1 t
-
-    module ≅2 where
-     open Interval.Gel.main.gel
-
-     fore : ((t : T) → Bundle t) → Bundle2
-     fore tb = record {
-       coarseMap = λ r1 t → tb t .Bundle.coarseMap r1 ;
-       boundaryMap = λ t e a1 → tb t .Bundle.boundaryMap e a1 ;
-       compat = λ t e r1 i → tb t .Bundle.compat e r1 i
-       }
-
-     back : Bundle2 → ((t : T) → Bundle t)
-     back b2 t = record {
-       coarseMap = λ r1 → b2 .Bundle2.coarseMap r1 t ;
-       boundaryMap = λ e a1 → b2 .Bundle2.boundaryMap t e a1 ;
-       compat = λ e r1 i → b2 .Bundle2.compat t e r1 i
-       }
-
-     thm : ((t : T) → Bundle t) ≅ Bundle2
-     thm = isoToEquiv (iso fore back (λ b i → b) (λ u i → u))
 
     cvtR2 : R2 → (t : T) → Gel2 t
     cvtR2 r2 t = Gel2.gstrand r2
