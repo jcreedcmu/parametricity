@@ -31,9 +31,11 @@ module _ {ℓ : Level} (A : Set ℓ) (B : Set ℓ) (C : A → B → Set ℓ) whe
    fc : C fa fb
 
 module _ {ℓ : Level} (A A' : Set ℓ) (B : Set ℓ) (C : A → B → Set ℓ) -- needs more level flexibility? idk
-         (f : A' → A) (fEq : isEquiv f)
+         (fiso : A' ≅ A)
          where
  private
+  f = fiso .fst
+  fEq = fiso .snd
   finv = invIsEq fEq
 
   fore : Threep A B C → Threep A' B (λ a b → C (f a) b)
