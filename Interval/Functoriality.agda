@@ -12,6 +12,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Interval.Axioms
+open import Interval.ThreePush
 open import Function.Base
 import Interval.Gel
 
@@ -60,6 +61,38 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
       coarseMap : R1 → Gel2 t
       boundaryMap : (e : E t) (a1 : A1 e) → Gel2 t
       compat : (e : E t) (r1 : R1) → boundaryMap e (f1 r1 e) ≡ coarseMap r1
+
+    BundleP : T → Set ℓ
+    BundleP t = Threep
+       (R1 → Gel2 t)
+       ((e : E t) (a1 : A1 e) → Gel2 t)
+       (λ cm bm → (e : E t) (r1 : R1) → bm e (f1 r1 e) ≡ cm r1)
+
+    module ≅0 (t : T) where
+     open Interval.Gel.main.gel
+     open Threep
+
+     fore : (Gel1 t → Gel2 t) → BundleP t
+     fore uniform = record {
+         fa = λ r1 → uniform (gstrand r1) ;
+         fb = λ e a1 → uniform (gpoint a1) ;
+         fc = λ e r1 i → uniform (gpath {e = e} r1 i)
+         }
+     back : BundleP t → (Gel1 t → Gel2 t)
+     back b (gstrand r1) = b .fa r1
+     back b (gpoint {e} a1) = b .fb e a1
+     back b (gpath {e} r1 i) = b .fc e r1 i
+
+     sect : (b : BundleP t) → fore (back b) ≡ b
+     sect b i = b
+
+     retr : (u : Gel1 t → Gel2 t) → back (fore u) ≡ u
+     retr u i (gstrand r) = u (gstrand r)
+     retr u i (gpoint a) = u (gpoint a)
+     retr u i (gpath {e} r j) = u (gpath {e = e} r j)
+
+     thm : (Gel1 t → Gel2 t) ≅ BundleP t
+     thm = isoToEquiv (iso fore back sect retr)
 
     module ≅1 (t : T) where
      open Bundle
