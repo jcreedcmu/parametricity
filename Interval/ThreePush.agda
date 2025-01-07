@@ -87,3 +87,32 @@ module _ {ℓ : Level} (A : Set ℓ) (B B' : Set ℓ) (C : A → B → Set ℓ) 
 
  congB : Threep A B C ≅ Threep A B' (λ a b → C a (f b))
  congB = isoToEquiv (iso fore back sect retr)
+
+
+module _ {ℓ : Level} (A : Set ℓ) (B : Set ℓ) (C C' : A → B → Set ℓ)
+         (fiso : {a : A} {b : B} → C' a b ≅ C a b)
+         where
+ private
+  f : {a : A} {b : B} → C' a b → C a b
+  f = fiso .fst
+
+  fEq : {a : A} {b : B} → isEquiv (f {a} {b})
+  fEq = fiso .snd
+
+  finv : {a : A} {b : B} → C a b → C' a b
+  finv = invIsEq fEq
+
+  fore : Threep A B C → Threep A B C'
+  fore (thr fa fb fc) = thr fa fb (finv fc)
+
+  back : Threep A B C' → Threep A B C
+  back (thr fa fb fc) = thr fa fb (f fc)
+
+  sect : (t : Threep A B C') → fore (back t) ≡ t
+  sect (thr fa fb fc) i = thr fa fb (retIsEq fEq fc i)
+
+  retr : (t : Threep A B C) → back (fore t) ≡ t
+  retr (thr fa fb fc) i = thr fa fb (secIsEq fEq fc i)
+
+ congC : Threep A B C ≅ Threep A B C'
+ congC = isoToEquiv (iso fore back sect retr)
