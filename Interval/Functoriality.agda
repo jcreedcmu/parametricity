@@ -188,6 +188,10 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
 
-    -- -- The provability of this depends on the exact nature of the isomorphism in Endpoints.agda
-    -- subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
-    -- subgoal = {!!}
+
+    -- This lemma depends crucially on the normalization behavior of cvtA2
+    subgoal' : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  Gel2.gstrand r2 ≡ cvtA2 e (f2 r2 e)
+    subgoal' t e r2 a2 i = Gel2.gpath {e = e} r2 (~ i)
+
+    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
+    subgoal t e r2 a2  = cong (invIsEq (≅A2 e)) (subgoal' t e r2 a2) ∙ retIsEq (≅A2 e) (f2 r2 e)
