@@ -45,13 +45,18 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    sect : {t : T} → (g : Σ[ e ∈ E t ] A e) → fore (back g) ≡ g
    sect s i = s
 
+   lemma : (r : R) (t : T) (e e' : E t) →
+           Square (λ j → gpoint (f r (EndIsProp t e' e j))) (λ j → gpath {e = e'} r j)
+                  (λ i → gpoint (f r e')) (λ i → gpath {e = e} r i)
+   lemma = {!!}
+
    retr : {t : T} → (g : Σ[ e ∈ E t ] Gel t) → back (fore g) ≡ g
    retr (e , gstrand r) i = e , (gpath {e = e}r i)
    retr {t} (e , gpoint {e = e'} a) i = EndIsProp t e' e i , gpoint a
-   retr {t} (e , gpath {e = e'} r j) i = EndIsProp t e' e (i ∨ j) , {!!}
+   retr {t} (e , gpath {e = e'} r j) i = EndIsProp t e' e (i ∨ j) , lemma r t e e' i j
 
   sumeq : {t : T} → (Σ[ e ∈ E t ] Gel t) ≅ (Σ[ e ∈ E t ] A e)
-  sumeq =  isoToEquiv (Cubical.Foundations.Isomorphism.iso fore {!!} {!!} {!!})
+  sumeq =  isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back sect retr)
 
   Gel-endpoints : {t : T} (e : E t)→ Gel t ≅ A e
   Gel-endpoints {t} e = PropSigmaReduce.thm  (E t) (λ _ → Gel t) A (EndIsProp t) sumeq e
