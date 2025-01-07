@@ -69,5 +69,23 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   sumeq : {t : T} → (Σ[ e ∈ E t ] Gel t) ≅ (Σ[ e ∈ E t ] A e)
   sumeq =  isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back sect retr)
 
-  Gel-endpoints : {t : T} (e : E t)→ Gel t ≅ A e
+  Gel-endpoints : {t : T} (e : E t) → Gel t ≅ A e
   Gel-endpoints {t} e = PropSigmaReduce.thm  (E t) (λ _ → Gel t) A (EndIsProp t) sumeq e
+
+-- -- Oof the following duct-tape job is not working out easy
+
+--   chosen-fore : {t : T} (e : E t) → Gel t → A e
+--   chosen-fore e g = funIsEq (Gel-endpoints e .snd) g
+
+--   chosen-back : {t : T} (e : E t) → A e → Gel t
+--   chosen-back e a = gpoint a
+
+-- --  chosen-back=back : {t : T} (e : E t) (a : A e) → chosen-back e a ≡ invIsEq (Gel-endpoints e .snd) a
+--   chosen-back=back : {t : T} (e : E t) (a : A e) → gpoint a ≡ gpoint (transp (λ i₁ → A (transp (λ j → Σ S (λ x → end x ≡ t)) (~ i₁) e)) i0 a)
+--   chosen-back=back e a i =  gpoint {e = {!!}} {!!}
+
+--   chosen-sect : {t : T} (e : E t) (a : A e) → chosen-fore e (chosen-back e a) ≡ a
+--   chosen-sect e a = {!!}
+
+--   Chosen-endpoints : {t : T} (e : E t) → isEquiv (chosen-fore e)
+--   Chosen-endpoints e = isoToEquiv (iso (chosen-fore e) (chosen-back e) {!!} {!!}) .snd
