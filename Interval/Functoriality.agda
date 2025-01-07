@@ -115,10 +115,10 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     cvtA2' : {t : T} (e : E t) → A2 e → Gel2 t
     cvtA2' e = invIsEq (Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e .snd)
 
-    foo : {t : T} (e : E t) (a2 : A2 e) → {!!}
-    -- XXX This isn't definitionally equal to gpoint a2 as expected,
-    -- need to rework proof
-    foo e a2 = {!cvtA2' e a2!}
+    -- foo : {t : T} (e : E t) (a2 : A2 e) → {!!}
+    -- -- XXX This isn't definitionally equal to gpoint a2 as expected,
+    -- -- need to rework proof
+    -- foo e a2 = {!cvtA2' e a2!}
 
     ≅A2' : {t : T} (e : E t) → Gel2 t ≅ A2 e
     ≅A2' e = Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e
@@ -199,6 +199,6 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
 
-    -- The provability of this depends on the exact nature of the isomorphism in Endpoints.agda
-    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
-    subgoal = {!!}
+    -- -- The provability of this depends on the exact nature of the isomorphism in Endpoints.agda
+    -- subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
+    -- subgoal = {!!}

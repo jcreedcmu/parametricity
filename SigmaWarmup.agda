@@ -22,7 +22,7 @@ import Interval.Gel
  - Practicing substituting isomorphisms into records that
  - constitute maps out of pushouts.
  -}
-module Interval.SigmaWarmup (A : Set) (A' : Set)
+module SigmaWarmup (A : Set) (A' : Set)
   (into : A → A') (intoEq : isEquiv into) (D : A' → Set)
   where
 
