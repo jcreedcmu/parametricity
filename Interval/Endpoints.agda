@@ -45,47 +45,29 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   open Interval.Gel.main.gel {ℓ1} {ℓ2} D S R f
 
   private
-   fore : {t : T} → (Σ[ e ∈ E t ] Gel t) → (Σ[ e ∈ E t ] A e)
-   fore (e , gstrand r) = e , (f r e)
-   fore (e , gpoint {e = e'} a) = e' , a
-   fore {t} (e , gpath {e = e'} r i) = EndIsProp t e' e i , f r (EndIsProp t e' e i)
+   fore : {t : T} (e : E t) → Gel t → (Σ[ e ∈ E t ] A e)
+   fore e (gstrand r) = e , (f r e)
+   fore e (gpoint {e = e'} a) = e' , a
+   fore {t} e (gpath {e = e'} r i) = EndIsProp t e' e i , f r (EndIsProp t e' e i)
 
-   back : {t : T} → (Σ[ e ∈ E t ] A e) → (Σ[ e ∈ E t ] Gel t)
-   back (e , a) = (e , gpoint a)
+   back : {t : T} → Σ (E t) A → Gel t
+   back (e , a) = gpoint a
 
-   sect : {t : T} → (g : Σ[ e ∈ E t ] A e) → fore (back g) ≡ g
-   sect s i = s
+   sect : {t : T} (e : E t) → (g : Σ (E t) A) → fore e (back g) ≡ g
+   sect e s i = s
 
    retr-lemma : (r : R) (t : T) (e e' : E t) →
            Square (λ j → gpoint (f r (EndIsProp t e' e j))) (λ j → gpath {e = e'} r j)
                   (λ i → gpoint (f r e')) (λ i → gpath {e = e} r i)
    retr-lemma r t e e' = lemma-abs (E t) (Gel t) (λ e → gpoint (f r e)) e e' (EndIsProp t e' e) (gstrand r) (λ e → gpath {e = e} r)
 
-   retr : {t : T} → (g : Σ[ e ∈ E t ] Gel t) → back (fore g) ≡ g
-   retr (e , gstrand r) i = e , (gpath {e = e}r i)
-   retr {t} (e , gpoint {e = e'} a) i = EndIsProp t e' e i , gpoint a
-   retr {t} (e , gpath {e = e'} r j) i = EndIsProp t e' e (i ∨ j) , retr-lemma r t e e' i j
+   retr : {t : T} (e : E t) (g : Gel t) → back (fore e g) ≡ g
+   retr e (gstrand r) i = (gpath {e = e} r i)
+   retr {t} e (gpoint {e = e'} a) i = gpoint a
+   retr {t} e (gpath {e = e'} r j) i = retr-lemma r t e e' i j
 
-  sumeq : {t : T} → (Σ[ e ∈ E t ] Gel t) ≅ (Σ[ e ∈ E t ] A e)
-  sumeq =  isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back sect retr)
+  sumeq : {t : T} (e : E t) → Gel t ≅ Σ (E t) A
+  sumeq e =  isoToEquiv (Cubical.Foundations.Isomorphism.iso (fore e) back (sect e) (retr e))
 
-  Gel-endpoints : {t : T} (e : E t) → Gel t ≅ A e
-  Gel-endpoints {t} e = PropSigmaReduce.thm  (E t) (λ _ → Gel t) A (EndIsProp t) sumeq e
-
--- -- Oof the following duct-tape job is not working out easy
-
---   chosen-fore : {t : T} (e : E t) → Gel t → A e
---   chosen-fore e g = funIsEq (Gel-endpoints e .snd) g
-
---   chosen-back : {t : T} (e : E t) → A e → Gel t
---   chosen-back e a = gpoint a
-
--- --  chosen-back=back : {t : T} (e : E t) (a : A e) → chosen-back e a ≡ invIsEq (Gel-endpoints e .snd) a
---   chosen-back=back : {t : T} (e : E t) (a : A e) → gpoint a ≡ gpoint (transp (λ i₁ → A (transp (λ j → Σ S (λ x → end x ≡ t)) (~ i₁) e)) i0 a)
---   chosen-back=back e a i =  gpoint {e = {!!}} {!!}
-
---   chosen-sect : {t : T} (e : E t) (a : A e) → chosen-fore e (chosen-back e a) ≡ a
---   chosen-sect e a = {!!}
-
---   Chosen-endpoints : {t : T} (e : E t) → isEquiv (chosen-fore e)
---   Chosen-endpoints e = isoToEquiv (iso (chosen-fore e) (chosen-back e) {!!} {!!}) .snd
+  -- Gel-endpoints : {t : T} (e : E t) → Gel t ≅ A e
+  -- Gel-endpoints {t} e = PropSigmaReduce.thm  (E t) (λ _ → Gel t) A (EndIsProp t) sumeq e
