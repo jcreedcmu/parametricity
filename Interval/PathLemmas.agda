@@ -53,3 +53,31 @@ piIsoCong {A = A} {B} {B'} eq = isoToEquiv (iso fore back sect retr) where
 
  retr : (f : (a : A) → B a) → back (fore f) ≡ f
  retr f i a = retIsEq (eq a .snd) (f a) i
+
+cancelEquiv : ∀ {ℓ} {A B : Set ℓ} (f : A → B) {a1 a2 : A}
+              (eq : isEquiv f) →
+              (f a1 ≡ f a2) ≅ (a1 ≡ a2)
+cancelEquiv f {a1} {a2} eq = isoToEquiv (iso fore back sect retr) where
+  invf = invIsEq eq
+
+  fore : (f a1 ≡ f a2) → (a1 ≡ a2)
+  fore p = sym (retIsEq eq a1) ∙∙ cong invf p ∙∙ retIsEq eq a2
+
+  back : a1 ≡ a2 → (f a1 ≡ f a2)
+  back = cong f
+
+  sect : (q : a1 ≡ a2) → fore (back q) ≡ q
+  sect q i j = hcomp (λ k → λ {
+    (i = i0) → doubleCompPath-filler (sym (retIsEq eq a1)) (cong invf (cong f q)) (retIsEq eq a2) k j ;
+    (i = i1) → q j ;
+    (j = i0) → retIsEq eq a1 (i ∨ k) ;
+    (j = i1) → retIsEq eq a2 (i ∨ k)
+   }) (retIsEq eq (q j) i)
+
+  retr : (q : f a1 ≡ f a2) → back (fore q) ≡ q
+  retr q i j = hcomp (λ k → λ {
+    (i = i0) → f (doubleCompPath-filler (sym (retIsEq eq a1)) (cong invf q) (retIsEq eq a2) k j)  ;
+    (i = i1) → secIsEq eq (q j) k  ;
+    (j = i0) → commPathIsEq eq a1 (~ i) k ;
+    (j = i1) → commPathIsEq eq a2 (~ i) k
+   }) (f (invf (q j)) )
