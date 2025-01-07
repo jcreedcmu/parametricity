@@ -19,6 +19,10 @@ import PropSigmaReduce
 {-
  - The point of this is to show that when t is an endpoint (i.e. E t holds)
  - then the type Gel t is isomorphic to the prescribed endpoint set.
+ -
+ - This file, as opposed to Endpoints.agda, was supposed to be a more
+ - direct proof, not involving PropSigmaReduce, but my brain is too
+ - small to contain it I think.
  -}
 
 module Interval.Endpoints2 where
