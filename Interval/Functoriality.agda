@@ -104,25 +104,14 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     cvtR2 r2 t = Gel2.gstrand r2
 
     cvtA2 : {t : T} (e : E t) → A2 e → Gel2 t
-    cvtA2 e a2 = Gel2.gpoint a2
+    cvtA2 e = Interval.Endpoints.main.endpointFunc D S {A = A2} R2 f2 e
 
-    -- XXX these should be inputs, not postulates
+    ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
+    ≅A2 e = Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e
+
+    -- XXX this should be defined, not a postulate
     postulate
       ≅R2 : isEquiv cvtR2
-      ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
--- {t : T} (e : E t) → isEquiv (cvtA2 e)
-
-    cvtA2' : {t : T} (e : E t) → A2 e → Gel2 t
-    cvtA2' e = invIsEq (Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e .snd)
-
-    -- foo : {t : T} (e : E t) (a2 : A2 e) → {!!}
-    -- -- XXX This isn't definitionally equal to gpoint a2 as expected,
-    -- -- need to rework proof
-    -- foo e a2 = {!cvtA2' e a2!}
-
-    ≅A2' : {t : T} (e : E t) → Gel2 t ≅ A2 e
-    ≅A2' e = Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e
-
 
     Rfore : (R1 → R2) → (R1 → (t : T) → Gel2 t)
     Rfore k r1 = cvtR2 (k r1)
