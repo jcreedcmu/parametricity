@@ -213,8 +213,18 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        eq23
 
     -- This is the real thing I want to obtain:
-    Bundle100 : Set ℓ
-    Bundle100 = Threep
+    Bundle4 : Set ℓ
+    Bundle4 = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
+
+    thm34 : Bundle3 ≅ Bundle4
+    thm34 = congC
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
+       λ cm bm → piIsoCong (λ t →
+                  piIsoCong (λ e →
+                  piIsoCong (λ r1 → cancelEquiv (cvtA2 e) (≅A2 e) )))

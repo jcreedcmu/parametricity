@@ -56,8 +56,8 @@ piIsoCong {A = A} {B} {B'} eq = isoToEquiv (iso fore back sect retr) where
 
 cancelEquiv : ∀ {ℓ} {A B : Set ℓ} (f : A → B) {a1 a2 : A}
               (eq : isEquiv f) →
-              (f a1 ≡ f a2) ≅ (a1 ≡ a2)
-cancelEquiv f {a1} {a2} eq = isoToEquiv (iso fore back sect retr) where
+              (a1 ≡ a2) ≅ (f a1 ≡ f a2)
+cancelEquiv f {a1} {a2} eq = isoToEquiv (iso back fore retr sect) where
   invf = invIsEq eq
 
   fore : (f a1 ≡ f a2) → (a1 ≡ a2)
