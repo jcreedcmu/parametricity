@@ -19,15 +19,21 @@ import PropSigmaReduce
 {-
  - The point of this is to show that when t is an endpoint (i.e. E t holds)
  - then the type Gel t is isomorphic to the prescribed endpoint set.
- - FIXME: adapt proof in ../prop-family-sigma.agda
  -}
 
 module Interval.Endpoints where
 
-lemma-abs : ∀ {ℓ} (E B : Set ℓ) (p : E → B) (e e' : E) (q : e' ≡ e) (b : B) (h : (e : E) → p e ≡ b) →
-        Square (λ j → p (q j)) (λ j → h e' j)
-               (λ i → p e') (λ i → h e i)
-lemma-abs = {!!}
+-- A slightly abstracted form of retr-lemma below
+private
+ lemma-abs : ∀ {ℓ} (E B : Set ℓ) (p : E → B) (e e' : E) (q : e' ≡ e) (b : B) (h : (e : E) → p e ≡ b) →
+         Square (λ j → p (q j)) (λ j → h e' j)
+                (λ i → p e') (λ i → h e i)
+ lemma-abs E B p e e' q b h i j = hcomp (λ k → λ {
+    (i = i0) → p (q j) ;
+    (j = i0) → h e' (i ∧ ~ k) ;
+    (i = i1) → h e' (j ∨ ~ k) ;
+    (j = i1) → h e i
+  }) (h (q j) i)
 
 module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
@@ -50,15 +56,15 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    sect : {t : T} → (g : Σ[ e ∈ E t ] A e) → fore (back g) ≡ g
    sect s i = s
 
-   lemma : (r : R) (t : T) (e e' : E t) →
+   retr-lemma : (r : R) (t : T) (e e' : E t) →
            Square (λ j → gpoint (f r (EndIsProp t e' e j))) (λ j → gpath {e = e'} r j)
                   (λ i → gpoint (f r e')) (λ i → gpath {e = e} r i)
-   lemma r t e e' = lemma-abs (E t) (Gel t) (λ e → gpoint (f r e)) e e' (EndIsProp t e' e) (gstrand r) (λ e → gpath {e = e} r)
+   retr-lemma r t e e' = lemma-abs (E t) (Gel t) (λ e → gpoint (f r e)) e e' (EndIsProp t e' e) (gstrand r) (λ e → gpath {e = e} r)
 
    retr : {t : T} → (g : Σ[ e ∈ E t ] Gel t) → back (fore g) ≡ g
    retr (e , gstrand r) i = e , (gpath {e = e}r i)
    retr {t} (e , gpoint {e = e'} a) i = EndIsProp t e' e i , gpoint a
-   retr {t} (e , gpath {e = e'} r j) i = EndIsProp t e' e (i ∨ j) , lemma r t e e' i j
+   retr {t} (e , gpath {e = e'} r j) i = EndIsProp t e' e (i ∨ j) , retr-lemma r t e e' i j
 
   sumeq : {t : T} → (Σ[ e ∈ E t ] Gel t) ≅ (Σ[ e ∈ E t ] A e)
   sumeq =  isoToEquiv (Cubical.Foundations.Isomorphism.iso fore back sect retr)
