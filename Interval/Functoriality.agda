@@ -13,6 +13,7 @@ open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Interval.Axioms
 open import Interval.ThreePush
+open import Interval.PathLemmas
 import Interval.Endpoints
 open import Function.Base
 import Interval.Gel
@@ -189,11 +190,27 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     Bundle3 = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → invA2 e (Gel2.gpoint (bm t e (f1 r1 e))) ≡ invA2 e (Gel2.gstrand (cm r1)))
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
+
+    -- This lemma depends crucially on the normalization behavior of cvtA2
+    eq23-lemma : {t : T} (e : E t) (r2 : R2)  →  cvtA2 e (f2 r2 e) ≡ Gel2.gstrand r2
+    eq23-lemma e r2 i = Gel2.gpath {e = e} r2 i
+
+    eq23 : (cm : (R1 → R2)) (bm : ((t : T) (e : E t) (a1 : A1 e) → A2 e)) →
+       ((t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
+     ≅ ((t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
+    eq23 cm bm = piIsoCong (λ t →
+                 piIsoCong (λ e →
+                 piIsoCong (λ r1 →
+                 extendByPath (eq23-lemma e (cm r1)))))
 
     thm23 : Bundle2 ≅ Bundle3
-    thm23 = {!!}
-
+    thm23 = congC
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
+       eq23
 
     -- This is the real thing I want to obtain:
     Bundle100 : Set ℓ
@@ -201,14 +218,3 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
-
-
-    -- This lemma depends crucially on the normalization behavior of cvtA2
-    subgoal' : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  Gel2.gstrand r2 ≡ cvtA2 e (f2 r2 e)
-    subgoal' t e r2 a2 i = Gel2.gpath {e = e} r2 (~ i)
-
-    subgoal'' : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invA2 e (Gel2.gstrand r2) ≡ invA2 e (cvtA2 e (f2 r2 e))
-    subgoal'' t e r2 a2 i = invA2 e (Gel2.gpath {e = e} r2 (~ i))
-
-    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invA2 e (Gel2.gstrand r2) ≡ f2 r2 e
-    subgoal t e r2 a2  = cong (invIsEq (≅A2 e)) (subgoal' t e r2 a2) ∙ retIsEq (≅A2 e) (f2 r2 e)

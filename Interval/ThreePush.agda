@@ -90,14 +90,14 @@ module _ {ℓ : Level} (A : Set ℓ) (B B' : Set ℓ) (C : A → B → Set ℓ) 
 
 
 module _ {ℓ : Level} (A : Set ℓ) (B : Set ℓ) (C C' : A → B → Set ℓ)
-         (fiso : {a : A} {b : B} → C' a b ≅ C a b)
+         (fiso : (a : A) (b : B) → C' a b ≅ C a b)
          where
  private
   f : {a : A} {b : B} → C' a b → C a b
-  f = fiso .fst
+  f = fiso _ _ .fst
 
   fEq : {a : A} {b : B} → isEquiv (f {a} {b})
-  fEq = fiso .snd
+  fEq = fiso _ _ .snd
 
   finv : {a : A} {b : B} → C a b → C' a b
   finv = invIsEq fEq
