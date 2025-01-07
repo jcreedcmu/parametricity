@@ -138,12 +138,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ (Rfore cm) r1 t)
     -- The next main step is replacing (t : T) → Gel2 t with R2
     thm01 : Bundle0 ≅ Bundle1
-    thm01 = congA
-       (R1 → (t : T) → Gel2 t)
-       (R1 → R2)
-       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ cm r1 t)
-       Riso
+    thm01 = congA _ _ _ _ Riso
 
     Afore : (((t : T) (e : E t) (a1 : A1 e) → A2 e))
          → (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))
@@ -172,12 +167,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
 
     -- The next main step is replacing Gel2 t in the presence of e : E t with A2 e.
     thm12 : Bundle1 ≅ Bundle2
-    thm12 = congB
-       (R1 → R2)
-       ((t : T) (e : E t) (a1 : A1 e) → Gel2 t)
-       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ (Rfore cm) r1 t)
-       Aiso
+    thm12 = congB _ _ _ _ Aiso
 
     -- At this point we've got ((t : T) → Gel1 t → Gel2 t) isomorphic
     -- to something that looks a lot like a relation homomorphism.
@@ -190,26 +180,16 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
-
     -- This lemma depends crucially on the normalization behavior of cvtA2
     eq23-lemma : {t : T} (e : E t) (r2 : R2)  →  cvtA2 e (f2 r2 e) ≡ Gel2.gstrand r2
     eq23-lemma e r2 i = Gel2.gpath {e = e} r2 i
 
-    eq23 : (cm : (R1 → R2)) (bm : ((t : T) (e : E t) (a1 : A1 e) → A2 e)) →
-       ((t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
-     ≅ ((t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
-    eq23 cm bm = piIsoCong (λ t →
+    thm23 : Bundle2 ≅ Bundle3
+    thm23 = congC _ _ _ _
+      λ cm bm → piIsoCong (λ t →
                  piIsoCong (λ e →
                  piIsoCong (λ r1 →
                  extendByPath (eq23-lemma e (cm r1)))))
-
-    thm23 : Bundle2 ≅ Bundle3
-    thm23 = congC
-       (R1 → R2)
-       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
-       eq23
 
     -- This is the real thing I want to obtain:
     Bundle4 : Set ℓ
@@ -219,11 +199,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
 
     thm34 : Bundle3 ≅ Bundle4
-    thm34 = congC
-       (R1 → R2)
-       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ cvtA2 e (f2 (cm r1) e))
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
+    thm34 = congC _ _ _ _
        λ cm bm → piIsoCong (λ t →
                   piIsoCong (λ e →
                   piIsoCong (λ r1 → cancelEquiv (cvtA2 e) (≅A2 e) )))
