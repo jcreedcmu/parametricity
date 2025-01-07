@@ -50,7 +50,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     module toOpen1 = Interval.Gel.main.gel {ℓ} {ℓ} D S R1 f1
     open toOpen1 renaming (Gel to Gel1 ; gstrand to gstrand1 ; gpoint to gpoint1 ; gpath to gpath1 ; gel to gel1 )
     module toOpen2 = Interval.Gel.main.gel {ℓ} {ℓ} D S R2 f2
-    open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 )
+    open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 ; gelIsEquiv to gel2IsEquiv )
 
     ungel1 : ((t : T) → Gel1 t) → R1
     ungel1 = toOpen1.ungel disc-R1 disc-EA1 disc-ER1
@@ -102,7 +102,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
      thm = isoToEquiv (iso fore back sect retr)
 
     cvtR2 : R2 → (t : T) → Gel2 t
-    cvtR2 r2 t = Gel2.gstrand r2
+    cvtR2 r2 = gel2 r2
 
     cvtA2 : {t : T} (e : E t) → A2 e → Gel2 t
     cvtA2 e = Interval.Endpoints.main.endpointFunc D S {A = A2} R2 f2 e
@@ -113,9 +113,8 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     invA2 : {t : T} (e : E t) → Gel2 t → A2 e
     invA2 e = invIsEq (≅A2 e)
 
-    -- XXX this should be defined, not a postulate
-    postulate
-      ≅R2 : isEquiv cvtR2
+    ≅R2 : isEquiv cvtR2
+    ≅R2 = gel2IsEquiv disc-R2 disc-EA2 disc-ER2
 
     Rfore : (R1 → R2) → (R1 → (t : T) → Gel2 t)
     Rfore k r1 = cvtR2 (k r1)

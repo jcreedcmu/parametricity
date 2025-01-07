@@ -131,3 +131,6 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
+
+     gelIsEquiv : isEquiv gel
+     gelIsEquiv = isoToEquiv (iso gel ungel gelβ gelη) .snd
