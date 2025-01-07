@@ -177,3 +177,14 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     -- The only problem is the compatibility relation involves gel.
     -- We should be able to apply some congruences and (co)units to get
     -- rid of that.
+
+    -- This is the real thing I want to obtain:
+    Bundle3 : Set ℓ
+    Bundle3 = Threep
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
+
+    -- The provability of this depends on the exact nature of the isomorphism in Endpoints.agda
+    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
+    subgoal = {!!}
