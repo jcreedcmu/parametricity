@@ -14,7 +14,7 @@ open import Cubical.Relation.Nullary
 open import Interval.Axioms
 open import Function.Base
 import Interval.Gel
-import PropSigmaReduce
+import Interval.PropSigmaReduce
 
 {-
  - The point of this is to show that when t is an endpoint (i.e. E t holds)
@@ -66,8 +66,11 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    retr {t} e (gpoint {e = e'} a) i = gpoint a
    retr {t} e (gpath {e = e'} r j) i = retr-lemma r t e e' i j
 
-  sumeq : {t : T} (e : E t) → Gel t ≅ Σ (E t) A
-  sumeq e =  isoToEquiv (Cubical.Foundations.Isomorphism.iso (fore e) back (sect e) (retr e))
+  sumeq : {t : T} (e : E t) → Σ (E t) A ≅ Gel t
+  sumeq e =  isoToEquiv (Cubical.Foundations.Isomorphism.iso back (fore e) (retr e) (sect e))
 
-  -- Gel-endpoints : {t : T} (e : E t) → Gel t ≅ A e
-  -- Gel-endpoints {t} e = PropSigmaReduce.thm  (E t) (λ _ → Gel t) A (EndIsProp t) sumeq e
+  endpointFunc : {t : T} (e : E t) → A e → Gel t
+  endpointFunc e a = gpoint a
+
+  Gel-endpoints : {t : T} (e : E t) → isEquiv (endpointFunc e)
+  Gel-endpoints {t} e = Interval.PropSigmaReduce.thm  (E t) A (Gel t) (EndIsProp t) endpointFunc (sumeq e .snd) e
