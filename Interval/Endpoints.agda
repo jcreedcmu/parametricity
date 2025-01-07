@@ -24,6 +24,11 @@ import PropSigmaReduce
 
 module Interval.Endpoints where
 
+lemma-abs : ∀ {ℓ} (E B : Set ℓ) (p : E → B) (e e' : E) (q : e' ≡ e) (b : B) (h : (e : E) → p e ≡ b) →
+        Square (λ j → p (q j)) (λ j → h e' j)
+               (λ i → p e') (λ i → h e i)
+lemma-abs = {!!}
+
 module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
   ℓ = ℓ-max ℓ1 ℓ2
@@ -48,7 +53,7 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    lemma : (r : R) (t : T) (e e' : E t) →
            Square (λ j → gpoint (f r (EndIsProp t e' e j))) (λ j → gpath {e = e'} r j)
                   (λ i → gpoint (f r e')) (λ i → gpath {e = e} r i)
-   lemma = {!!}
+   lemma r t e e' = lemma-abs (E t) (Gel t) (λ e → gpoint (f r e)) e e' (EndIsProp t e' e) (gstrand r) (λ e → gpath {e = e} r)
 
    retr : {t : T} → (g : Σ[ e ∈ E t ] Gel t) → back (fore g) ≡ g
    retr (e , gstrand r) i = e , (gpath {e = e}r i)
