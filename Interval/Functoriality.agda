@@ -109,6 +109,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
     ≅A2 e = Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e
 
+    invA2 : {t : T} (e : E t) → Gel2 t → A2 e
+    invA2 e = invIsEq (≅A2 e)
+
     -- XXX this should be defined, not a postulate
     postulate
       ≅R2 : isEquiv cvtR2
@@ -148,7 +151,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
 
     Aback : (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))
          → (((t : T) (e : E t) (a1 : A1 e) → A2 e))
-    Aback k t e a1 = invIsEq (≅A2 e) (k t e a1)
+    Aback k t e a1 = invA2 e (k t e a1)
 
     Asect : (z : (((t : T) (e : E t) (a1 : A1 e) → Gel2 t))) → Afore (Aback z) ≡ z
     Asect z i t e a1 = secIsEq (≅A2 e) (z t e a1) i
@@ -164,7 +167,8 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     Bundle2 = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
-       (λ cm bm → (t : T) (e : E t) (r1 : R1) → Gel2.gpoint (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → cvtA2 e (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1))
+--     (λ cm bm → (t : T) (e : E t) (r1 : R1) → Gel2.gpoint (bm t e (f1 r1 e)) ≡ Gel2.gstrand (cm r1)) -- ← def'n-equivalently
 
     -- The next main step is replacing Gel2 t in the presence of e : E t with A2 e.
     thm12 : Bundle1 ≅ Bundle2
@@ -181,9 +185,19 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     -- We should be able to apply some congruences and (co)units to get
     -- rid of that.
 
-    -- This is the real thing I want to obtain:
     Bundle3 : Set ℓ
     Bundle3 = Threep
+       (R1 → R2)
+       ((t : T) (e : E t) (a1 : A1 e) → A2 e)
+       (λ cm bm → (t : T) (e : E t) (r1 : R1) → invA2 e (Gel2.gpoint (bm t e (f1 r1 e))) ≡ invA2 e (Gel2.gstrand (cm r1)))
+
+    thm23 : Bundle2 ≅ Bundle3
+    thm23 = {!!}
+
+
+    -- This is the real thing I want to obtain:
+    Bundle100 : Set ℓ
+    Bundle100 = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
@@ -193,5 +207,8 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     subgoal' : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  Gel2.gstrand r2 ≡ cvtA2 e (f2 r2 e)
     subgoal' t e r2 a2 i = Gel2.gpath {e = e} r2 (~ i)
 
-    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invIsEq (≅A2 e) (Gel2.gstrand r2) ≡ f2 r2 e
+    subgoal'' : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invA2 e (Gel2.gstrand r2) ≡ invA2 e (cvtA2 e (f2 r2 e))
+    subgoal'' t e r2 a2 i = invA2 e (Gel2.gpath {e = e} r2 (~ i))
+
+    subgoal : (t : T) (e : E t) (r2 : R2) (a2 : A2 e) →  invA2 e (Gel2.gstrand r2) ≡ f2 r2 e
     subgoal t e r2 a2  = cong (invIsEq (≅A2 e)) (subgoal' t e r2 a2) ∙ retIsEq (≅A2 e) (f2 r2 e)
