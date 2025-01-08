@@ -76,7 +76,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     -- (t : T) (e : E t) (a1 : A1 e) → ⋯
     -- In passing, we also commute the t-binder to the right of R1, which
     -- we'll need for future steps.
-    module ≅0 (t : T) where
+    module ≅0 where
      open Interval.Gel.main
      open Threep
 
@@ -193,14 +193,16 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
                  extendByPath (eq23-lemma e (cm r1)))))
 
     -- This is the real thing I want to obtain:
-    Bundle4 : Set ℓ
-    Bundle4 = Threep
+    RelHom : Set ℓ
+    RelHom = Threep
        (R1 → R2)
        ((t : T) (e : E t) (a1 : A1 e) → A2 e)
        (λ cm bm → (t : T) (e : E t) (r1 : R1) → bm t e (f1 r1 e) ≡ f2 (cm r1) e)
 
-    thm34 : Bundle3 ≅ Bundle4
-    thm34 = congC _ _ _ _
+    thm3R : Bundle3 ≅ RelHom
+    thm3R = congC _ _ _ _
        λ cm bm → piIsoCong (λ t →
                   piIsoCong (λ e →
                   piIsoCong (λ r1 → cancelEquiv (cvtA2 e) (≅A2 e) )))
+    thm : ((t : T) → Gel1 t → Gel2 t) ≅ RelHom
+    thm = compEquiv ≅0.thm (compEquiv thm01 (compEquiv thm12 (compEquiv thm23 thm3R)))
