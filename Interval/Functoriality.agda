@@ -16,7 +16,7 @@ open import Interval.ThreePush
 open import Interval.PathLemmas
 import Interval.Endpoints
 open import Function.Base
-import Interval.Gel
+open import Interval.Gel renaming (disc to discFor)
 
 {-
  - There remains some stuff to be formulated and proved here.
@@ -29,6 +29,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
  private
   T = D ▻ S
   E = End
+  disc = discFor D S
 
   module toOpen0 = Interval.Gel.main {ℓ} {ℓ} D S
   open toOpen0
@@ -47,9 +48,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
            (ah : {t : T} (e : E t) → A1 e → A2 e)
     where
 
-    module toOpen1 = Interval.Gel.main.gel {ℓ} {ℓ} D S R1 f1
+    module toOpen1 = Interval.Gel.main {ℓ} {ℓ} D S R1 f1
     open toOpen1 renaming (Gel to Gel1 ; gstrand to gstrand1 ; gpoint to gpoint1 ; gpath to gpath1 ; gel to gel1 )
-    module toOpen2 = Interval.Gel.main.gel {ℓ} {ℓ} D S R2 f2
+    module toOpen2 = Interval.Gel.main {ℓ} {ℓ} D S R2 f2
     open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 ; gelIsEquiv to gel2IsEquiv )
 
     ungel1 : ((t : T) → Gel1 t) → R1
@@ -76,14 +77,14 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
     -- In passing, we also commute the t-binder to the right of R1, which
     -- we'll need for future steps.
     module ≅0 (t : T) where
-     open Interval.Gel.main.gel
+     open Interval.Gel.main
      open Threep
 
      fore : ((t : T) → Gel1 t → Gel2 t) → Bundle0
      fore uniform = record {
-         fa = λ r1 t → uniform t (gstrand r1) ;
-         fb = λ t e a1 → uniform t (gpoint a1) ;
-         fc = λ t e r1 i → uniform t (gpath {e = e} r1 i)
+         fa = λ r1 t → uniform t (gstrand1 r1) ;
+         fb = λ t e a1 → uniform t (gpoint1 a1) ;
+         fc = λ t e r1 i → uniform t (gpath1 {e = e} r1 i)
          }
      back : Bundle0 → (t : T) → (Gel1 t → Gel2 t)
      back b t (gstrand r1) = b .fa r1 t
@@ -94,9 +95,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
      sect b i = b
 
      retr : (u : (t : T) → Gel1 t → Gel2 t) → back (fore u) ≡ u
-     retr u i t (gstrand r) = u t (gstrand r)
-     retr u i t (gpoint a) = u t (gpoint a)
-     retr u i t (gpath {e} r j) = u t (gpath {e = e} r j)
+     retr u i t (gstrand r) = u t (gstrand1 r)
+     retr u i t (gpoint a) = u t (gpoint1 a)
+     retr u i t (gpath {e} r j) = u t (gpath1 {e = e} r j)
 
      thm : ((t : T) → Gel1 t → Gel2 t) ≅ Bundle0
      thm = isoToEquiv (iso fore back sect retr)

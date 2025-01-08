@@ -42,7 +42,7 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   E = End
 
  module _ {A : {t : T} (e : E t) → Set ℓ} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
-  open Interval.Gel.main.gel {ℓ1} {ℓ2} D S R f
+  open Interval.Gel.main {ℓ1} {ℓ2} D S R f
 
   private
    fore : {t : T} (e : E t) → Gel t → (Σ[ e ∈ E t ] A e)

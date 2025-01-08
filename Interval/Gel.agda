@@ -22,7 +22,7 @@ module Interval.Gel where
 abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
 abort A ()
 
-module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
+module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
   ℓ = ℓ-max ℓ1 ℓ2
   T = D ▻ S
@@ -31,7 +31,7 @@ module main {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
  disc A = bridgeDiscrete T A
 
- module gel {A : {t : T} (e : E t) → Set ℓ} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
+ module main {A : {t : T} (e : E t) → Set ℓ} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
 
    data Gel (t : T) : Set ℓ where
         gstrand : (r : R) → Gel t
