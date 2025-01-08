@@ -30,21 +30,36 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
  D = R
  S = two
  T = T' D
- module _ (R : Set) (A : {t : T} (e : E t) → Set)
+ module stage1 (R : Set) (A : {t : T} (e : E t) → Set)
         (f : (r : R) {t : T} (e : E t) → A e) where
-  open Interval.Gel.main D S {A = A} R f
+  open Interval.Gel.main D S {A = A} R f renaming (ungel to ungel')
   RelHom = Interval.Functoriality.RelHom D S R R f f
-  FuncThm : ((t : T) → Gel t → Gel t) ≅ RelHom
-  -- XXX many unfulfilled discreteness obligations here
-  FuncThm = Interval.Functoriality.thm D S R R {!!} {!!} {!!} {!!} {!!} {!!} f f
-  rthm : (zr : R) (zs : RelHom) → (t : T) → Gel t
-  rthm zr zs t = cnat (Gel t) (gel zr t) (invIsEq (FuncThm .snd) zs t)
 
--- rthm : (cnat : (X : Set) → X → (X → X) → X) →
---        (R : Set) (A' : two → Set) (f : (r : R) (x : two) → A' x)
---        (z : (x : two) → A' x) (s : (x : two) → A' x → A' x)
---        (spres : (r : R) → {!!}
--- rthm = {!!}
+  -- XXX unfulfilled discreteness obligations here
+  disc-R : Interval.Gel.disc D S R
+  disc-R = {!!}
+
+  disc-EA : (t : T) → Interval.Gel.disc D S (Σ (E t) A)
+  disc-EA = {!!}
+
+  disc-ER : (t : T) → Interval.Gel.disc D S ((E t) × R)
+  disc-ER = {!!}
+
+  ungel = ungel' disc-R disc-EA disc-ER
+
+  FuncThm : ((t : T) → Gel t → Gel t) ≅ RelHom
+  FuncThm = Interval.Functoriality.thm D S R R disc-R disc-EA disc-ER disc-R disc-EA disc-ER f f
+  intoGel : (zr : R) (zs : RelHom) → (t : T) → Gel t
+  intoGel zr zs t = cnat (Gel t) (gel zr t) (invIsEq (FuncThm .snd) zs t)
+
+  intoR : (zr : R) (zs : RelHom) → R
+  intoR zr zs = ungel (intoGel zr zs)
+
+ module stage2 (R : Set) (A : two → Set) (f : (r : R) (x : two) → A x) where
+  -- RelHom = Interval.Functoriality.RelHom D S R R f f
+
+  -- intoR : (zr : R) (zs : RelHom) → R
+  -- intoR = ?
 
 fthm : (cnat : (X : Set) → X → (X → X) → X) →
       (A B : Set) (f : A → B) (za : A)
