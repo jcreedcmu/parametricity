@@ -50,5 +50,8 @@ prodPresDisc {A = A} {B} da db = isoToEquiv (iso fore back sect retr) .snd where
  back : ((t : T) → Σ A B) → Σ A B
  back tab = invIsEq da (fst ∘ tab) , invIsEq (db (invIsEq da (fst ∘ tab))) λ t → subst B (back-lemma tab t) (tab t .snd)
 
- sect = {!!}
- retr = {!!}
+ sect : (s : T → Σ A B) → fore (back s) ≡ s
+ sect s i t = back-lemma s t (~ i) , {!!}
+
+ retr : (s : Σ A B) → back (fore s) ≡ s
+ retr (a , b) i = retIsEq da a i , {!!}
