@@ -39,16 +39,17 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
   disc-R : Interval.Gel.disc D S R
   disc-R = {!!}
 
-  disc-EA : (t : T) → Interval.Gel.disc D S (Σ (E t) A)
-  disc-EA = {!!}
+  disc-A : (t : T) (e : E t) → Interval.Gel.disc D S (A e)
+  disc-A = {!!}
 
-  disc-ER : (t : T) → Interval.Gel.disc D S ((E t) × R)
-  disc-ER = {!!}
+  disc-E : (t : T) → Interval.Gel.disc D S (E t)
+  disc-E = {!!}
 
-  ungel = ungel' disc-R disc-EA disc-ER
+  ungel = ungel' disc-R disc-A disc-E
 
   FuncThm : ((t : T) → Gel t → Gel t) ≅ RelHom
-  FuncThm = Interval.Functoriality.thm D S R R disc-R disc-EA disc-ER disc-R disc-EA disc-ER f f
+  FuncThm = Interval.Functoriality.thm D S R R disc-E disc-R disc-A disc-R disc-A f f
+
   intoGel : (zr : R) (zs : RelHom) → (t : T) → Gel t
   intoGel zr zs t = cnat (Gel t) (gel zr t) (invIsEq (FuncThm .snd) zs t)
 

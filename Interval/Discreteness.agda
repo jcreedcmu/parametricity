@@ -1,4 +1,4 @@
-{-# OPTIONS --cubical --rewriting #-}
+{-# OPTIONS --cubical --rewriting --allow-unsolved-metas #-}
 
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Agda.Primitive

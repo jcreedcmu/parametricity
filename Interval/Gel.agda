@@ -74,9 +74,15 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    gel r t = gstrand {t} r
 
    module _ (Rdisc : disc R)
-            (EAdisc : (t : T) → disc (Σ (E t) A))
-            (ERdisc : (t : T) → disc ((E t) × R))
+            (Adisc : (t : T) (e : E t) → disc (A e))
+            (Edisc : (t : T) → disc (E t))
      where
+
+     EAdisc : (t : T) → disc (Σ (E t) A)
+     EAdisc t = ΣPresDisc T (Edisc t) (Adisc t)
+
+     ERdisc : (t : T) → disc (E t × R)
+     ERdisc t = prodPresDisc T (Edisc t) Rdisc
 
      Commute : isEquiv (pushMap ff gg)
      Commute = ▻Commute (λ _ → Rdisc) EAdisc ERdisc ff gg
