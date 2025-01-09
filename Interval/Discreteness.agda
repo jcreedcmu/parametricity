@@ -55,3 +55,27 @@ prodPresDisc {A = A} {B} da db = isoToEquiv (iso fore back sect retr) .snd where
 
  retr : (s : Σ A B) → back (fore s) ≡ s
  retr (a , b) i = retIsEq da a i , {!!}
+
+
+data isConst {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} : (f : A → B) → Set (ℓ ⊔ ℓ') where
+ isConst/ : (b : B) → isConst (λ (_ : A) → b)
+
+getPoint : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} {f : A → B} → isConst {B = B} f → B
+getPoint = {!!}
+
+ΣPresConst : ∀ {ℓ0} {A : Set ℓ0} {B : A → Set ℓ0} (fA : T → A) (fB : (a : A) (t : T) → B a)
+             → isConst fA → ((a : A) → isConst (fB a)) → isConst {B = Σ A B} (λ t → (fA t , fB (fA t) t))
+ΣPresConst {A = A} {B = B} .(λ _ → a) fB (isConst/ a) ccb = secondStep (fB a) (ccb a) where
+  secondStep : (q : T → B a) → isConst q → isConst {B = Σ A B} (λ t → (a , q t))
+  secondStep .(λ _ → b) (isConst/ b) = isConst/ (a , b)
+
+ΣPresAllConst : ∀ {ℓ0} {A : Set ℓ0} {B : A → Set ℓ0}
+             → ((fA : T → A) → isConst fA)
+             → ((a : A) → (fB : (t : T) → B a) → isConst fB)
+             → ((fC : T → Σ A B) → isConst fC)
+ΣPresAllConst {A = A} {B} aca acb fC = stage1 (fst ∘ fC) (snd ∘ fC) (aca (fst ∘ fC))  where
+   stage3 : (a : A) (fC2 : (t : T) → B a) → isConst fC2 → isConst {B = Σ A B} (λ t → a , fC2 t)
+   stage3 a .(λ _ → b) (isConst/ b) = isConst/ (a , b)
+
+   stage1 : (fC1 : T → A) (fC2 : (t : T) → B (fC1 t)) → isConst (fC1) → isConst {B = Σ A B} (λ t → fC1 t , fC2 t)
+   stage1 .(λ _ → a) fC2 (isConst/ a) = stage3 a fC2 (acb a fC2)
