@@ -11,6 +11,7 @@ open import Cubical.Relation.Nullary
 open import Function.Base
 open import Cubical.HITs.PropositionalTruncation as PT
 open import Cubical.Functions.Surjection
+open import Interval.Discreteness
 
 module Interval.Axioms where
 
@@ -24,11 +25,6 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
 postulate
   -- D ▻ S is an interval type of "direction" D and "shape S"
   _▻_ : {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) → Set (ℓ-max ℓ1 ℓ2)
-
--- bridgeDiscrete A := A has no T-cohesion
-bridgeDiscrete : ∀ {ℓ0 ℓ1} (T : Set ℓ1) (A : Set ℓ0)→ Set (ℓ1 ⊔ ℓ0)
-bridgeDiscrete T A = isEquiv (λ (a : A) (t : T) → a)
-
 module _ {ℓ1 ℓ2 : Level} {D : Set ℓ1} {S : Set ℓ2} where
   private
     ℓ = ℓ-max ℓ1 ℓ2

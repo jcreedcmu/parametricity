@@ -12,6 +12,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Interval.Axioms
+open import Interval.Discreteness
 open import Function.Base
 
 -- Instead of postulating the Gel type, I'm trying to understand it as
