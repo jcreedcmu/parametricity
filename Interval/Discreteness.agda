@@ -49,3 +49,17 @@ module _ {ℓ : Level} (T : Set ℓ) where
  -- discreteness is preserved by product
  prodPresDisc : ∀ {ℓ0} {ℓ1} {A : Set ℓ0} {B : Set ℓ1} → bridgeDiscrete A → bridgeDiscrete B → bridgeDiscrete (A × B)
  prodPresDisc {A = A} {B} da db = ΣPresDisc da (λ _ → db)
+
+ propIsDisc : ∀ {ℓ} {A : Set ℓ} (isPropA : isProp A) (t : T) → bridgeDiscrete A
+ propIsDisc {A = A} isPropA t0 = isoToEquiv (iso fore back sect retr) .snd where
+  fore : A → T → A
+  fore a t = a
+
+  back : (T → A) → A
+  back f = f t0
+
+  sect : (f : T → A) → fore (back f) ≡ f
+  sect f i t = isPropA (f t0) (f t) i
+
+  retr : (a : A) → back (fore a) ≡ a
+  retr a i = a

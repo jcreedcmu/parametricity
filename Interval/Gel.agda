@@ -75,8 +75,10 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
    module _ (Rdisc : disc R)
             (Adisc : (t : T) (e : E t) → disc (A e))
-            (Edisc : (t : T) → disc (E t))
      where
+
+     Edisc : (t : T) → disc (E t)
+     Edisc t = propIsDisc T (EndIsProp t) t
 
      EAdisc : (t : T) → disc (Σ (E t) A)
      EAdisc t = ΣPresDisc T (Edisc t) (Adisc t)

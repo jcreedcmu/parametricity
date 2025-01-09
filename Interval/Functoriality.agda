@@ -50,7 +50,6 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
  module _ {A1 : {t : T} (e : E t) → Set ℓ}
           {A2 : {t : T} (e : E t) → Set ℓ}
           (R1 R2 : Set ℓ)
-          (disc-E : (t : T) → disc (E t))
           (disc-R1 : disc R1)
           (disc-A1 : (t : T) (e : E t) → disc (A1 e))
           (disc-R2 : disc R2)
@@ -65,10 +64,10 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
    open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 ; gelIsEquiv to gel2IsEquiv )
 
    ungel1 : ((t : T) → Gel1 t) → R1
-   ungel1 = toOpen1.ungel disc-R1 disc-A1 disc-E
+   ungel1 = toOpen1.ungel disc-R1 disc-A1
 
    ungel2 : ((t : T) → Gel2 t) → R2
-   ungel2 = toOpen2.ungel disc-R2 disc-A2 disc-E
+   ungel2 = toOpen2.ungel disc-R2 disc-A2
 
    Bundle0 : Set ℓ
    Bundle0 = Threep
@@ -126,7 +125,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
    invA2 e = invIsEq (≅A2 e)
 
    ≅R2 : isEquiv cvtR2
-   ≅R2 = gel2IsEquiv disc-R2 disc-A2 disc-E
+   ≅R2 = gel2IsEquiv disc-R2 disc-A2
 
    Rfore : (R1 → R2) → (R1 → (t : T) → Gel2 t)
    Rfore k r1 = cvtR2 (k r1)
