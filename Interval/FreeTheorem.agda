@@ -42,13 +42,10 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
   disc-R : bridgeDiscrete T R
   disc-R = ▻Discrete {D = R} {S = two}
 
-  disc-E : (t : T) → bridgeDiscrete T (E t)
-  disc-E = {!!}
-
-  ungel = ungel' disc-R disc-A disc-E
+  ungel = ungel' disc-R disc-A
 
   FuncThm : ((t : T) → Gel t → Gel t) ≅ RelHom
-  FuncThm = Interval.Functoriality.thm D S R R disc-E disc-R disc-A disc-R disc-A f f
+  FuncThm = Interval.Functoriality.thm D S R R disc-R disc-A disc-R disc-A f f
 
   intoGel : (zr : R) (zs : RelHom) → (t : T) → Gel t
   intoGel zr zs t = cnat (Gel t) (gel zr t) (invIsEq (FuncThm .snd) zs t)
