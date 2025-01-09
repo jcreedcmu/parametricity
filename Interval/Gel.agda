@@ -3,7 +3,7 @@
 open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
-open import Cubical.Data.Prod
+open import Cubical.Data.Sigma
 open import Cubical.Data.Empty renaming (rec to aborti)
 open import Cubical.Foundations.Equiv
 open import Cubical.Foundations.Isomorphism
@@ -79,7 +79,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) (s0 : S) where -- Ass
      where
 
      EAdisc : (t : T) → disc (Σ (E t) A)
-     EAdisc t = ΣPresDisc T (end s0) (Edisc t) (Adisc t)
+     EAdisc t = ΣPresDisc T (Edisc t) (Adisc t)
 
      ERdisc : (t : T) → disc (E t × R)
      ERdisc t = prodPresDisc T (Edisc t) Rdisc
