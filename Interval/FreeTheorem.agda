@@ -12,6 +12,7 @@ open import Cubical.Foundations.Prelude
 open import Cubical.Functions.Embedding
 open import Cubical.Relation.Nullary
 open import Interval.Axioms
+open import Interval.Discreteness
 import Interval.Gel
 import Interval.Functoriality
 open import Function.Base
@@ -30,19 +31,20 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
  D = R
  S = two
  T = T' D
- module stage1 (R : Set) (A : {t : T} (e : E t) → Set)
+
+ module stage1 (A : {t : T} (e : E t) → Set)
         (f : (r : R) {t : T} (e : E t) → A e) where
   open Interval.Gel.main D S {A = A} R f renaming (ungel to ungel')
   RelHom = Interval.Functoriality.RelHom D S R R f f
 
   -- XXX unfulfilled discreteness obligations here
-  disc-R : Interval.Gel.disc D S R
-  disc-R = {!!}
+  disc-R : bridgeDiscrete T R
+  disc-R = ▻Discrete {D = R} {S = two}
 
-  disc-A : (t : T) (e : E t) → Interval.Gel.disc D S (A e)
+  disc-A : (t : T) (e : E t) → bridgeDiscrete T (A e)
   disc-A = {!!}
 
-  disc-E : (t : T) → Interval.Gel.disc D S (E t)
+  disc-E : (t : T) → bridgeDiscrete T (E t)
   disc-E = {!!}
 
   ungel = ungel' disc-R disc-A disc-E
