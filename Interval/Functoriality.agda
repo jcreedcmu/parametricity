@@ -25,7 +25,7 @@ open import Function.Base
  -}
 module Interval.Functoriality where
 
-module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) (s0 : S) where
+module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) where
  private
   T = D ▻ S
   E = End
@@ -33,7 +33,7 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) (s0 : S) where
   disc A = bridgeDiscrete T A
 
 
- module toOpen0 = Interval.Gel.main {ℓ} {ℓ} D S s0
+ module toOpen0 = Interval.Gel.main {ℓ} {ℓ} D S
  open toOpen0
 
  module _ {A1 : {t : T} (e : E t) → Set ℓ}
@@ -59,9 +59,9 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) (s0 : S) where
           (f2 : (r : R2) {t : T} (e : E t) → A2 e)
    where
 
-   module toOpen1 = Interval.Gel.main {ℓ} {ℓ} D S s0 R1 f1
+   module toOpen1 = Interval.Gel.main {ℓ} {ℓ} D S R1 f1
    open toOpen1 renaming (Gel to Gel1 ; gstrand to gstrand1 ; gpoint to gpoint1 ; gpath to gpath1 ; gel to gel1 )
-   module toOpen2 = Interval.Gel.main {ℓ} {ℓ} D S s0 R2 f2
+   module toOpen2 = Interval.Gel.main {ℓ} {ℓ} D S R2 f2
    open toOpen2 renaming (Gel to Gel2 ; gstrand to gstrand2 ; gpoint to gpoint2 ; gpath to gpath2 ; gel to gel2 ; gelIsEquiv to gel2IsEquiv )
 
    ungel1 : ((t : T) → Gel1 t) → R1
@@ -117,10 +117,10 @@ module _ {ℓ : Level} (D : Set ℓ) (S : Set ℓ) (s0 : S) where
    cvtR2 r2 = gel2 r2
 
    cvtA2 : {t : T} (e : E t) → A2 e → Gel2 t
-   cvtA2 e = Interval.Endpoints.main.endpointFunc D S s0 {A = A2} R2 f2 e
+   cvtA2 e = Interval.Endpoints.main.endpointFunc D S {A = A2} R2 f2 e
 
    ≅A2 : {t : T} (e : E t) → isEquiv (cvtA2 e)
-   ≅A2 e = Interval.Endpoints.main.Gel-endpoints D S s0 {A = A2} R2 f2 e
+   ≅A2 e = Interval.Endpoints.main.Gel-endpoints D S {A = A2} R2 f2 e
 
    invA2 : {t : T} (e : E t) → Gel2 t → A2 e
    invA2 e = invIsEq (≅A2 e)

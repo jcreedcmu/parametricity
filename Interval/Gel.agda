@@ -23,7 +23,7 @@ module Interval.Gel where
 abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
 abort A ()
 
-module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) (s0 : S) where -- Assume S is inhabited here to make ΣPresDisc easier to prove
+module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
   ℓ = ℓ-max ℓ1 ℓ2
   T = D ▻ S
