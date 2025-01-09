@@ -23,14 +23,14 @@ module Interval.Gel where
 abort : ∀ {ℓ} (A : Type ℓ) → ⊥ → A
 abort A ()
 
-module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
+module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) (s0 : S) where -- Assume S is inhabited here to make ΣPresDisc easier to prove
  private
   ℓ = ℓ-max ℓ1 ℓ2
   T = D ▻ S
   E = End
 
- disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
- disc A = bridgeDiscrete T A
+  disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
+  disc A = bridgeDiscrete T A
 
  module main {A : {t : T} (e : E t) → Set ℓ} (R : Set ℓ) (f : (r : R) {t : T} (e : E t) → A e) where
 
@@ -79,7 +79,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      where
 
      EAdisc : (t : T) → disc (Σ (E t) A)
-     EAdisc t = ΣPresDisc T (Edisc t) (Adisc t)
+     EAdisc t = ΣPresDisc T (end s0) (Edisc t) (Adisc t)
 
      ERdisc : (t : T) → disc (E t × R)
      ERdisc t = prodPresDisc T (Edisc t) Rdisc
