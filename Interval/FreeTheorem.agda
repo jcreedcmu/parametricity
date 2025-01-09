@@ -38,9 +38,8 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
   open Interval.Gel.main D S {A = A} R f renaming (ungel to ungel')
   RelHom = Interval.Functoriality.RelHom D S R R f f
 
-  -- XXX unfulfilled discreteness obligations here
   disc-R : bridgeDiscrete T R
-  disc-R = ▻Discrete {D = R} {S = two}
+  disc-R = ▻Discrete
 
   ungel = ungel' disc-R disc-A
 
