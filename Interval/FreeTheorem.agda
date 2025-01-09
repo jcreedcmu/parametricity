@@ -33,6 +33,7 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
  T = T' D
 
  module stage1 (A : {t : T} (e : E t) → Set)
+        (disc-A : (t : T) (e : E t) → bridgeDiscrete T (A e))
         (f : (r : R) {t : T} (e : E t) → A e) where
   open Interval.Gel.main D S {A = A} R f renaming (ungel to ungel')
   RelHom = Interval.Functoriality.RelHom D S R R f f
@@ -40,9 +41,6 @@ module _ (cnat : (X : Set) → X → (X → X) → X) (R : Set) where
   -- XXX unfulfilled discreteness obligations here
   disc-R : bridgeDiscrete T R
   disc-R = ▻Discrete {D = R} {S = two}
-
-  disc-A : (t : T) (e : E t) → bridgeDiscrete T (A e)
-  disc-A = {!!}
 
   disc-E : (t : T) → bridgeDiscrete T (E t)
   disc-E = {!!}
