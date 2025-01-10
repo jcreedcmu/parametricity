@@ -67,7 +67,18 @@ module _ (a+ a- b+ b- x+ x- y+ y- : Set) where
     (a n× x n+ b n× y) n× (a n× x n+ b n× y) n+
     (neg b n× x n+ a n× y) n× (neg b n× x n+ a n× y)
   n≡ (a n× a n+ b n× b) n× (x n× x n+ y n× y)
- lemma3 = {!!}
+ lemma3 = isoToEquiv (iso {!fore!} {!!} {!!} {!!}) where
+    fore : fst
+      ((a n× x n+ b n× y) n× (a n× x n+ b n× y) n+
+       (neg b n× x n+ a n× y) n× (neg b n× x n+ a n× y))
+      + snd ((a n× a n+ b n× b) n× (x n× x n+ y n× y)) →
+      snd
+      ((a n× x n+ b n× y) n× (a n× x n+ b n× y) n+
+       (neg b n× x n+ a n× y) n× (neg b n× x n+ a n× y))
+      + fst ((a n× a n+ b n× b) n× (x n× x n+ y n× y))
+    fore (inl (inl x₁)) = {!!}
+    fore (inl (inr x₁)) = {!!}
+    fore (inr x₁) = {!!}
 
  lemma2 :
      sqnorm (a n× x n+ b n× y , neg b n× x n+ a n× y)
