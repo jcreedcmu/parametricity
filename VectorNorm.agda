@@ -30,6 +30,9 @@ _n×_ : Num → Num → Num
 (x+ , x-) n× (y+ , y-) = (x+ × y+ + x- × y- , x+ × y- + x- × y+)
 infixr 15 _n×_
 
+neg : Num → Num
+neg (x+ , x-) = (x- , x+)
+
 _n+_ : Num → Num → Num
 (x+ , x-) n+ (y+ , y-) = (x+ + y+ , x- + y-)
 infixr 10 _n+_
@@ -41,12 +44,12 @@ infixr 15 _s×_
 sqnorm : Vec → Num
 sqnorm (x , y) = x n× x n+ y n× y
 
-rotate : Num → Num → Vec → Vec
-rotate a b (x , y) = (a n× x n+ b n× y , b n× x n+ a n× y)
+rotate : Vec → Vec → Vec
+rotate (a , b) (x , y) = (a n× x n+ b n× y , neg b n× x n+ a n× y)
 
 _n≡_ : Num → Num → Set
 (a+ , a-) n≡ (b+ , b-) = (a+ + b-) ≅ (a- + b+)
 infixr 6 _n≡_
 
-thm : (a b : Num) (v : Vec) → sqnorm (rotate a b v) n≡ sqnorm (a , b) n× sqnorm v
-thm (a+ , a-) (b+ , b-) ((x+ , x-) , (y+ , y-)) = {!!}
+thm : (w v : Vec) → sqnorm (rotate w v) n≡ sqnorm w n× sqnorm v
+thm ((a+ , a-), (b+ , b-)) ((x+ , x-) , (y+ , y-)) = {!!}
