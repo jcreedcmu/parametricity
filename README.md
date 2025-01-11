@@ -12,7 +12,7 @@ that it is the same as $S$ with just a little bit of extra cohesion.
 - [Interval/Gel.agda](Interval/Gel.agda) constructs a Gel type as a pushout. It proves
 that `(t : T) → Gel R t` is the same thing as an element of the relation `R`.
 
-- [Interval/Gel.agda](Interval/Endpoints.agda) shows that the fibers of the Gel type
+- [Interval/Endpoints.agda](Interval/Endpoints.agda) shows that the fibers of the Gel type
 at the endpoints are isomorphic to the chosen arms of the relevant relation.
 
 - [Interval/Functoriality.agda](Interval/Functoriality.agda) shows that uniform maps
