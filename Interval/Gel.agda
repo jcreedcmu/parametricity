@@ -66,12 +66,19 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
      retr (gpoint a) i = gpoint a
      retr (gpath {e} r i) j = gpath {e = e} r i
 
-   GelIsPush : (t : T) → Gel t ≅ Push (ff {t}) gg
+   PGel : T → Set ℓ
+   PGel t = Push (ff {t}) gg
+
+   GelIsPush : (t : T) → Gel t ≅ PGel t
    GelIsPush t = isoToEquiv (iso fore back sect retr) where
      open gip t
 
    gel : R → ((t : T) → Gel t)
    gel r t = gstrand {t} r
+
+   GlobalGelIsPush : ((t : T) → Gel t) ≅ ((t : T) → PGel t)
+   GlobalGelIsPush = isoToEquiv (iso (λ g t → gip.fore t (g t)) (λ g t → gip.back t (g t))
+                        (λ b i t → gip.sect t (b t) i) (λ a i t → gip.retr t (a t) i))
 
    module _ (Rdisc : disc R)
             (Adisc : (t : T) (e : E t) → disc (A e))
@@ -111,32 +118,28 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
            (λ j → get (invert-r (get R) ≡ pinr (gg ∘ c)) j)
            (λ j → pinl (secIsEq Rdisc (ff ∘ c) j))
 
-     ≅1 : ((t : T) → Gel t) ≅ ((t : T) → Push (ff {t}) gg)
-     ≅1 = isoToEquiv (iso (λ g t → gip.fore t (g t)) (λ g t → gip.back t (g t))
-                          (λ b i t → gip.sect t (b t) i) (λ a i t → gip.retr t (a t) i))
-
-     ≅2 : ((t : T) → Push (ff {t}) gg) ≅ (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg))
-     ≅2 = isoToEquiv (iso (invIsEq Commute) (funIsEq Commute) (retIsEq Commute) (secIsEq Commute))
-     ≅3 : (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)) ≅ R
-     ≅3 = isoToEquiv (iso extract-r invert-r (retIsEq Rdisc) retr-r)
+     CommuteIso : ((t : T) → PGel t) ≅ (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg))
+     CommuteIso = isoToEquiv (iso (invIsEq Commute) (funIsEq Commute) (retIsEq Commute) (secIsEq Commute))
+     DiscretenessIso : (Push (λ k (t : T) → ff {t} (k t)) (_∘_ gg)) ≅ R
+     DiscretenessIso = isoToEquiv (iso extract-r invert-r (retIsEq Rdisc) retr-r)
 
      ungel : (g : (t : T) → Gel t) → R
      ungel g = extract-r (invIsEq Commute (λ t → funIsEq (GelIsPush t .snd) (g t)))
 
-     -- gelβ' : (r : R) → (invIsEq (≅1 .snd) ∘ invIsEq (≅2 .snd) ∘ invIsEq (≅3 .snd)) r ≡ gel r
+     -- gelβ' : (r : R) → (invIsEq (GlobalGelIsPush .snd) ∘ invIsEq (CommuteIso .snd) ∘ invIsEq (DiscretenessIso .snd)) r ≡ gel r
      -- gelβ' r i = gel r
 
-     -- gelη' : (g : (t : T) → Gel t)  → (funIsEq (≅3 .snd) ∘ funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g ≡  ungel g
+     -- gelη' : (g : (t : T) → Gel t)  → (funIsEq (DiscretenessIso .snd) ∘ funIsEq (CommuteIso .snd) ∘ funIsEq (GlobalGelIsPush .snd)) g ≡  ungel g
      -- gelη' g i = ungel g
 
      gelβ : (g : (t : T) → Gel t) → gel (ungel g) ≡ g
-     gelβ g  =  cong (invIsEq (≅1 .snd))
-               (cong (invIsEq (≅2 .snd))
-               (cong (invIsEq (≅3 .snd))
+     gelβ g  =  cong (invIsEq (GlobalGelIsPush .snd))
+               (cong (invIsEq (CommuteIso .snd))
+               (cong (invIsEq (DiscretenessIso .snd))
                  (λ i → ungel g)
-               ∙ (retIsEq (≅3 .snd)  ((funIsEq (≅2 .snd) ∘ funIsEq (≅1 .snd)) g)))
-               ∙ (retIsEq (≅2 .snd)) ((funIsEq (≅1 .snd)) g))
-               ∙ (retIsEq (≅1 .snd)) g
+               ∙ (retIsEq (DiscretenessIso .snd)  ((funIsEq (CommuteIso .snd) ∘ funIsEq (GlobalGelIsPush .snd)) g)))
+               ∙ (retIsEq (CommuteIso .snd)) ((funIsEq (GlobalGelIsPush .snd)) g))
+               ∙ (retIsEq (GlobalGelIsPush .snd)) g
 
      gelη : (r : R) → ungel (gel r) ≡ r
      gelη r = (cong extract-r (retIsEq Commute (pinl (λ t → r)))) ∙ (retIsEq Rdisc r)
