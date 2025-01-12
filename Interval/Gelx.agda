@@ -44,7 +44,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
         gpaths : {s : Σ T E} (aa : (s : Σ T E) → A s) (r : R aa) → gpoints (aa s) ≡ gstrands aa r
 
    thm : (t : T) → Geli t ≅ Gels t
-   thm t = isoToEquiv (iso fore {!!} {!!} {!!}) where
+   thm t = isoToEquiv (iso fore back sect retr) where
     fore : Geli t → Gels t
     fore (gstrandi aa r) = gstrands (λ s → aa (s .snd)) r
     fore (gpointi a) = gpoints a
@@ -55,7 +55,15 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
     back (gpoints {t , e} a) = gpointi {e = e} a
     back (gpaths {t , e} aa r i) = gpathi {e = e} (λ {t} e → aa (t , e)) r i
 
+    sect : (g : Gels t) → fore (back g) ≡ g
+    sect (gstrands aa r) i = gstrands aa r
+    sect (gpoints a) i = gpoints a
+    sect (gpaths {s} aa r i) j = gpaths {s = s} aa r i
 
+    retr : (g : Geli t) → back (fore g) ≡ g
+    retr (gstrandi aa r) i = gstrandi aa r
+    retr (gpointi a) i = gpointi a
+    retr (gpathi {e} aa r i) j = gpathi {e = e} aa r i
 
  module mainx {A : S → Set ℓ} (R : (aa : (s : S) → A s) → Set ℓ)  where
 
