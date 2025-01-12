@@ -60,7 +60,7 @@ Push-left-cong-equiv :
           (f : C → A) (g : C → B)
           (eq : A' ≅ A)
           → Push {A = A} f g ≅ Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
-Push-left-cong-equiv {A = A} {A'} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
+Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
  fore : Push {A = A} f g → Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
  fore (pinl a) = pinl (invIsEq (eq .snd) a)
  fore (pinr b) = pinr b
@@ -72,9 +72,15 @@ Push-left-cong-equiv {A = A} {A'} f g eq = isoToEquiv (iso fore back {!!} {!!}) 
  back (ppath c i) = (ppath c ∙∙ refl ∙∙ λ j → pinl (secIsEq (eq .snd) (f c) (~ i ∨ ~ j))) i
 
  sect : (g : Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g ) → fore (back g) ≡ g
- sect (pinl a) i = pinl ((retIsEq (eq .snd) a) i)
- sect (pinr b) i = pinr b
- sect (ppath c i) j = {!!}
+ sect (pinl a) = λ i → pinl ((retIsEq (eq .snd) a) i)
+ sect (pinr b) = λ i → pinr b
+ sect (ppath c i)  = proof i where
+   foo  : Set (ℓ1 ⊔ ℓ2 ⊔ ℓ3)
+   foo = PathP (λ i → fore (back (ppath c i)) ≡ ppath c i)
+        (λ _ → pinr (g c))
+        (λ i → pinl ((retIsEq (eq .snd) (invIsEq (eq .snd) (f c))) i))
+   proof : foo
+   proof = {!!}
 
  retr : (g : Push {A = A} f g) → back (fore g) ≡ g
  retr (pinl a) i = pinl ((secIsEq (eq .snd) a) i)
