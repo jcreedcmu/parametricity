@@ -80,11 +80,24 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
  sect (pinr b) = λ i → pinr b
  sect (ppath c i)  = proof i where
 
-   lemma : (a : A) → Square (λ i →  (ret (inv a) i))
+   lemma3 : (eq : A ≅ A') (a : A) → Square (λ i → secIsEq (eq .snd) (funIsEq (eq .snd) a) i)
+                  (λ _ → (funIsEq (eq .snd) a))
+                  (λ i → (funIsEq (eq .snd) (retIsEq (eq .snd) a i)))
+                  (λ _ → (funIsEq (eq .snd) a))
+   lemma3 = {!!}
+
+   lemma2 : (eq : A' ≅ A) (a : A) → Square (λ i → retIsEq (eq .snd) (invIsEq (eq .snd) a) i)
+                  (λ _ → (invIsEq (eq .snd) a))
+                  (λ i → (invIsEq (eq .snd) (secIsEq (eq .snd) a i)))
+                  (λ _ → (invIsEq (eq .snd) a))
+   lemma2 eq a = lemma3 (isoToEquiv (iso {!invIsEq (eq .snd)!} {!!} {!!} {!!})) a
+
+   lemma : (a : A) → Square (λ i → ret (inv a) i)
                   (λ _ → (inv a))
                   (λ i → (inv (sec a i)))
                   (λ _ → (inv a))
-   lemma a j k = {!commSqIsEq (invEquiv eq .snd) (f c) k j!}
+   lemma a j k =  lemma2 eq a j k
+
 
    proof : Square
         (λ _ → pinr (g c))
