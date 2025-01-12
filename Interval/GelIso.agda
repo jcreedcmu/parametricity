@@ -112,3 +112,38 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
     retr (gstrand aa r) i = gstrand aa r
     retr (gpoint a) i = gpoint a
     retr (gpath {e} aa r i) j = gpath {e = e} aa r i
+
+ module TotalGel
+      {A : Σ T E → Set ℓ}
+      (R : (aa : (s : Σ T E) → A s) → Set ℓ)
+      where
+
+   module Prev = LumpTogetherMod R
+
+   data Gel : Set ℓ where
+        gstrand : {t : T} (aa : (s : Σ T E) → A s) (r : R aa) → Gel
+        gpoint : {s : Σ T E} (a : A s) → Gel
+        gpath : {s : Σ T E} (aa : (s : Σ T E) → A s) (r : R aa) → gpoint (aa s) ≡ gstrand {t = s .fst} aa r
+   getTime : Gel → T
+   getTime (gstrand {t} aa r) = t
+   getTime (gpoint {s} a) = s .fst
+   getTime (gpath {s} aa r i) = s .fst
+
+   thm : (t : T) → Prev.Gel t ≅ Σ Gel (λ g → getTime g ≡ t)
+   thm t = isoToEquiv (iso fore back sect retr) where
+    open Prev using (gstrand ; gpoint ; gpath)
+    fore : Prev.Gel t → Σ Gel (λ g → getTime g ≡ t)
+    fore (gstrand {t} aa r) = (gstrand {t} aa r) , refl
+    fore (gpoint a) = gpoint a , refl
+    fore (gpath {s} aa r i) = gpath {s = s} aa r i , refl
+
+    back : (Σ Gel (λ g → getTime g ≡ t)) → Prev.Gel t
+    back (gstrand aa r , p) = gstrand {t} aa r
+    back (gpoint a , p) = {!gpoint a!}
+    back (gpath aa r i , p) = {!!}
+
+    sect : (g : Σ Gel (λ g → getTime g ≡ t)) → fore (back g) ≡ g
+    sect x = {!!}
+
+    retr : (g : Prev.Gel t) → back (fore g) ≡ g
+    retr x = {!!}
