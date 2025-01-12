@@ -60,7 +60,7 @@ Push-left-cong-equiv :
           (f : C → A) (g : C → B)
           (eq : A' ≅ A)
           → Push {A = A} f g ≅ Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
-Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
+Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
  fore : Push {A = A} f g → Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
  fore (pinl a) = pinl (invIsEq (eq .snd) a)
  fore (pinr b) = pinr b
@@ -71,23 +71,41 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} f g eq = isoToEquiv (iso 
  back (pinr b) = pinr b
  back (ppath c i) = (ppath c ∙∙ refl ∙∙ λ j → pinl (secIsEq (eq .snd) (f c) (~ i ∨ ~ j))) i
 
+ inv = invIsEq (eq .snd)
+ sec = secIsEq (eq .snd)
+ ret = retIsEq (eq .snd)
+
  sect : (g : Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g ) → fore (back g) ≡ g
  sect (pinl a) = λ i → pinl ((retIsEq (eq .snd) a) i)
  sect (pinr b) = λ i → pinr b
  sect (ppath c i)  = proof i where
-   foo  : Set (ℓ1 ⊔ ℓ2 ⊔ ℓ3)
-   foo = PathP (λ i → fore (back (ppath c i)) ≡ ppath c i)
-        (λ _ → pinr (g c))
-        (λ i → pinl ((retIsEq (eq .snd) (invIsEq (eq .snd) (f c))) i))
-   proof : foo
-   proof = {!!}
 
+   lemma : (c : C) → Square (λ i → pinl (ret (inv (f c)) i))
+                  (λ _ → pinl (inv (f c)))
+                  (λ i → pinl (inv(sec (f c) i)))
+                  (λ _ → pinl (inv (f c)))
+   lemma c j k = {!commSqIsEq (invEquiv eq .snd) (f c) k j!}
+
+   proof : Square
+        (λ _ → pinr (g c))
+        (λ i → pinl (ret (inv (f c)) i))
+        (λ i → fore ((ppath c ∙∙ refl ∙∙ λ j → pinl (sec (f c) (~ i ∨ ~ j))) i))
+        (ppath c)
+   proof i j = hcomp (λ k → λ {
+    (i = i0) → ppath c (~ k) ;
+    (j = i0) → fore ((doubleCompPath-filler (ppath c) refl (λ j → pinl (sec (f c) (~ i ∨ ~ j))) k i )) ;
+    (i = i1) → lemma c (~ k) j ;
+    (j = i1) → ppath c (i ∨ ~ k)
+    }) (pinl (inv (f c)))
+
+
+-- pinl (commSqIsEq (invEquiv eq .snd) (f c) (~ k) j)
  retr : (g : Push {A = A} f g) → back (fore g) ≡ g
- retr (pinl a) i = pinl ((secIsEq (eq .snd) a) i)
+ retr (pinl a) i = pinl (sec a i)
  retr (pinr b) i = pinr b
  retr (ppath c i) j = hcomp (λ k → λ {
    (i = i0) → ppath c (~ k) ;
-   (j = i0) → doubleCompPath-filler (ppath c) refl (λ j → pinl (secIsEq (eq .snd) (f c) (~ i ∨ ~ j))) k i  ;
-   (i = i1) → pinl (secIsEq (eq .snd) (f c) (j ∨ ~ k)) ;
+   (j = i0) → doubleCompPath-filler (ppath c) refl (λ j → pinl (sec (f c) (~ i ∨ ~ j))) k i  ;
+   (i = i1) → pinl (sec (f c) (j ∨ ~ k)) ;
    (j = i1) → ppath c (i ∨ ~ k ) })
   (pinl (f c))
