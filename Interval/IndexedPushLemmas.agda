@@ -86,17 +86,40 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
                   (λ _ → (funIsEq (eq .snd) a))
    lemma3 eq a = commSqIsEq (eq .snd) a
 
+
+   betterInvEquiv' : {A B : Set} → (f : A → B) → ((b : B) → isContr (fiber f b)) → B ≅ A
+   betterInvEquiv' f fibc = (λ b → fibc b .fst .fst) , -- <- this is f⁻¹
+        record { equiv-proof = λ a → (f a , -- <-- this is f
+                 cong fst (fibc (f a) .snd (a , refl))) , -- <-- this is ret for f, sec for f⁻¹
+                 λ {(b , path) i → ((cong f (sym path) ∙ fibc b .fst .snd) i ) , {!!} } } -- <- this is sec for f, ret for f⁻¹
+--
+   betterInvEquiv : {A B : Set} → A ≅ B → B ≅ A
+   betterInvEquiv (f , fise) = betterInvEquiv' f (fise .equiv-proof)
+
+   check1 : (eq : A' ≅ A) → funIsEq (eq .snd) ≡ invIsEq (invEquiv eq .snd)
+   check1 eq = refl
+
+   check : (eq : A' ≅ A) → invIsEq (eq .snd) ≡ funIsEq (invEquiv eq .snd)
+   check eq = refl
+
+   check2 : (eq : A' ≅ A) → retIsEq (eq .snd) ≡ secIsEq (invEquiv eq .snd)
+   check2 eq = refl
+
+   check3 : (eq : A' ≅ A) → secIsEq (eq .snd) ≡ retIsEq (invEquiv eq .snd)
+   check3 eq i a j = {!!}
+
    lemma2 : (eq : A' ≅ A) (a : A) → Square (λ i → retIsEq (eq .snd) (invIsEq (eq .snd) a) i)
                   (λ _ → (invIsEq (eq .snd) a))
                   (λ i → (invIsEq (eq .snd) (secIsEq (eq .snd) a i)))
                   (λ _ → (invIsEq (eq .snd) a))
-   lemma2 eq a = lemma3 (isoToEquiv (iso {!invIsEq (eq .snd)!} {!!} {!!} {!!})) a
-
+   lemma2 eq a = {!eq .snd!}
+  -- commSqIsEq : ∀ a → Square (secIsEq (f a)) refl (cong f (retIsEq a)) refl
+  -- commSqIsEq a i = equivF .equiv-proof (f a) .snd (a , refl) i .snd
    lemma : (a : A) → Square (λ i → ret (inv a) i)
                   (λ _ → (inv a))
                   (λ i → (inv (sec a i)))
                   (λ _ → (inv a))
-   lemma a j k =  lemma2 eq a j k
+   lemma a j k = lemma2 eq a j k
 
 
    proof : Square
