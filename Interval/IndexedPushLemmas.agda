@@ -80,11 +80,11 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
  sect (pinr b) = λ i → pinr b
  sect (ppath c i)  = proof i where
 
-   lemma : (c : C) → Square (λ i → pinl (ret (inv (f c)) i))
-                  (λ _ → pinl (inv (f c)))
-                  (λ i → pinl (inv(sec (f c) i)))
-                  (λ _ → pinl (inv (f c)))
-   lemma c j k = {!commSqIsEq (invEquiv eq .snd) (f c) k j!}
+   lemma : (a : A) → Square (λ i →  (ret (inv a) i))
+                  (λ _ → (inv a))
+                  (λ i → (inv (sec a i)))
+                  (λ _ → (inv a))
+   lemma a j k = {!commSqIsEq (invEquiv eq .snd) (f c) k j!}
 
    proof : Square
         (λ _ → pinr (g c))
@@ -94,7 +94,7 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
    proof i j = hcomp (λ k → λ {
     (i = i0) → ppath c (~ k) ;
     (j = i0) → fore ((doubleCompPath-filler (ppath c) refl (λ j → pinl (sec (f c) (~ i ∨ ~ j))) k i )) ;
-    (i = i1) → lemma c (~ k) j ;
+    (i = i1) → pinl (lemma (f c) (~ k) j) ;
     (j = i1) → ppath c (i ∨ ~ k)
     }) (pinl (inv (f c)))
 
