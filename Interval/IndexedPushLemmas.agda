@@ -56,6 +56,8 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
 
 open Iso using () renaming (fun to Ifun ; inv to Iinv ; rightInv to Isec ; leftInv to Iret)
 
+
+
 Push-left-cong-equiv :
           {ℓ1 ℓ2 ℓ3 : Level}
           {A A' : Type ℓ1} {B : Type ℓ2} {C : Type ℓ3}
@@ -125,3 +127,12 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
    (i = i1) → pinl (sec (f c) (j ∨ ~ k)) ;
    (j = i1) → ppath c (i ∨ ~ k ) })
   (pinl (f c))
+
+
+commSqIsEq' : {A B : Set} {f : A → B} (e : isEquiv f) (a : A) →
+     Square (secIsEq e (funIsEq e a)) refl (cong f (retIsEq e a)) refl
+commSqIsEq' e a = commSqIsEq e a
+
+commSqIsEq'' : {A B : Set} {f : A → B} (e : isEquiv f) (a : B) →
+     Square (retIsEq e (invIsEq e a)) refl (cong (invIsEq e) (secIsEq e a)) refl
+commSqIsEq'' {f = f} e a = commSqIsEq (invEquiv (f , {!e!}) .snd) a -- e doesn't work here
