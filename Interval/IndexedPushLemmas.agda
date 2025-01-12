@@ -84,7 +84,7 @@ Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEqu
                   (λ _ → (funIsEq (eq .snd) a))
                   (λ i → (funIsEq (eq .snd) (retIsEq (eq .snd) a i)))
                   (λ _ → (funIsEq (eq .snd) a))
-   lemma3 = {!!}
+   lemma3 eq a = commSqIsEq (eq .snd) a
 
    lemma2 : (eq : A' ≅ A) (a : A) → Square (λ i → retIsEq (eq .snd) (invIsEq (eq .snd) a) i)
                   (λ _ → (invIsEq (eq .snd) a))
