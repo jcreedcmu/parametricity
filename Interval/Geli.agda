@@ -29,7 +29,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
   disc A = bridgeDiscrete T A
 
- module maini {A : {t : T} (e : E t) → Set ℓ} (R : (aa : {t : T} (e : E t) → A e) → Set)  where
+ module maini {A : {t : T} (e : E t) → Set ℓ} (R : (aa : {t : T} (e : E t) → A e) → Set ℓ)  where
 
    Rtotal : Set ℓ
    Rtotal = (Σ ({t : T} (e : E t) → A e) R)
