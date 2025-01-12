@@ -16,10 +16,9 @@ open import Interval.Discreteness
 open import Function.Base
 import Interval.Gel
 
--- Instead of postulating the Gel type, I'm trying to understand it as
--- defined by pushout of copies of the interval
+-- Gel, but R is indexed instead of fibered
 
-module Interval2.Gel where
+module Interval.Geli where
 
 module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
  private
@@ -49,15 +48,29 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
    EA : T → Set ℓ
    EA t = Σ (E t) A
 
-   -- Gel, but R is indexed instead of fibered
    data Geli (t : T) : Set ℓ where
         gstrandi : (aa : {t : T} (e : E t) → A e) (r : R aa) → Geli t -- AR
         gpointi : {e : E t} (a : A e) → Geli t -- EA
         gpathi : {e : E t} (aa : {t : T} (e : E t) → A e) (r : R aa) → gpointi (aa e) ≡ gstrandi aa r -- EAR
 
    thm : (t : T) → Gel t ≅ Geli t
-   thm t = isoToEquiv (iso fore {!!} {!!} {!!}) where
+   thm t = isoToEquiv (iso fore back sect retr) where
     fore : Gel t → Geli t
-    fore (gstrand r) = {!!}
-    fore (gpoint a) = {!!}
-    fore (gpath r i) = {!!}
+    fore (gstrand r) = gstrandi (r .fst) (r .snd)
+    fore (gpoint a) = gpointi a
+    fore (gpath {e} r i) = gpathi {e = e} (r .fst) (r .snd) i
+
+    back : Geli t → Gel t
+    back (gstrandi aa r) = gstrand (aa , r)
+    back (gpointi a) = gpoint a
+    back (gpathi {e} aa r i) = gpath {e = e} (aa , r) i
+
+    sect : (g : Geli t) → fore (back g) ≡ g
+    sect (gstrandi aa r) i = gstrandi aa r
+    sect (gpointi a) i = gpointi a
+    sect (gpathi {e} aa r i) j = gpathi {e = e} aa r i
+
+    retr : (g : Gel t) → back (fore g) ≡ g
+    retr (gstrand r) i = gstrand r
+    retr (gpoint a) i = gpoint a
+    retr (gpath{e} r i) j = gpath {e = e} r i
