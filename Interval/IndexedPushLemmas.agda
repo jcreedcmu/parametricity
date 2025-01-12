@@ -39,7 +39,7 @@ module Interval.IndexedPushLemmas where
 --  back : Push {A = A'} (λ {t} c → invIsEq (eq .snd) (f c)) g t → Push {A = A} f g t
 --  back (pinl a) = pinl (funIsEq (eq .snd) a)
 --  back (pinr b) = pinr b
---  back (ppath c i) = (ppath c ∙ λ j → pinl (secIsEq (eq .snd) (f c) (~ i ∨ ~ j))) i
+--  back (ppath c i) = (ppath c ∙ λ j → pinl (Isec eq (f c) (~ i ∨ ~ j))) i
 
 --  sect : (g : Push {A = A'} (λ {t} c → invIsEq (eq .snd) (f c)) g t) → fore (back g) ≡ g
 --  sect (pinl a) i = pinl ((retIsEq (eq .snd) a) i)
@@ -54,65 +54,45 @@ data Push {ℓ1 ℓ2 ℓ3 : Level}
   pinr : (b : B) → Push f g
   ppath : (c : C) → pinr (g c) ≡ pinl (f c)
 
+open Iso using () renaming (fun to Ifun ; inv to Iinv ; rightInv to Isec ; leftInv to Iret)
+
 Push-left-cong-equiv :
           {ℓ1 ℓ2 ℓ3 : Level}
           {A A' : Type ℓ1} {B : Type ℓ2} {C : Type ℓ3}
           (f : C → A) (g : C → B)
-          (eq : A' ≅ A)
-          → Push {A = A} f g ≅ Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
+          (eq : Iso A' A)
+          → Push {A = A} f g ≅ Push {A = A'} (λ c → Iso.inv eq (f c)) g
 Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
- fore : Push {A = A} f g → Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g
- fore (pinl a) = pinl (invIsEq (eq .snd) a)
+ fore : Push {A = A} f g → Push {A = A'} (λ c → Iso.inv eq (f c)) g
+ fore (pinl a) = pinl (Iso.inv eq a)
  fore (pinr b) = pinr b
  fore (ppath c i) = ppath c i
 
- back : Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g → Push {A = A} f g
- back (pinl a) = pinl (funIsEq (eq .snd) a)
+ back : Push {A = A'} (λ c → Iso.inv eq (f c)) g → Push {A = A} f g
+ back (pinl a) = pinl (Ifun eq a)
  back (pinr b) = pinr b
- back (ppath c i) = (ppath c ∙∙ refl ∙∙ λ j → pinl (secIsEq (eq .snd) (f c) (~ i ∨ ~ j))) i
+ back (ppath c i) = (ppath c ∙∙ refl ∙∙ λ j → pinl (Isec eq (f c) (~ i ∨ ~ j))) i
 
- inv = invIsEq (eq .snd)
- sec = secIsEq (eq .snd)
- ret = retIsEq (eq .snd)
+ inv = Iso.inv eq
+ sec = Isec eq
+ ret = Iret eq
 
- sect : (g : Push {A = A'} (λ c → invIsEq (eq .snd) (f c)) g ) → fore (back g) ≡ g
- sect (pinl a) = λ i → pinl ((retIsEq (eq .snd) a) i)
+ sect : (g : Push {A = A'} (λ c → Iso.inv eq (f c)) g ) → fore (back g) ≡ g
+ sect (pinl a) = λ i → pinl ((ret a) i)
  sect (pinr b) = λ i → pinr b
  sect (ppath c i)  = proof i where
 
-   lemma3 : (eq : A ≅ A') (a : A) → Square (λ i → secIsEq (eq .snd) (funIsEq (eq .snd) a) i)
-                  (λ _ → (funIsEq (eq .snd) a))
-                  (λ i → (funIsEq (eq .snd) (retIsEq (eq .snd) a i)))
-                  (λ _ → (funIsEq (eq .snd) a))
-   lemma3 eq a = commSqIsEq (eq .snd) a
+   lemma3 : (eq : Iso A A') (a : A) → Square (λ i → Isec eq (Ifun eq a) i)
+                  (λ _ → (Ifun eq a))
+                  (λ i → (Ifun eq (Iret eq a i)))
+                  (λ _ → (Ifun eq a))
+   lemma3 eq a i j = {!commSqIsEq (isoToEquiv eq .snd) a i j!}
 
-
-   betterInvEquiv' : {A B : Set} → (f : A → B) → ((b : B) → isContr (fiber f b)) → B ≅ A
-   betterInvEquiv' f fibc = (λ b → fibc b .fst .fst) , -- <- this is f⁻¹
-        record { equiv-proof = λ a → (f a , -- <-- this is f
-                 cong fst (fibc (f a) .snd (a , refl))) , -- <-- this is ret for f, sec for f⁻¹
-                 λ {(b , path) i → ((cong f (sym path) ∙ fibc b .fst .snd) i ) , {!!} } } -- <- this is sec for f, ret for f⁻¹
---
-   betterInvEquiv : {A B : Set} → A ≅ B → B ≅ A
-   betterInvEquiv (f , fise) = betterInvEquiv' f (fise .equiv-proof)
-
-   check1 : (eq : A' ≅ A) → funIsEq (eq .snd) ≡ invIsEq (invEquiv eq .snd)
-   check1 eq = refl
-
-   check : (eq : A' ≅ A) → invIsEq (eq .snd) ≡ funIsEq (invEquiv eq .snd)
-   check eq = refl
-
-   check2 : (eq : A' ≅ A) → retIsEq (eq .snd) ≡ secIsEq (invEquiv eq .snd)
-   check2 eq = refl
-
-   check3 : (eq : A' ≅ A) → secIsEq (eq .snd) ≡ retIsEq (invEquiv eq .snd)
-   check3 eq i a j = {!!}
-
-   lemma2 : (eq : A' ≅ A) (a : A) → Square (λ i → retIsEq (eq .snd) (invIsEq (eq .snd) a) i)
-                  (λ _ → (invIsEq (eq .snd) a))
-                  (λ i → (invIsEq (eq .snd) (secIsEq (eq .snd) a i)))
-                  (λ _ → (invIsEq (eq .snd) a))
-   lemma2 eq a = {!eq .snd!}
+   lemma2 : (eq : Iso A' A) (a : A) → Square (λ i → Iret eq (Iinv eq a) i)
+                  (λ _ → (Iso.inv eq a))
+                  (λ i → (Iso.inv eq (Isec eq a i)))
+                  (λ _ → (Iso.inv eq a))
+   lemma2 eq a = lemma3 (invIso eq) a
   -- commSqIsEq : ∀ a → Square (secIsEq (f a)) refl (cong f (retIsEq a)) refl
   -- commSqIsEq a i = equivF .equiv-proof (f a) .snd (a , refl) i .snd
    lemma : (a : A) → Square (λ i → ret (inv a) i)
