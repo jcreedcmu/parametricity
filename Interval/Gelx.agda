@@ -29,7 +29,7 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
   disc : ∀ {ℓ0} → Set ℓ0 → Set (ℓ ⊔ ℓ0)
   disc A = bridgeDiscrete T A
 
- module mainsigma {A : Σ T E → Set ℓ} (R : (aa : (s : Σ T E) → A s) → Set ℓ)  where
+ module mainsig {A : Σ T E → Set ℓ} (R : (aa : (s : Σ T E) → A s) → Set ℓ)  where
    Agen : {t : T} (e : E t) → Set ℓ
    Agen {t} e = A (t , e)
 
@@ -67,37 +67,35 @@ module _ {ℓ1 ℓ2 : Level} (D : Set ℓ1) (S : Set ℓ2) where
 
  module mainx {A : S → Set ℓ} (R : (aa : (s : S) → A s) → Set ℓ)  where
 
-   Agen : {t : T} (e : E t) → Set ℓ
-   Agen (s , p) = A s
+   Asig : Σ T E → Set ℓ
+   Asig s = A (funIsEq (EndIsS .snd) s)
 
-   Rgen : ({t : T} (e : E t) → Agen e) → Set ℓ
-   Rgen aa = R λ s → aa (s , refl)
+   Rsig : (aa : (s : Σ T E) → Asig s) → Set ℓ
+   Rsig aa = R (λ s → aa (invIsEq (EndIsS .snd) s))
 
-   open Interval.Geli.maini D S Rgen hiding (thm)
+   open mainsig Rsig hiding (thm)
 
    data Gelx (t : T) : Set ℓ where
         gstrandx : (aa : (s : S) → A s) (r : R aa) → Gelx t
         gpointx : {s : S} (a : A s) → Gelx t
         gpathx : {s : S} (aa : (s : S) → A s) (r : R aa) → gpointx (aa s) ≡ gstrandx aa r
 
-   thm : (t : T) → Geli t ≅ Gelx t
+   thm : (t : T) → Gels t ≅ Gelx t
    thm t = isoToEquiv (iso fore {!!} {!!} {!!}) where
-    fore : Geli t → Gelx t
-    fore (gstrandi aa r) = gstrandx {!!} {!!}
-    fore (gpointi a) = {!!}
-    fore (gpathi aa r i) = {!!}
+    fore : Gels t → Gelx t
+    fore g = {!!}
 
-   --  back : Geli t → Gel t
-   --  back (gstrandi aa r) = gstrand (aa , r)
-   --  back (gpointi a) = gpoint a
-   --  back (gpathi {e} aa r i) = gpath {e = e} (aa , r) i
+   -- --  back : Geli t → Gel t
+   -- --  back (gstrandi aa r) = gstrand (aa , r)
+   -- --  back (gpointi a) = gpoint a
+   -- --  back (gpathi {e} aa r i) = gpath {e = e} (aa , r) i
 
-   --  sect : (g : Geli t) → fore (back g) ≡ g
-   --  sect (gstrandi aa r) i = gstrandi aa r
-   --  sect (gpointi a) i = gpointi a
-   --  sect (gpathi {e} aa r i) j = gpathi {e = e} aa r i
+   -- --  sect : (g : Geli t) → fore (back g) ≡ g
+   -- --  sect (gstrandi aa r) i = gstrandi aa r
+   -- --  sect (gpointi a) i = gpointi a
+   -- --  sect (gpathi {e} aa r i) j = gpathi {e = e} aa r i
 
-   --  retr : (g : Gel t) → back (fore g) ≡ g
-   --  retr (gstrand r) i = gstrand r
-   --  retr (gpoint a) i = gpoint a
-   --  retr (gpath{e} r i) j = gpath {e = e} r i
+   -- --  retr : (g : Gel t) → back (fore g) ≡ g
+   -- --  retr (gstrand r) i = gstrand r
+   -- --  retr (gpoint a) i = gpoint a
+   -- --  retr (gpath{e} r i) j = gpath {e = e} r i
