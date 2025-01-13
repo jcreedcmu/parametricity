@@ -29,7 +29,7 @@ Push-left-cong-equiv :
           (f : C → A) (g : C → B)
           (eq : A ≅ A')
           → Push {A = A} f g ≅ Push {A = A'} (λ c → funIsEq (eq .snd) (f c)) g
-Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEquiv (iso fore back {!!} {!!}) where
+Push-left-cong-equiv {ℓ1} {ℓ2} {ℓ3} {A = A} {A'} {C = C} f g eq = isoToEquiv (iso fore back sect retr) where
  fff = funIsEq (eq .snd)
  inv = invIsEq (eq .snd)
  sec = secIsEq (eq .snd)
