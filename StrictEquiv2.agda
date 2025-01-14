@@ -85,3 +85,30 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅ B) where
 
  invertPresSec : getSec q ≡ getRet (invert q)
  invertPresSec = refl
+
+module _ {ℓ : Level} {A : Set ℓ} where
+ yoneda-A : (a : A) → (s : Σ[ a' ∈ A ] (a ≡ a')) → (a , refl) ≡ s
+ yoneda-A a (a' , p) i = p i , λ j → p (i ∧ j)
+
+ A-contr : (a : A) → isContr (Σ A (λ a' → a ≡ a'))
+ A-contr a = (a , refl) , (yoneda-A a)
+
+ yoneda-B : (a : A) → (s : Σ[ a' ∈ A ] (a' ≡ a)) → (a , refl) ≡ s
+ yoneda-B a (a' , p) i = (p (~ i)) , λ j → p (~ i ∨ j)
+
+ B-contr : (a : A) → isContr (Σ A (λ a' → a' ≡ a))
+ B-contr a = (a , refl) , (yoneda-B a)
+
+ reflEquiv : A ≅ A
+ reflEquiv = (λ x → x) , record
+                          { R = λ a a' → a ≡ a'
+                          ; g = λ x → x
+                          ; A-contr = A-contr
+                          ; B-contr = B-contr
+                          ; f-match = λ _ → refl
+                          ; g-match = λ _ → refl
+                          }
+ open isEquiv
+ reflStrict : invert (reflEquiv) .snd .R ≡ reflEquiv .snd .R
+ reflStrict = {!refl!} -- doesn't strictly preserve R of the identity! can't give refl here
+                       -- This is Jason Gross's "Resurrecting this thread from many years ago" observation
