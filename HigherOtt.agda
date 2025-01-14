@@ -41,10 +41,11 @@ Bdd : ∀ {ℓ ℓ'} {A : Set ℓ} (B : A → Set ℓ') {a a' : A} (p : Bd A a a
 Bdd B p ba ba' = ap B p ba ba'
 
 postulate
- -- are f and f' x-generic or x-specific?
- Bdd/→ : ∀ {ℓ0 ℓ ℓ'} {X : Set ℓ0} {A : X → Set ℓ} {B : X → Set ℓ'} {f f' : (x : X) (a : A x) → B x }
-            {a a' : (x : X) → A x} (p : (x : X) → Bd (A x) (a x) (a' x)) {x x' : X} (x~ : Bd X x x')
-      → Bdd {A = X} (λ x → A x → B x) x~ (f x) (f' x') ≡p ({a : A x} {a' : A x'} → Bdd A x~ a a' → Bdd B x~ (f x a) (f' x' a'))
+ Bdd/→ : ∀ {ℓ0 ℓ ℓ'} {X : Set ℓ0} {A : X → Set ℓ} {B : X → Set ℓ'}
+             {x x' : X} (x~ : Bd X x x')
+             {f : (a : A x) → B x } {f' : (a : A x') → B x'}
+             {a : A x} {a' : A x'} (p : Bdd A x~ a a')
+      → Bdd {A = X} (λ x → A x → B x) x~ f f' ≡p ({a : A x} {a' : A x'} → Bdd A x~ a a' → Bdd B x~ (f a) (f' a'))
  -- {-# REWRITE Bdd/→ #-} -- can't make this a rewrite rule, as I'm effectively trying to do HOAS!
 
  Bd/Π : ∀ {ℓ ℓ'} {A : Set ℓ} {B : A → Set ℓ'} {f f' : (a : A) → B a} → Bd ((a : A) → B a) f f' ≡p
