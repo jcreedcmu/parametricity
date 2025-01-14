@@ -23,7 +23,11 @@ module HigherOtt where
 
 postulate
  Bd : ∀ {ℓ} (B : Set ℓ) → B → B → Set ℓ
+ ap2 : ∀ {ℓ ℓ'} {A1 A2 : Set ℓ} {B : Set ℓ'} {a1 a1' : A1} {a2 a2' : A2} (f : A1 → A2 → B)
+                (p1 : Bd A1 a1 a1') (p2 : Bd A2 a2 a2') → Bd B (f a1 a2) (f a1' a2')
  ap : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} {a a' : A} (f : A → B) (p : Bd A a a') → Bd B (f a) (f a')
+ brefl : ∀ {ℓ'}  {B : Set ℓ'} (f : B) → Bd B f f
+ isRefl : ∀ {ℓ ℓ'}  {B : Set ℓ'} (f f' : B) → Bd B f f' → Set ℓ -- levels??
 
  Bd/U : ∀ {ℓ} {A B : Set ℓ} → Bd (Set ℓ) A B ≡p (A → B → Set ℓ)
  {-# REWRITE Bd/U #-}
@@ -34,6 +38,8 @@ postulate
       ({a a' : A} → Bd A a a' → Bd B (f a) (f' a'))
  {-# REWRITE Bd/→ #-}
 
+ isRefl/U : ∀ {ℓ} (B C : Set ℓ) (d : Bd (Set ℓ) B C) → isRefl {B = Set ℓ} B C d ≡p
+   ( (((b : B) → isContr (Σ C (λ c → d b c)))) × (((c : C) → isContr (Σ B (λ b → d b c)))) )
 
  -- (f a) → (f a') → Set
 
@@ -65,3 +71,7 @@ foo id R = apd id R
 foo-step : (A B : Set) {id : (X : Set) → X → X} (R : A → B → Set)
     → ap (λ z → z → z) R (id A) (id B) ≡p ({a : A} {b : B} → R a b → R (id A a) (id B b))
 foo-step A B R = ap/→ A B R
+
+-- module _ where
+--  postulate
+--   isDiag : ∀ {ℓ} Bd
