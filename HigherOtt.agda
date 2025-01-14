@@ -41,11 +41,10 @@ Bdd : ∀ {ℓ ℓ'} {A : Set ℓ} (B : A → Set ℓ') {a a' : A} (p : Bd A a a
 Bdd B p ba ba' = ap B p ba ba'
 
 postulate
- Bdd/→ : ∀ {ℓ0 ℓ ℓ'} {X : Set ℓ0} {A : X → Set ℓ} {B : X → Set ℓ'}
-             {x x' : X} (x~ : Bd X x x')
+ ap/→ : ∀ {ℓ0 ℓ ℓ'} {X : Set ℓ0} {A : X → Set ℓ} {B : X → Set ℓ'}
+             (x x' : X) (x~ : Bd X x x')
              {f : (a : A x) → B x } {f' : (a : A x') → B x'}
-             {a : A x} {a' : A x'} (p : Bdd A x~ a a')
-      → Bdd {A = X} (λ x → A x → B x) x~ f f' ≡p ({a : A x} {a' : A x'} → Bdd A x~ a a' → Bdd B x~ (f a) (f' a'))
+      → ap (λ x → A x → B x) x~ f f' ≡p ({a : A x} {a' : A x'} → ap A x~ a a' → ap B x~ (f a) (f' a'))
  -- {-# REWRITE Bdd/→ #-} -- can't make this a rewrite rule, as I'm effectively trying to do HOAS!
 
  Bd/Π : ∀ {ℓ ℓ'} {A : Set ℓ} {B : A → Set ℓ'} {f f' : (a : A) → B a} → Bd ((a : A) → B a) f f' ≡p
@@ -55,6 +54,14 @@ postulate
 postulate
  apd : ∀ {ℓ ℓ'} {A : Set ℓ} {B : A → Set ℓ'} {a a' : A} (f : (a : A) → B a) (p : Bd A a a') → Bdd B p (f a) (f a')
 
-foo : {A B : Set} (id : (X : Set) → X → X) (R : A → B → Set) (a : A) (b : B) (r : R a b)
-      → ap {A = Set} {B = Set} (λ z → z → z) R (id A) (id B)
-foo id R a b r = apd id R
+ ap/id : ∀ {ℓ} {A B : Set ℓ} {R : A → B → Set ℓ} →
+        ap {a = A} {a' = B} (λ X → X) R ≡p R
+ {-# REWRITE ap/id #-}
+
+foo : {A B : Set} (id : (X : Set) → X → X) (R : A → B → Set)
+      → ap (λ z → z → z) R (id A) (id B)
+foo id R = apd id R
+
+foo-step : (A B : Set) {id : (X : Set) → X → X} (R : A → B → Set)
+    → ap (λ z → z → z) R (id A) (id B) ≡p ({a : A} {b : B} → R a b → R (id A a) (id B b))
+foo-step A B R = ap/→ A B R
