@@ -73,9 +73,9 @@ module _ where
  postulate
   isDiag : ∀ {ℓ ℓ'} {B : Set ℓ} (b : B) → Bd Unit B (λ _ → b) → Set ℓ' -- sketchy universe level stuff going on here
 
-  isDiag/U : ∀ {ℓ}  (A : Set ℓ) (d : Bd Unit _ (λ _ → A)) → isDiag A d ≡p ((a : A) → isContr (d (λ _ → a)))
+  isDiag/U : ∀ {ℓ}  (A : Set ℓ) (d : Bd Unit (Set ℓ) (λ _ → A)) → isDiag A d ≡p ((a : A) → isContr (d (λ _ → a)))
   {-# REWRITE isDiag/U #-}
 
   funcS : ∀ {ℓ} {S S' : Set} (f : S' → S) {B : Set ℓ} (b : S → B) → Bd S B b → Bd S' B (b ∘ f)
 
-  funcS/U : ∀ {ℓ} {S S' : Set} (f : S' → S) (A : S → Set ℓ) (d : Bd S _ A) → funcS f A d ≡p λ x → d λ s → {!!}
+  funcS/U : ∀ {ℓ} {S S' : Set} (f : S' → S) (A : S → Set ℓ) (d : Bd S (Set ℓ) A) → funcS f A d ≡p λ x' → {!Σ!}
