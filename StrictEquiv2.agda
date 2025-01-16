@@ -2,7 +2,7 @@
 
 open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_ ; pathToEquiv to p2e)
-open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_)
+open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_ ; refl to reflp)
 open import Agda.Builtin.Equality.Rewrite
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma
@@ -196,10 +196,11 @@ which is a prop.
    pab : mab ≡ mrb ∘ (invOfPath path-ra)
 
  record stage4 : Set (ℓ-suc ℓ) where
+  constructor c4
   field
    mrb : A → B
    erb : isEquiv mrb
-   pab : mab ≡ mrb
+   pab : mab ≡p mrb
 
  lemma01 : iseq' ≅ stage1
  lemma01 = {!!}
@@ -214,7 +215,18 @@ which is a prop.
  lemma34 = {!!}
 
  lemma4■ : stage4 ≅ iseq
- lemma4■ = {!!}
+ lemma4■ = isoToEquiv (iso fore back sect retr) where
+  fore : stage4 → iseq
+  fore (c4 .f erb reflp) = erb
+
+  back : iseq → stage4
+  back e = c4 f e reflp
+
+  sect : (e : iseq) → fore (back e) ≡ e
+  sect e = refl
+
+  retr : (e : stage4) → back (fore e) ≡ e
+  retr (c4 mrb erb reflp) = refl
 
  isEquiv'IsProp : isProp iseq'
  isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
