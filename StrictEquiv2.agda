@@ -103,7 +103,13 @@ module _ {ℓ : Level} {A : Set ℓ} where
  invertRefl : invert (reflEquiv) ≡ reflEquiv
  invertRefl = refl
 
-module _ {ℓ : Level} {A B : Set ℓ} where
+equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
+equivPresProp (f , fe) pa b1 b2 = sym (sec b1) ∙ cong f (pa (g b1) (g b2)) ∙ sec b2
+ where
+ g = invIsEq fe
+ sec = secIsEq fe
+
+module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
 
 {-
 Informal proof
@@ -156,5 +162,17 @@ which by J on pab is iso to
 which is a prop.
 
 -}
- isEquiv'IsProp : (f : A → B) → isProp (isEquiv' f)
- isEquiv'IsProp = {!!}
+ iseq = isEquiv f
+ iseq' = isEquiv' f
+
+ stageN = (Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (f ≡ mrb)))
+
+
+ isEquiv'IsProp : isProp iseq'
+ isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
+  where
+  bigEq : iseq' ≅ iseq
+  bigEq = iseq'
+       ≃⟨ {!!} ⟩ stageN
+       ≃⟨ {!!} ⟩ iseq
+       ■
