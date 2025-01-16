@@ -169,10 +169,20 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  univp : (A ≅ B) ≅ (A ≡p B)
  univp = compEquiv univp1 univp2
 
- required-path1 : (eab : A ≅ B) →
---               transport (equivFun univp1 eab) ≡p fst eab -- <-- definitionally equivalent to the following line
-                 transport (ua eab) ≡p fst eab
- required-path1 eab = pathToEq λ i a → uaβ eab a i
+ stage2 : Set (ℓ)
+ stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun univp eab)
+
+ lemma1/2 : stage1 ≅ stage2
+ lemma1/2 = invEquiv (Σ-cong-equiv-fst univp)
+
+ stage3 : Set (ℓ)
+ stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
+
+ -- Here comes the stage2 ≅ stage3 proof. It's kind of a mess and probably could be better.
+ -- This is an easy lemma that might be in a library somewhere already.
+
+ concat-lemma : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
+ concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
  required-path2' : (cp : A ≡p B) →
          getFunp cp ≡p transport (eqToPath cp)
@@ -183,20 +193,8 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
          getFunp (pathToEq cp) ≡p transport cp
  required-path2 cp = required-path2' (pathToEq cp) ∙p (ap transport (pathToEq (eqToPath-pathToEq cp)))
 
- stage2 : Set (ℓ)
- stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun univp eab)
-
- lemma1/2 : stage1 ≅ stage2
- lemma1/2 = invEquiv (Σ-cong-equiv-fst univp)
-
- stage3 : Set (ℓ)
- stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
-
- concat-lemma : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
- concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
-
  lemma2/3 : stage2 ≅ stage3
- lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (ua s) ∙p required-path1 s)
+ lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (ua s) ∙p (pathToEq λ i a → uaβ s a i))
 
  lemma3/■ : stage3 ≅ iseq
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
