@@ -139,7 +139,7 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  stage3 = isEquiv f
 
  stage1 : Set (ℓ-suc ℓ)
- stage1 = Σ[ eab ∈ (A ≡p B) ] (f ≡p getFunp eab)
+ stage1 = Σ[ eab ∈ (A ≡p B) ] f ≡p getFunp eab
 
  lemma0/1 : stage0 ≅ stage1
  lemma0/1 = isoToEquiv (iso fore back sect retr ) where
@@ -155,11 +155,13 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage0) → back (fore e) ≡ e
   retr (mkIsEq R _ reflp erb pab reflp) = refl
 
+ stage2 : Set (ℓ)
+ stage2 = Σ[ eab ∈ A ≅ B ] f ≡p fst eab
+
+ -- this is the equivalence we want to traverse in the first component of the Σ in
+ -- stage1 ≅ stage2
  univp : (A ≅ B) ≅ (A ≡p B)
  univp = compEquiv (invEquiv univalence) (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
-
- stage2 : Set (ℓ)
- stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
 
  -- This is an easy lemma that might be in a library somewhere already.
  concat-lemma : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
