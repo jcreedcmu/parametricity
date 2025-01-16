@@ -144,11 +144,11 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage0) → back (fore e) ≡ e
   retr (mkIsEquiv R _ era erb pab reflp) = refl
 
- tail : (R : Set ℓ) (path-ra : R ≅ A) → Set ℓ
- tail R path-ra = Σ[ erb ∈ (R ≅ B) ] (mab ≡p (erb .fst) ∘ (invIsEq (path-ra .snd)))
+ tail : (R : Set ℓ) (e : R ≅ A) → Set ℓ
+ tail R e = Σ[ erb ∈ (R ≅ B) ] (mab ≡p (erb .fst) ∘ (invIsEq (e .snd)))
 
  stage2 : Set (ℓ-suc ℓ)
- stage2 = Σ[ R ∈ Set ℓ ] Σ[ path-ra ∈ R ≅ A ] (tail R path-ra)
+ stage2 = Σ[ R ∈ Set ℓ ] Σ[ e ∈ R ≅ A ] (tail R e)
 
  lemma1/2 : stage1 ≅ stage2
  lemma1/2 = isoToEquiv (iso fore back sect retr) where
@@ -164,10 +164,20 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage1) → back (fore e) ≡ e
   retr (c1 R era erb pab) = refl
 
- J-like : (X : (R : Set ℓ) (path-ra : R ≅ A) → Set ℓ) → Set (ℓ-suc ℓ)
- J-like X = (Σ[ R ∈ Set ℓ ] Σ[ path-ra ∈ R ≅ A ] X R path-ra) ≅ (X A (idEquiv A))
+ J-like : (X : (R : Set ℓ) (e : R ≅ A) → Set ℓ) → Set (ℓ-suc ℓ)
+ J-like X = (Σ[ R ∈ Set ℓ ] Σ[ e ∈ R ≅ A ] X R e) ≅ (X A (idEquiv A))
 
- -- Maybe I can build this up out of J-like A for simpler types A...
+ ΣJ : {B : (R : Set ℓ) (e : R ≅ A) → Set ℓ}
+      {C : (R : Set ℓ) (e : R ≅ A) → B R e → Set ℓ}
+      --                     vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv this type is wrong surely...
+      (JB : J-like B) (JC : (b : (R : Set ℓ) (e : R ≅ A) → B R e) → J-like λ R e → C R e (b R e))
+      → J-like (λ R e → Σ (B R e) (λ b → C R e b))
+ ΣJ = {!!}
+
+ RBJ : J-like (λ R e → R ≅ B)
+ RBJ = {!!}
+
+
  tail-J : J-like tail
  tail-J = {!!}
 
