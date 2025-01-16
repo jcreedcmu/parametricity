@@ -111,6 +111,43 @@ module _ {ℓ : Level} {A : Set ℓ} where
  - Finally, we show that isEquiv' is a proposition.
  ---------------------------------------------------------------}
 
+module _ {ℓ : Level} {A B : Set ℓ} {mab : A → B} where
+
+ record stage8 : Set (ℓ-suc ℓ) where
+  constructor c8
+  field
+   R : Set ℓ
+   era : R ≅ A
+   erb : R ≅ B
+   pab : (mab ≡p (erb .fst) ∘ (invIsEq (era .snd)))
+
+ record stage9 : Set (ℓ) where
+  constructor c9
+  field
+   erb : A ≅ B
+   pab : (mab ≡p (erb .fst))
+
+ thm : stage8 ≅ stage9
+ thm = isoToEquiv (iso fore back sect retr) where
+  fore : stage8 → stage9
+  fore (c8 _ era erb pab) = c9 (compEquiv (invEquiv era) erb) pab
+
+  back : stage9 → stage8
+  back (c9 erb pab) = c8 A (idEquiv A) erb pab
+
+  -- c9 (compEquiv (invEquiv era) erb) pab
+  -- sect : (e : stage9) → fore (back e) ≡ e
+  -- sect : (e : stage9) → fore (c8 A (idEquiv A) (e .stage9.erb) (e .stage9.pab)) ≡ e
+  sect : (e : stage9) → c9 (compEquiv (invEquiv (idEquiv A)) (e .stage9.erb)) (e .stage9.pab) ≡ e
+  sect (c9 erb pab) = {!!}
+
+  -- retr : (e : stage8) → back (fore e) ≡ e
+  -- retr : (e : stage8) → back (c9 (compEquiv (invEquiv (e .stage8.era)) (e .stage8.erb)) (e .stage8.pab)) ≡ e
+  retr : (e : stage8) → c8 A (idEquiv A) (compEquiv (invEquiv (e .stage8.era)) (e .stage8.erb)) (e .stage8.pab) ≡ e
+
+  retr (c8 R era erb pab) = {!!}
+
+
 module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  mab = f -- a synonym
  iseq = isEquiv f
