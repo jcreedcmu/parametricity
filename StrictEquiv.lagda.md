@@ -46,10 +46,10 @@ record _≅'_ {ℓ : Level} (A : Set ℓ) (B : Set ℓ) : Set (ℓ-suc ℓ) wher
 ```
 
 <blockquote>
-Parenthetically: A bummer about this definition is it's at level ℓ+1 rather than ℓ. Is
-there any way we can interpret this as some kind of codata type? It
-smells something like a type of lazy pairs enhanced by equivalence
-information.
+Parenthetically: A bummer about this definition is it's at level ℓ+1
+rather than ℓ. Is there any way we can keep it at level ℓ by
+interpreting it as a codata type? It smells something like a type of
+lazy pairs enhanced by equivalence information.
 
     codata _&_ (A : Set ℓ) (B : Set ℓ) : Set ℓ where
       π₁ : A & B → A
@@ -58,7 +58,7 @@ information.
       γ₂ : (b : B) → isContr (fiber π₂ b)
 
 Except the two γ clauses are illegal,
-because they're not out of A & B.
+because they're not out of the type A & B.
 </blockquote>
 
  Anyway.
