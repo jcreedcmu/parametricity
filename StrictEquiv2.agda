@@ -12,17 +12,32 @@ module StrictEquiv2 where
 
 infix 4 _≅'_
 
+module _ {ℓ : Level} {A : Set ℓ} {B : Set ℓ}  where
+
+ getFunp : (q : A ≡p B) → A → B
+ getFunp reflp x = x
+
+ getInvp : (q : A ≡p B) → B → A
+ getInvp reflp x = x
+
+ getSecp : (q : A ≡p B) (b : B) → getFunp q (getInvp q b) ≡ b
+ getSecp reflp b = refl
+
+ getRetp : (q : A ≡p B) (a : A) → getInvp q (getFunp q a) ≡ a
+ getRetp reflp b = refl
+
 {-
- - Definition of isEquiv predicate on a function, bootstrapped off an existing one.
+ - Definition of isEquiv predicate on a function
  -}
 record isEquiv' {ℓ : Level} {A : Set ℓ} {B : Set ℓ} (mab : A → B) : Set (ℓ-suc ℓ) where
+ constructor mkIsEq
  field
   R : Set ℓ
   mba : B → A
-  era : R ≅ A
-  erb : R ≅ B
-  pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
-  pba : mba ≡ (era .fst) ∘ (invIsEq (erb .snd))
+  era : R ≡p A
+  erb : R ≡p B
+  pab : mab ≡p getFunp erb ∘ getInvp era
+  pba : mba ≡p getFunp era ∘ getInvp erb
 
 {-
  - Definition of equivalence relation between types.
@@ -40,10 +55,10 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  private
   open isEquiv' (q .snd)
   mab = q .fst
-  fra = funIsEq (era .snd)
-  frb = funIsEq (erb .snd)
-  ira = invIsEq (era .snd)
-  irb = invIsEq (erb .snd)
+  fra = getFunp era
+  frb = getFunp erb
+  ira = getInvp era
+  irb = getInvp erb
 
  getFun : A → B
  getFun = frb ∘ ira
@@ -52,10 +67,10 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  getInv = fra ∘ irb
 
  getSec : (b : B) → getFun (getInv b) ≡ b
- getSec b = cong frb (retIsEq (era .snd) (irb b)) ∙ secIsEq (erb .snd) b
+ getSec b = cong frb (getRetp (era) (irb b)) ∙ getSecp (erb) b
 
  getRet : (a : A) → getInv (getFun a) ≡ a
- getRet a = cong fra (retIsEq (erb .snd) (ira a)) ∙ secIsEq (era .snd) a
+ getRet a = cong fra (getRetp (erb) (ira a)) ∙ getSecp (era) a
 
  invert : B ≅' A
  invert = mba , (record
@@ -97,10 +112,10 @@ module _ {ℓ : Level} {A : Set ℓ} where
  reflEquiv = (λ x → x) , record
                           { R = A
                           ; mba = λ x → x
-                          ; era = (λ x → x) , idIsEquiv A
-                          ; erb = (λ x → x) , idIsEquiv A
-                          ; pab = refl
-                          ; pba = refl
+                          ; era = reflp
+                          ; erb = reflp
+                          ; pab = reflp
+                          ; pba = reflp
                           }
 
  invertRefl : invert (reflEquiv) ≡ reflEquiv
@@ -171,40 +186,29 @@ which is a prop.
  invOfPath : ∀ {ℓ} {A B : Set ℓ} → A ≡p B → B → A
  invOfPath reflp x = x
 
- record stage0 : Set (ℓ-suc ℓ) where
-  constructor c0
-  field
-   R : Set ℓ
-   mba : B → A
-   era : R ≅ A
-   erb : R ≅ B
-   pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
-   pba : mba ≡p (era .fst) ∘ (invIsEq (erb .snd))
-
- lemma■/0 : iseq' ≅ stage0
- lemma■/0 = {!!} -- deep application of Cubical.Data.Equality.Conversion.PathIsoEq
+ stage0 = iseq'
 
  record stage1 : Set (ℓ-suc ℓ) where
   constructor c1
   field
    R : Set ℓ
-   era : R ≅ A
-   erb : R ≅ B
-   pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
+   era : R ≡p A
+   erb : R ≡p B
+   pab : mab ≡p getFunp erb ∘ getInvp era
 
  lemma0/1 : stage0 ≅ stage1
  lemma0/1 = isoToEquiv (iso fore back sect retr ) where
   fore : stage0 → stage1
-  fore (c0 R _ era erb pab reflp) = c1 R era erb pab
+  fore (mkIsEq R _ era erb pab reflp) = c1 R era erb pab
 
   back : stage1 → stage0
-  back (c1 R era erb pab) = (c0 R ((era .fst) ∘ (invIsEq (erb .snd))) era erb pab reflp)
+  back (c1 R era erb pab) = mkIsEq R (getFunp era ∘ getInvp erb) era erb pab reflp
 
   sect : (e : stage1) → fore (back e) ≡ e
   sect (c1 R era erb pab) = refl
 
   retr : (e : stage0) → back (fore e) ≡ e
-  retr (c0 R mba era erb pab reflp) = refl
+  retr (mkIsEq R _ era erb pab reflp) = refl
 
  -- record stage3 : Set (ℓ-suc ℓ) where
  --  constructor c3
