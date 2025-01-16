@@ -178,23 +178,16 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  stage3 : Set (ℓ)
  stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
 
- -- Here comes the stage2 ≅ stage3 proof. It's kind of a mess and probably could be better.
  -- This is an easy lemma that might be in a library somewhere already.
-
  concat-lemma : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
  concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
- required-path2' : (cp : A ≡p B) →
-         getFunp cp ≡ transport (eqToPath cp)
- required-path2' reflp = λ i z → transportRefl z (~ i)
-
- required-path2 : (cp : A ≡ B) →
---       getFunp (equivFun univp2 cp) ≡ transport cp -- <-- definitionally equivalent to the following line
-         getFunp (pathToEq cp) ≡ transport cp
- required-path2 cp = (required-path2' (pathToEq cp) ∙ cong transport (eqToPath-pathToEq cp))
+ lemma2/3-match : (cp : A ≡p B) → getFunp cp ≡ transport (eqToPath cp)
+ lemma2/3-match reflp = λ i z → transportRefl z (~ i)
 
  lemma2/3 : stage2 ≅ stage3
- lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (pathToEq (required-path2 (ua s) ∙ (λ i a → uaβ s a i)))
+ lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (pathToEq
+     ((lemma2/3-match (pathToEq (ua s)) ∙ cong transport (eqToPath-pathToEq (ua s))) ∙ (λ i a → uaβ s a i)))
 
  lemma3/■ : stage3 ≅ iseq
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
