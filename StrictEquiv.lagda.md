@@ -4,7 +4,7 @@ title: Strictly Involutive Equivalence
 
 <!--
 ```agda
-{-# OPTIONS --cubical --rewriting #-}
+{-# OPTIONS --cubical --rewriting --allow-unsolved-metas #-}
 
 open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_ ; pathToEquiv to p2e)
