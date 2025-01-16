@@ -38,12 +38,13 @@ _≅'_ : {ℓ : Level} (A : Set ℓ) (B : Set ℓ) → Set (ℓ-suc ℓ)
 A ≅' B = Σ (A → B) isEquiv'
 
 module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
- open isEquiv' (q .snd)
- mab = q .fst
- fra = funIsEq era
- frb = funIsEq erb
- ira = invIsEq era
- irb = invIsEq erb
+ private
+  open isEquiv' (q .snd)
+  mab = q .fst
+  fra = funIsEq era
+  frb = funIsEq erb
+  ira = invIsEq era
+  irb = invIsEq erb
 
  getFun : A → B
  getFun = frb ∘ ira
@@ -162,17 +163,67 @@ which by J on pab is iso to
 which is a prop.
 
 -}
+ mab = f -- a synonym
  iseq = isEquiv f
  iseq' = isEquiv' f
 
- stageN = (Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (f ≡ mrb)))
+ invOfPath : ∀ {ℓ} {A B : Set ℓ} → A ≡ B → B → A
+ invOfPath = {!!}
 
+ record stage1 : Set (ℓ-suc ℓ) where
+  field
+   R : Set ℓ
+   mra : R → A
+   mrb : R → B
+   era : isEquiv mra
+   erb : isEquiv mrb
+   pab : mab ≡ mrb ∘ (invIsEq era)
+
+ record stage2 : Set (ℓ-suc ℓ) where
+  field
+   R : Set ℓ
+   iso-ra : R ≅ A
+   mrb : R → B
+   erb : isEquiv mrb
+   pab : mab ≡ mrb ∘ (invIsEq (iso-ra .snd))
+
+ record stage3 : Set (ℓ-suc ℓ) where
+  field
+   R : Set ℓ
+   path-ra : R ≡ A
+   mrb : R → B
+   erb : isEquiv mrb
+   pab : mab ≡ mrb ∘ (invOfPath path-ra)
+
+ record stage4 : Set (ℓ-suc ℓ) where
+  field
+   mrb : A → B
+   erb : isEquiv mrb
+   pab : mab ≡ mrb
+
+ lemma01 : iseq' ≅ stage1
+ lemma01 = {!!}
+
+ lemma12 : stage1 ≅ stage2
+ lemma12 = {!!}
+
+ lemma23 : stage2 ≅ stage3
+ lemma23 = {!!}
+
+ lemma34 : stage3 ≅ stage4
+ lemma34 = {!!}
+
+ lemma4■ : stage4 ≅ iseq
+ lemma4■ = {!!}
 
  isEquiv'IsProp : isProp iseq'
  isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
   where
   bigEq : iseq' ≅ iseq
   bigEq = iseq'
-       ≃⟨ {!!} ⟩ stageN
-       ≃⟨ {!!} ⟩ iseq
+       ≃⟨ lemma01 ⟩ stage1
+       ≃⟨ lemma12 ⟩ stage2
+       ≃⟨ lemma23 ⟩ stage3
+       ≃⟨ lemma34 ⟩ stage4
+       ≃⟨ lemma4■ ⟩ iseq
        ■
