@@ -126,60 +126,6 @@ module _ {ℓ : Level} {A : Set ℓ} where
  ---------------------------------------------------------------}
 
 module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
-
-{-
-Proof sketch:
-
-The record
-
-  R : Set ℓ
-  mba : B → A
-  mra : R → A
-  mrb : R → B
-  era : isEquiv mra
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invIsEq era)
-  pba : mba ≡ mra ∘ (invIsEq erb)
-
-is iso (by J, by observing that pba fixes what mba must be) to
-
-  R : Set ℓ
-  mra : R → A
-  mrb : R → B
-  era : isEquiv mra
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invIsEq era)
-
-which is iso (by combining mra and era) to
-
-  R : Set ℓ
-  iso-ra : R ≅ A
-  mrb : R → B
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invOfIso iso-ra)
-
-but by univalence that's iso to
-
-  R : Set ℓ
-  path-ra : R ≡ A
-  mrb : R → B
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invOfPath path-ra)
-
-so by J on R  path-ra, this is iso to
-
-  mrb : A → B
-  erb : isEquiv mrb
-  pab : mab ≡ mrb
-
-which by J on pab is iso to
-
-  erb : isEquiv mab
-
-which is a prop.
-
--}
- mab = f -- a synonym
  iseq = isEquiv f
  iseq' = isEquiv' f
 
@@ -188,93 +134,73 @@ which is a prop.
 
  stage0 = iseq'
 
- record stage1 : Set (ℓ-suc ℓ) where
-  constructor c1
-  field
-   erb : A ≡p B
-   pab : mab ≡p getFunp erb
+ stage1 : Set (ℓ-suc ℓ)
+ stage1 = Σ[ eab ∈ (A ≡p B) ] (f ≡p getFunp eab)
 
  lemma0/1 : stage0 ≅ stage1
  lemma0/1 = isoToEquiv (iso fore back sect retr ) where
   fore : stage0 → stage1
-  fore (mkIsEq R _ reflp erb pab reflp) = c1 erb pab
+  fore (mkIsEq R _ reflp erb pab reflp) = erb , pab
 
   back : stage1 → stage0
-  back (c1 erb pab) = mkIsEq A (getInvp erb) reflp erb pab reflp
+  back (erb , pab) = mkIsEq A (getInvp erb) reflp erb pab reflp
 
   sect : (e : stage1) → fore (back e) ≡ e
-  sect (c1 erb pab) = refl
+  sect (erb , pab) = refl
 
   retr : (e : stage0) → back (fore e) ≡ e
   retr (mkIsEq R _ reflp erb pab reflp) = refl
 
- -- record stage3 : Set (ℓ-suc ℓ) where
- --  constructor c3
- --  field
- --   R : Set ℓ
- --   path-ra : R ≡p A
- --   mrb : R → B
- --   erb : isEquiv mrb
- --   pab : mab ≡ mrb ∘ (invOfPath path-ra)
+ lemma-inner : Σ (A → B) isEquiv ≅ (A ≡p B)
+ lemma-inner = isoToEquiv {!!}
+  -- XXX I should get this from library functions
 
- -- lemma2/3 : stage2 ≅ stage3
- -- lemma2/3 = {!!} -- by univalence
+ required-path : (eab : Σ (A → B) isEquiv) →
+                 getFunp (equivFun lemma-inner eab) ≡p fst eab
+ required-path = {!!}
 
- -- stage3a : Set ℓ
- -- stage3a = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
+ stage2 : Set (ℓ)
+ stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun lemma-inner eab)
 
- -- lemma3/3a : stage3 ≅ stage3a
- -- lemma3/3a = isoToEquiv (iso fore back sect retr) where
- --  fore : stage3 → stage3a
- --  fore (c3 .A reflp mrb erb pab) = mrb , (erb , pab)
+ lemma1/2 : stage1 ≅ stage2
+ lemma1/2 = invEquiv (Σ-cong-equiv-fst lemma-inner)
 
- --  back : stage3a → stage3
- --  back (mrb , erb , pab) = c3 A reflp mrb erb pab
+ stage3 : Set (ℓ)
+ stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
 
- --  sect : (e : stage3a) → fore (back e) ≡ e
- --  sect (mrb , erb , pab) = refl
+ lemma-thing : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
+ lemma-thing = {!!}
 
- --  retr : (e : stage3) → back (fore e) ≡ e
- --  retr (c3 .A reflp mrb erb pab) = refl
+ lemma2/3 : stage2 ≅ stage3
+ lemma2/3 = Σ-cong-equiv-snd λ s → lemma-thing (required-path s)
 
- -- stage4 : Set ℓ
- -- stage4 = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡p mrb))
+ lemma3/■ : stage3 ≅ iseq
+ lemma3/■ = isoToEquiv (iso fore back sect retr) where
+  fore : stage3 → iseq
+  fore ((.f , fe) , reflp) = fe
 
- -- lemma3a/4 : stage3a ≅ stage4
- -- lemma3a/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
- --              Σ-cong-equiv (idEquiv (isEquiv mrb)) λ _ →
- --              (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
+  back : iseq → stage3
+  back fe = ((f , fe) , reflp)
 
- -- lemma4/■ : stage4 ≅ iseq
- -- lemma4/■ = isoToEquiv (iso fore back sect retr) where
- --  fore : stage4 → iseq
- --  fore (_ , (erb , reflp)) = erb
+  sect : (e : iseq) → fore (back e) ≡ e
+  sect e = refl
 
- --  back : iseq → stage4
- --  back e = (f , (e , reflp))
+  retr : (e : stage3) → back (fore e) ≡ e
+  retr ((.f , fe) , reflp) = refl
 
- --  sect : (e : iseq) → fore (back e) ≡ e
- --  sect e = refl
+ isEquiv'IsProp : isProp iseq'
+ isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
+  where
+  equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
+  equivPresProp (f , fe) pa b1 b2 = sym (sec b1) ∙ cong f (pa (g b1) (g b2)) ∙ sec b2
+   where
+   g = invIsEq fe
+   sec = secIsEq fe
 
- --  retr : (e : stage4) → back (fore e) ≡ e
- --  retr (_ , (_ , reflp)) = refl
-
- -- isEquiv'IsProp : isProp iseq'
- -- isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
- --  where
- --  equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
- --  equivPresProp (f , fe) pa b1 b2 = sym (sec b1) ∙ cong f (pa (g b1) (g b2)) ∙ sec b2
- --   where
- --   g = invIsEq fe
- --   sec = secIsEq fe
-
- --  bigEq : iseq' ≅ iseq
- --  bigEq = iseq'
- --       ≃⟨ lemma■/0 ⟩ stage0
- --       ≃⟨ lemma0/1 ⟩ stage1
- --       ≃⟨ lemma1/2 ⟩ stage2
- --       ≃⟨ lemma2/3 ⟩ stage3
- --       ≃⟨ lemma3/3a ⟩ stage3a
- --       ≃⟨ lemma3a/4 ⟩ stage4
- --       ≃⟨ lemma4/■ ⟩ iseq
- --       ■
+  bigEq : iseq' ≅ iseq
+  bigEq = iseq'
+       ≃⟨ lemma0/1 ⟩ stage1
+       ≃⟨ lemma1/2 ⟩ stage2
+       ≃⟨ lemma2/3 ⟩ stage3
+       ≃⟨ lemma3/■ ⟩ iseq
+       ■
