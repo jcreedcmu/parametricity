@@ -191,24 +191,22 @@ which is a prop.
  record stage1 : Set (ℓ-suc ℓ) where
   constructor c1
   field
-   R : Set ℓ
-   era : R ≡p A
-   erb : R ≡p B
-   pab : mab ≡p getFunp erb ∘ getInvp era
+   erb : A ≡p B
+   pab : mab ≡p getFunp erb
 
  lemma0/1 : stage0 ≅ stage1
  lemma0/1 = isoToEquiv (iso fore back sect retr ) where
   fore : stage0 → stage1
-  fore (mkIsEq R _ era erb pab reflp) = c1 R era erb pab
+  fore (mkIsEq R _ reflp erb pab reflp) = c1 erb pab
 
   back : stage1 → stage0
-  back (c1 R era erb pab) = mkIsEq R (getFunp era ∘ getInvp erb) era erb pab reflp
+  back (c1 erb pab) = mkIsEq A (getInvp erb) reflp erb pab reflp
 
   sect : (e : stage1) → fore (back e) ≡ e
-  sect (c1 R era erb pab) = refl
+  sect (c1 erb pab) = refl
 
   retr : (e : stage0) → back (fore e) ≡ e
-  retr (mkIsEq R _ era erb pab reflp) = refl
+  retr (mkIsEq R _ reflp erb pab reflp) = refl
 
  -- record stage3 : Set (ℓ-suc ℓ) where
  --  constructor c3
