@@ -176,12 +176,10 @@ which is a prop.
   field
    R : Set ℓ
    mba : B → A
-   mra : R → A
-   mrb : R → B
-   era : isEquiv mra
-   erb : isEquiv mrb
-   pab : mab ≡ mrb ∘ (invIsEq era)
-   pba : mba ≡p mra ∘ (invIsEq erb)
+   era : R ≅ A
+   erb : R ≅ B
+   pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
+   pba : mba ≡p (era .fst) ∘ (invIsEq (erb .snd))
 
  lemma■/0 : iseq' ≅ stage0
  lemma■/0 = {!!} -- deep application of Cubical.Data.Equality.Conversion.PathIsoEq
@@ -190,116 +188,91 @@ which is a prop.
   constructor c1
   field
    R : Set ℓ
-   mra : R → A
-   mrb : R → B
-   era : isEquiv mra
-   erb : isEquiv mrb
-   pab : mab ≡ mrb ∘ (invIsEq era)
+   era : R ≅ A
+   erb : R ≅ B
+   pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
 
  lemma0/1 : stage0 ≅ stage1
- lemma0/1 = isoToEquiv (iso fore back sect retr) where
+ lemma0/1 = isoToEquiv (iso fore back sect retr ) where
   fore : stage0 → stage1
-  fore (c0 R mba mra mrb era erb pab reflp) = c1 R mra mrb era erb pab
+  fore (c0 R _ era erb pab reflp) = c1 R era erb pab
 
   back : stage1 → stage0
-  back (c1 R mra mrb era erb pab) = (c0 R (mra ∘ (invIsEq erb)) mra mrb era erb pab reflp)
+  back (c1 R era erb pab) = (c0 R ((era .fst) ∘ (invIsEq (erb .snd))) era erb pab reflp)
 
   sect : (e : stage1) → fore (back e) ≡ e
-  sect (c1 R mra mrb era erb pab) = refl
+  sect (c1 R era erb pab) = refl
 
   retr : (e : stage0) → back (fore e) ≡ e
-  retr (c0 R mba mra mrb era erb pab reflp) = refl
+  retr (c0 R mba era erb pab reflp) = refl
 
- record stage2 : Set (ℓ-suc ℓ) where
-  constructor c2
-  field
-   R : Set ℓ
-   iso-ra : R ≅ A
-   mrb : R → B
-   erb : isEquiv mrb
-   pab : mab ≡ mrb ∘ (invIsEq (iso-ra .snd))
+ -- record stage3 : Set (ℓ-suc ℓ) where
+ --  constructor c3
+ --  field
+ --   R : Set ℓ
+ --   path-ra : R ≡p A
+ --   mrb : R → B
+ --   erb : isEquiv mrb
+ --   pab : mab ≡ mrb ∘ (invOfPath path-ra)
 
- lemma1/2 : stage1 ≅ stage2
- lemma1/2 = isoToEquiv (iso fore back sect retr) where
-  fore : stage1 → stage2
-  fore (c1 R mra mrb era erb pab) = c2 R (mra , era) mrb erb pab
+ -- lemma2/3 : stage2 ≅ stage3
+ -- lemma2/3 = {!!} -- by univalence
 
-  back : stage2 → stage1
-  back (c2 R (mra , era) mrb erb pab) = (c1 R mra mrb era erb pab)
+ -- stage3a : Set ℓ
+ -- stage3a = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
 
-  sect : (e : stage2) → fore (back e) ≡ e
-  sect (c2 R (mra , era) mrb erb pab) = refl
+ -- lemma3/3a : stage3 ≅ stage3a
+ -- lemma3/3a = isoToEquiv (iso fore back sect retr) where
+ --  fore : stage3 → stage3a
+ --  fore (c3 .A reflp mrb erb pab) = mrb , (erb , pab)
 
-  retr : (e : stage1) → back (fore e) ≡ e
-  retr (c1 R mra mrb era erb pab) = refl
+ --  back : stage3a → stage3
+ --  back (mrb , erb , pab) = c3 A reflp mrb erb pab
 
- record stage3 : Set (ℓ-suc ℓ) where
-  constructor c3
-  field
-   R : Set ℓ
-   path-ra : R ≡p A
-   mrb : R → B
-   erb : isEquiv mrb
-   pab : mab ≡ mrb ∘ (invOfPath path-ra)
+ --  sect : (e : stage3a) → fore (back e) ≡ e
+ --  sect (mrb , erb , pab) = refl
 
- lemma2/3 : stage2 ≅ stage3
- lemma2/3 = {!!} -- by univalence
+ --  retr : (e : stage3) → back (fore e) ≡ e
+ --  retr (c3 .A reflp mrb erb pab) = refl
 
- stage3a : Set ℓ
- stage3a = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
+ -- stage4 : Set ℓ
+ -- stage4 = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡p mrb))
 
- lemma3/3a : stage3 ≅ stage3a
- lemma3/3a = isoToEquiv (iso fore back sect retr) where
-  fore : stage3 → stage3a
-  fore (c3 .A reflp mrb erb pab) = mrb , (erb , pab)
+ -- lemma3a/4 : stage3a ≅ stage4
+ -- lemma3a/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
+ --              Σ-cong-equiv (idEquiv (isEquiv mrb)) λ _ →
+ --              (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
 
-  back : stage3a → stage3
-  back (mrb , erb , pab) = c3 A reflp mrb erb pab
+ -- lemma4/■ : stage4 ≅ iseq
+ -- lemma4/■ = isoToEquiv (iso fore back sect retr) where
+ --  fore : stage4 → iseq
+ --  fore (_ , (erb , reflp)) = erb
 
-  sect : (e : stage3a) → fore (back e) ≡ e
-  sect (mrb , erb , pab) = refl
+ --  back : iseq → stage4
+ --  back e = (f , (e , reflp))
 
-  retr : (e : stage3) → back (fore e) ≡ e
-  retr (c3 .A reflp mrb erb pab) = refl
+ --  sect : (e : iseq) → fore (back e) ≡ e
+ --  sect e = refl
 
- stage4 : Set ℓ
- stage4 = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡p mrb))
+ --  retr : (e : stage4) → back (fore e) ≡ e
+ --  retr (_ , (_ , reflp)) = refl
 
- lemma3a/4 : stage3a ≅ stage4
- lemma3a/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
-              Σ-cong-equiv (idEquiv (isEquiv mrb)) λ _ →
-              (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
+ -- isEquiv'IsProp : isProp iseq'
+ -- isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
+ --  where
+ --  equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
+ --  equivPresProp (f , fe) pa b1 b2 = sym (sec b1) ∙ cong f (pa (g b1) (g b2)) ∙ sec b2
+ --   where
+ --   g = invIsEq fe
+ --   sec = secIsEq fe
 
- lemma4/■ : stage4 ≅ iseq
- lemma4/■ = isoToEquiv (iso fore back sect retr) where
-  fore : stage4 → iseq
-  fore (_ , (erb , reflp)) = erb
-
-  back : iseq → stage4
-  back e = (f , (e , reflp))
-
-  sect : (e : iseq) → fore (back e) ≡ e
-  sect e = refl
-
-  retr : (e : stage4) → back (fore e) ≡ e
-  retr (_ , (_ , reflp)) = refl
-
- isEquiv'IsProp : isProp iseq'
- isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
-  where
-  equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
-  equivPresProp (f , fe) pa b1 b2 = sym (sec b1) ∙ cong f (pa (g b1) (g b2)) ∙ sec b2
-   where
-   g = invIsEq fe
-   sec = secIsEq fe
-
-  bigEq : iseq' ≅ iseq
-  bigEq = iseq'
-       ≃⟨ lemma■/0 ⟩ stage0
-       ≃⟨ lemma0/1 ⟩ stage1
-       ≃⟨ lemma1/2 ⟩ stage2
-       ≃⟨ lemma2/3 ⟩ stage3
-       ≃⟨ lemma3/3a ⟩ stage3a
-       ≃⟨ lemma3a/4 ⟩ stage4
-       ≃⟨ lemma4/■ ⟩ iseq
-       ■
+ --  bigEq : iseq' ≅ iseq
+ --  bigEq = iseq'
+ --       ≃⟨ lemma■/0 ⟩ stage0
+ --       ≃⟨ lemma0/1 ⟩ stage1
+ --       ≃⟨ lemma1/2 ⟩ stage2
+ --       ≃⟨ lemma2/3 ⟩ stage3
+ --       ≃⟨ lemma3/3a ⟩ stage3a
+ --       ≃⟨ lemma3a/4 ⟩ stage4
+ --       ≃⟨ lemma4/■ ⟩ iseq
+ --       ■
