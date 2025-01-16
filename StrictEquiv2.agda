@@ -19,12 +19,10 @@ record isEquiv' {ℓ : Level} {A : Set ℓ} {B : Set ℓ} (mab : A → B) : Set 
  field
   R : Set ℓ
   mba : B → A
-  mra : R → A
-  mrb : R → B
-  era : isEquiv mra
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invIsEq era)
-  pba : mba ≡ mra ∘ (invIsEq erb)
+  era : R ≅ A
+  erb : R ≅ B
+  pab : mab ≡ (erb .fst) ∘ (invIsEq (era .snd))
+  pba : mba ≡ (era .fst) ∘ (invIsEq (erb .snd))
 
 {-
  - Definition of equivalence relation between types.
@@ -42,10 +40,10 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  private
   open isEquiv' (q .snd)
   mab = q .fst
-  fra = funIsEq era
-  frb = funIsEq erb
-  ira = invIsEq era
-  irb = invIsEq erb
+  fra = funIsEq (era .snd)
+  frb = funIsEq (erb .snd)
+  ira = invIsEq (era .snd)
+  irb = invIsEq (erb .snd)
 
  getFun : A → B
  getFun = frb ∘ ira
@@ -54,17 +52,15 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  getInv = fra ∘ irb
 
  getSec : (b : B) → getFun (getInv b) ≡ b
- getSec b = cong frb (retIsEq era (irb b)) ∙ secIsEq erb b
+ getSec b = cong frb (retIsEq (era .snd) (irb b)) ∙ secIsEq (erb .snd) b
 
  getRet : (a : A) → getInv (getFun a) ≡ a
- getRet a = cong fra (retIsEq erb (ira a)) ∙ secIsEq era a
+ getRet a = cong fra (retIsEq (erb .snd) (ira a)) ∙ secIsEq (era .snd) a
 
  invert : B ≅' A
  invert = mba , (record
                   { R = R
                   ; mba = mab
-                  ; mra = mrb
-                  ; mrb = mra
                   ; era = erb
                   ; erb = era
                   ; pab = pba
@@ -101,10 +97,8 @@ module _ {ℓ : Level} {A : Set ℓ} where
  reflEquiv = (λ x → x) , record
                           { R = A
                           ; mba = λ x → x
-                          ; mra = λ x → x
-                          ; mrb = λ x → x
-                          ; era = idIsEquiv A
-                          ; erb = idIsEquiv A
+                          ; era = (λ x → x) , idIsEquiv A
+                          ; erb = (λ x → x) , idIsEquiv A
                           ; pab = refl
                           ; pba = refl
                           }
