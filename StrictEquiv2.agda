@@ -163,8 +163,9 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  lemma-inner = compEquiv lemma-inner1 lemma-inner2
 
  required-path1 : (eab : A ≅ B) →
-                 transport (equivFun lemma-inner1 eab) ≡p fst eab
- required-path1 (f , iseq) = {!!}
+--               transport (equivFun lemma-inner1 eab) ≡p fst eab -- <-- definitionally equivalent
+                 transport (ua eab) ≡p fst eab
+ required-path1 eab = pathToEq λ i a → uaβ eab a i
 
  required-path2 : (cp : A ≡ B) →
          getFunp (equivFun lemma-inner2 cp) ≡p transport cp
