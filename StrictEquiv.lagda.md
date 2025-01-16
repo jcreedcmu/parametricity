@@ -139,7 +139,7 @@ module _ {ℓ : Level} {A B : Set ℓ} where
 
 We must show that being an equivalence is a mere proposition.
 The informal proof I have in mind is this:
-isEquiv' h is
+`isEquiv' h` is
 
     { R : Set,
       f : R ≅ A,
@@ -174,7 +174,34 @@ really is the partner of our prior definition of equivalence.
 That is, two types being equivalent is the same thing as there
 existing a function between them that is an equivalence.
 
+The informal proof I have in mind is this:
+`(Σ (A → B) isEquiv')` is the same as
+
+    { h : A → B
+      R : Set,
+      f : R ≅ A,
+      g : R ≅ B,
+      _ : funOfEquiv g ∘ invOfEquiv f ≡ h }
+
+which is isomorphic to
+
+    { h : A → B
+      R : Set,
+      f : R ≡ A,
+      g : R ≅ B,
+      _ : funOfEquiv g ∘ invOfPath f ≡ h }
+
+which is isomorphic to
+
+    { h : A → B
+      g : A ≅ B,
+      _ : funOfEquiv g ≡ h }
+
+which is isomorphic to
+
+    A ≅ B
+
 ```agda
- isoSplits : (A ≅ B) ≅ (Σ (A → B) isEquiv')
+ isoSplits : (Σ (A → B) isEquiv') ≅ (A ≅ B)
  isoSplits = {!!}
 ```
