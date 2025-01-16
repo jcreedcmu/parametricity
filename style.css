@@ -2,6 +2,11 @@ body {
   background-color: #fafaf7;
   max-width: 40em;
   margin: auto;
+  font-family: sans-serif;
+}
+
+blockquote {
+  font-size: 0.8em;
 }
 
 pre {

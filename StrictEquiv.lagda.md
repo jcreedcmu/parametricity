@@ -13,7 +13,7 @@ open import Agda.Builtin.Equality.Rewrite
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma
 open import Cubical.Data.Empty renaming (rec to aborti)
-open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Equiv hiding (isEquiv')
 open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Prelude
@@ -30,6 +30,8 @@ module StrictEquiv where
 infix 4 _≅'_
 ```
 -->
+
+## Strictly Involutive Equivalence
 
 An alternative notion of equivalence, bootstrapped off of an existing one.
 We merely give ourselves one type's worth of "slack", to make the definition
@@ -61,8 +63,9 @@ Except the two γ clauses are illegal,
 because they're not out of the type A & B.
 </blockquote>
 
- Anyway.
- First we compute all the usual things that we can compute from an equivalence
+Anyway.
+First we compute all the usual things that we can compute from an equivalence.
+
 ```agda
 module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  open _≅'_ q
@@ -87,8 +90,10 @@ module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  invert = record { R = R ; f = g ; g = f ; fe = ge ; ge = fe }
 
 ```
- Inversion is strictly involutive, and all of the useful properties
- are strictly exchanged under inversion as expected
+
+Inversion is strictly involutive, and all of the useful properties
+are strictly exchanged under inversion as expected.
+
 ```agda
 module _ {ℓ : Level} {A B : Set ℓ} (q : A ≅' B) where
  open _≅'_
@@ -119,4 +124,19 @@ module _ {ℓ : Level} {A : Set ℓ} where
 
  invertRefl : invert (reflEquiv) ≡ reflEquiv
  invertRefl = refl
+```
+
+Now we'd like to show that a function *being* an equivalence is a mere
+proposition.
+
+```agda
+module _ {ℓ : Level} {A B : Set ℓ} where
+ isEquiv' : (A → B) → Set (ℓ-suc ℓ)
+ isEquiv' f = Σ[ q ∈ A ≅' B ] getFun q ≡ f
+
+ isoSplits : (A ≅ B) ≅ (Σ (A → B) isEquiv')
+ isoSplits = {!!}
+
+ isEquiv'IsProp : (f : A → B) → isProp (isEquiv' f)
+ isEquiv'IsProp = {!!}
 ```
