@@ -6,6 +6,7 @@ open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv hiding (isEquiv')
 open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Prelude
 open import Function.Base
 module StrictEquiv2 where
@@ -151,13 +152,18 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage0) → back (fore e) ≡ e
   retr (mkIsEq R _ reflp erb pab reflp) = refl
 
- lemma-inner : Σ (A → B) isEquiv ≅ (A ≡p B)
- lemma-inner = isoToEquiv {!!}
-  -- XXX I should get this from library functions
+ lemma-inner1 : (A ≅ B) ≅ (A ≡ B)
+ lemma-inner1 = invEquiv univalence
+
+ lemma-inner2 : (A ≡ B) ≅ (A ≡p B)
+ lemma-inner2 = isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq
+
+ lemma-inner : (A ≅ B) ≅ (A ≡p B)
+ lemma-inner = compEquiv lemma-inner1 lemma-inner2
 
  required-path : (eab : Σ (A → B) isEquiv) →
                  getFunp (equivFun lemma-inner eab) ≡p fst eab
- required-path = {!!}
+ required-path (f , iseq) = {!!}
 
  stage2 : Set (ℓ)
  stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun lemma-inner eab)
@@ -169,7 +175,7 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
 
  lemma-thing : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
- lemma-thing = {!!}
+ lemma-thing {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
  lemma2/3 : stage2 ≅ stage3
  lemma2/3 = Σ-cong-equiv-snd λ s → lemma-thing (required-path s)
