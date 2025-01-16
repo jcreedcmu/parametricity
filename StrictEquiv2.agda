@@ -1,24 +1,13 @@
 {-# OPTIONS --cubical --rewriting --allow-unsolved-metas  #-}
 
-open import Agda.Primitive
-open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_ ; pathToEquiv to p2e)
+open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_ ; refl to reflp)
-open import Agda.Builtin.Equality.Rewrite
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma
-open import Cubical.Data.Empty renaming (rec to aborti)
 open import Cubical.Foundations.Equiv hiding (isEquiv')
 open import Cubical.Foundations.Isomorphism
-open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Prelude
-open import Cubical.Functions.Embedding
-open import Cubical.Relation.Nullary
-open import Interval.Axioms
-open import Interval.Discreteness
-import Interval.Gel
-import Interval.Functoriality
 open import Function.Base
-
 module StrictEquiv2 where
 
 infix 4 _≅'_
