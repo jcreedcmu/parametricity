@@ -4,7 +4,7 @@ title: Strictly Involutive Equivalence
 
 <!--
 ```agda
-{-# OPTIONS --cubical --rewriting --allow-unsolved-metas #-}
+{-# OPTIONS --cubical --rewriting --allow-unsolved-metas  #-}
 
 open import Agda.Primitive
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_ ; pathToEquiv to p2e)
@@ -138,6 +138,31 @@ module _ {ℓ : Level} {A B : Set ℓ} where
 ```
 
 We must show that being an equivalence is a mere proposition.
+The informal proof I have in mind is this:
+isEquiv' h is
+
+    { R : Set,
+      f : R ≅ A,
+      g : R ≅ B,
+      _ : funOfEquiv g ∘ invOfEquiv f ≡ h }
+
+By univalence, this is the same as
+
+    { R : Set,
+      f : R ≡ A,
+      g : R ≅ B,
+      _ : funOfEquiv g ∘ invOfPath f ≡ h }
+
+so by path induction this should be the same as
+
+    { g : A ≅ B,
+      _ : funOfEquiv g ≡ h }
+
+hence this should be the same as
+
+    isEquiv h
+
+which is known to be a proposition.
 
 ```agda
  isEquiv'IsProp : (f : A → B) → isProp (isEquiv' f)
