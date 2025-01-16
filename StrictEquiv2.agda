@@ -135,13 +135,7 @@ module _ {ℓ : Level} {A : Set ℓ} where
  ---------------------------------------------------------------}
 
 module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
- iseq = isEquiv f
- iseq' = isEquiv' f
-
- invOfPath : ∀ {ℓ} {A B : Set ℓ} → A ≡p B → B → A
- invOfPath reflp x = x
-
- stage0 = iseq'
+ stage0 = isEquiv' f
 
  stage1 : Set (ℓ-suc ℓ)
  stage1 = Σ[ eab ∈ (A ≡p B) ] (f ≡p getFunp eab)
@@ -189,15 +183,15 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (pathToEq
      ((lemma2/3-match (pathToEq (ua s)) ∙ cong transport (eqToPath-pathToEq (ua s))) ∙ (λ i a → uaβ s a i)))
 
- lemma3/■ : stage3 ≅ iseq
+ lemma3/■ : stage3 ≅ isEquiv f
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
-  fore : stage3 → iseq
+  fore : stage3 → isEquiv f
   fore ((.f , fe) , reflp) = fe
 
-  back : iseq → stage3
+  back : isEquiv f → stage3
   back fe = ((f , fe) , reflp)
 
-  sect : (e : iseq) → fore (back e) ≡ e
+  sect : (e : isEquiv f) → fore (back e) ≡ e
   sect e = refl
 
   retr : (e : stage3) → back (fore e) ≡ e
@@ -206,7 +200,7 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
 {---------------------------------------------------------------
  - Here it is:
  ---------------------------------------------------------------}
- isEquiv'IsProp : isProp iseq'
+ isEquiv'IsProp : isProp (isEquiv' f)
  isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
   where
   equivPresProp : ∀ {ℓ ℓ'} {A : Set ℓ} {B : Set ℓ'} → A ≅ B → isProp A → isProp B
@@ -215,10 +209,10 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
    g = invIsEq fe
    sec = secIsEq fe
 
-  bigEq : iseq' ≅ iseq
-  bigEq = iseq'
+  bigEq : isEquiv' f ≅ isEquiv f
+  bigEq = isEquiv' f
        ≃⟨ lemma0/1 ⟩ stage1
        ≃⟨ lemma1/2 ⟩ stage2
        ≃⟨ lemma2/3 ⟩ stage3
-       ≃⟨ lemma3/■ ⟩ iseq
+       ≃⟨ lemma3/■ ⟩ isEquiv f
        ■
