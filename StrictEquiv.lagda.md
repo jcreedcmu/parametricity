@@ -126,17 +126,30 @@ module _ {ℓ : Level} {A : Set ℓ} where
  invertRefl = refl
 ```
 
-Now we'd like to show that a function *being* an equivalence is a mere
-proposition.
+Now we'd like to show that this notion of isomorphism has
+a well-behaved corresponding notion of a function *being* an equivalence.
+The definition of `isEquiv` is easy: a function is an equivalence
+if there exists an equivalence for which it is the extracted function.
 
 ```agda
 module _ {ℓ : Level} {A B : Set ℓ} where
  isEquiv' : (A → B) → Set (ℓ-suc ℓ)
  isEquiv' f = Σ[ q ∈ A ≅' B ] getFun q ≡ f
+```
 
- isoSplits : (A ≅ B) ≅ (Σ (A → B) isEquiv')
- isoSplits = {!!}
+We must show that being an equivalence is a mere proposition.
 
+```agda
  isEquiv'IsProp : (f : A → B) → isProp (isEquiv' f)
  isEquiv'IsProp = {!!}
+```
+
+Finally, we want to show that this notion of being an equivalence
+really is the partner of our prior definition of equivalence.
+That is, two types being equivalent is the same thing as there
+existing a function between them that is an equivalence.
+
+```agda
+ isoSplits : (A ≅ B) ≅ (Σ (A → B) isEquiv')
+ isoSplits = {!!}
 ```
