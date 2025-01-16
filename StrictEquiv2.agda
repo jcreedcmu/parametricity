@@ -2,8 +2,8 @@
 
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
 open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_ ; refl to reflp )
-open import Cubical.Data.Equality using () renaming (_∙_ to _∙p_ )
-open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
+open import Cubical.Data.Equality using (ap) renaming (_∙_ to _∙p_ )
+open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath ; eqToPath-pathToEq)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv hiding (isEquiv')
 open import Cubical.Foundations.Isomorphism
@@ -29,7 +29,14 @@ module _ {ℓ : Level} {A : Set ℓ} {B : Set ℓ}  where
  getRetp reflp b = refl
 
 {-
- - Definition of isEquiv predicate on a function
+ - Definition of isEquiv predicate on a function.
+ -
+ - It's not essential that I'm using (inductively defined equality) ≡p
+ - here. The definition would be definitionally symmetric in all the
+ - nice ways if I had used cubical equality ≡ or some pre-existing
+ - notion ≅ of equivalence. But the proof that isEquiv' is a mere
+ - proposition seemed to go much much easier when I could pattern
+ - match on refl.
  -}
 record isEquiv' {ℓ : Level} {A : Set ℓ} {B : Set ℓ} (mab : A → B) : Set (ℓ-suc ℓ) where
  constructor mkIsEq
@@ -153,29 +160,34 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage0) → back (fore e) ≡ e
   retr (mkIsEq R _ reflp erb pab reflp) = refl
 
- lemma-inner1 : (A ≅ B) ≅ (A ≡ B)
- lemma-inner1 = invEquiv univalence
+ univp1 : (A ≅ B) ≅ (A ≡ B)
+ univp1 = invEquiv univalence
 
- lemma-inner2 : (A ≡ B) ≅ (A ≡p B)
- lemma-inner2 = isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq
+ univp2 : (A ≡ B) ≅ (A ≡p B)
+ univp2 = isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq
 
- lemma-inner : (A ≅ B) ≅ (A ≡p B)
- lemma-inner = compEquiv lemma-inner1 lemma-inner2
+ univp : (A ≅ B) ≅ (A ≡p B)
+ univp = compEquiv univp1 univp2
 
  required-path1 : (eab : A ≅ B) →
---               transport (equivFun lemma-inner1 eab) ≡p fst eab -- <-- definitionally equivalent
+--               transport (equivFun univp1 eab) ≡p fst eab -- <-- definitionally equivalent to the following line
                  transport (ua eab) ≡p fst eab
  required-path1 eab = pathToEq λ i a → uaβ eab a i
 
+ required-path2' : (cp : A ≡p B) →
+         getFunp cp ≡p transport (eqToPath cp)
+ required-path2' reflp = pathToEq λ i z → transportRefl z (~ i)
+
  required-path2 : (cp : A ≡ B) →
-         getFunp (equivFun lemma-inner2 cp) ≡p transport cp
- required-path2 cp = {!!}
+--       getFunp (equivFun univp2 cp) ≡p transport cp -- <-- definitionally equivalent to the following line
+         getFunp (pathToEq cp) ≡p transport cp
+ required-path2 cp = required-path2' (pathToEq cp) ∙p (ap transport (pathToEq (eqToPath-pathToEq cp)))
 
  stage2 : Set (ℓ)
- stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun lemma-inner eab)
+ stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun univp eab)
 
  lemma1/2 : stage1 ≅ stage2
- lemma1/2 = invEquiv (Σ-cong-equiv-fst lemma-inner)
+ lemma1/2 = invEquiv (Σ-cong-equiv-fst univp)
 
  stage3 : Set (ℓ)
  stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
@@ -184,7 +196,7 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
  lemma2/3 : stage2 ≅ stage3
- lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (equivFun lemma-inner1 s) ∙p required-path1 s)
+ lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (ua s) ∙p required-path1 s)
 
  lemma3/■ : stage3 ≅ iseq
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
@@ -200,6 +212,9 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
   retr : (e : stage3) → back (fore e) ≡ e
   retr ((.f , fe) , reflp) = refl
 
+{---------------------------------------------------------------
+ - Here it is:
+ ---------------------------------------------------------------}
  isEquiv'IsProp : isProp iseq'
  isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
   where
