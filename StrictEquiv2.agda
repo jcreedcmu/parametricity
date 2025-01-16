@@ -143,15 +143,7 @@ which is iso (by combining mra and era) to
   erb : isEquiv mrb
   pab : mab ≡ mrb ∘ (invOfIso iso-ra)
 
-but by univalence that's iso to
-
-  R : Set ℓ
-  path-ra : R ≡ A
-  mrb : R → B
-  erb : isEquiv mrb
-  pab : mab ≡ mrb ∘ (invOfPath path-ra)
-
-so by J on R  path-ra, this is iso to
+by hook or by crook this should be iso to
 
   mrb : A → B
   erb : isEquiv mrb
