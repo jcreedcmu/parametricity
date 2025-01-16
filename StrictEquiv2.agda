@@ -170,6 +170,9 @@ which is a prop.
  invOfPath : ∀ {ℓ} {A B : Set ℓ} → A ≡ B → B → A
  invOfPath = {!!}
 
+ invOfDataPath : ∀ {ℓ} {A B : Set ℓ} → A ≡p B → B → A
+ invOfDataPath reflp x = x
+
  record stage1 : Set (ℓ-suc ℓ) where
   field
    R : Set ℓ
@@ -179,6 +182,9 @@ which is a prop.
    erb : isEquiv mrb
    pab : mab ≡ mrb ∘ (invIsEq era)
 
+ lemma0/1 : iseq' ≅ stage1
+ lemma0/1 = {!!}
+
  record stage2 : Set (ℓ-suc ℓ) where
   field
    R : Set ℓ
@@ -186,6 +192,9 @@ which is a prop.
    mrb : R → B
    erb : isEquiv mrb
    pab : mab ≡ mrb ∘ (invIsEq (iso-ra .snd))
+
+ lemma1/2 : stage1 ≅ stage2
+ lemma1/2 = {!!}
 
  record stage3 : Set (ℓ-suc ℓ) where
   field
@@ -195,27 +204,43 @@ which is a prop.
    erb : isEquiv mrb
    pab : mab ≡ mrb ∘ (invOfPath path-ra)
 
- lemma0/1 : iseq' ≅ stage1
- lemma0/1 = {!!}
-
- lemma1/2 : stage1 ≅ stage2
- lemma1/2 = {!!}
-
  lemma2/3 : stage2 ≅ stage3
  lemma2/3 = {!!}
 
+ record stage3a : Set (ℓ-suc ℓ) where
+  constructor c3a
+  field
+   R : Set ℓ
+   path-ra : R ≡p A
+   mrb : R → B
+   erb : isEquiv mrb
+   pab : mab ≡ mrb ∘ (invOfDataPath path-ra)
 
- stage3½ : Set ℓ
- stage3½ = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
+ lemma3/3a : stage3 ≅ stage3a
+ lemma3/3a = {!!}
 
- lemma3/3½ : stage3 ≅ stage3½
- lemma3/3½ = {!!}
+ stage3b : Set ℓ
+ stage3b = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
+
+ lemma3a/3b : stage3a ≅ stage3b
+ lemma3a/3b = isoToEquiv (iso fore back sect retr) where
+  fore : stage3a → stage3b
+  fore (c3a .A reflp mrb erb pab) = mrb , (erb , pab)
+
+  back : stage3b → stage3a
+  back (mrb , erb , pab) = c3a A reflp mrb erb pab
+
+  sect : (e : stage3b) → fore (back e) ≡ e
+  sect (mrb , erb , pab) = refl
+
+  retr : (e : stage3a) → back (fore e) ≡ e
+  retr (c3a .A reflp mrb erb pab) = refl
 
  stage4 : Set ℓ
  stage4 = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡p mrb))
 
- lemma3½/4 : stage3½ ≅ stage4
- lemma3½/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
+ lemma3b/4 : stage3b ≅ stage4
+ lemma3b/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
               Σ-cong-equiv (idEquiv (isEquiv mrb)) λ _ →
               (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
 
@@ -241,7 +266,8 @@ which is a prop.
        ≃⟨ lemma0/1 ⟩ stage1
        ≃⟨ lemma1/2 ⟩ stage2
        ≃⟨ lemma2/3 ⟩ stage3
-       ≃⟨ lemma3/3½ ⟩ stage3½
-       ≃⟨ lemma3½/4 ⟩ stage4
+       ≃⟨ lemma3/3a ⟩ stage3a
+       ≃⟨ lemma3a/3b ⟩ stage3b
+       ≃⟨ lemma3b/4 ⟩ stage4
        ≃⟨ lemma4/■ ⟩ iseq
        ■
