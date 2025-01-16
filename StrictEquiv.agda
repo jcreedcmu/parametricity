@@ -10,7 +10,7 @@ open import Cubical.Foundations.Isomorphism
 open import Cubical.Foundations.Univalence
 open import Cubical.Foundations.Prelude
 open import Function.Base
-module StrictEquiv where
+module StrictEquiv2 where
 
 infix 4 _≅'_
 
