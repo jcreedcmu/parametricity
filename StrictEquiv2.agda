@@ -127,27 +127,33 @@ is iso (by J, by observing that pba fixes what mba must be) to
   erb : isEquiv mrb
   pab : mab ≡ mrb ∘ (invIsEq era)
 
-which is iso (by combining mrb and erb) to
+which is iso (by combining mra and era) to
 
   R : Set ℓ
-  mra : R → A
-  isorb : R ≅ B
-  era : isEquiv mra
-  pab : mab ≡ isoToMap isorb ∘ (invIsEq era)
+  iso-ra : R ≅ A
+  mrb : R → B
+  erb : isEquiv mrb
+  pab : mab ≡ mrb ∘ (invOfIso iso-ra)
 
-but by univalence that's
+but by univalence that's iso to
 
   R : Set ℓ
-  mra : R → A
-  pathrb : R ≡ B
-  era : isEquiv mra
-  pab : mab ≡ pathtoMap pathrb ∘ (invIsEq era)
+  path-ra : R ≡ A
+  mrb : R → B
+  erb : isEquiv mrb
+  pab : mab ≡ mrb ∘ (invOfPath path-ra)
 
-so do J to pathrb:
+so by J on R  path-ra, this is iso to
 
-  mba : B → A
-  era : isEquiv mba
-  pab : mab ≡ invIsEq era
+  mrb : A → B
+  erb : isEquiv mrb
+  pab : mab ≡ mrb
+
+which by J on pab is iso to
+
+  erb : isEquiv mab
+
+which is a prop.
 
 -}
  isEquiv'IsProp : (f : A → B) → isProp (isEquiv' f)
