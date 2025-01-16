@@ -195,47 +195,53 @@ which is a prop.
    erb : isEquiv mrb
    pab : mab ≡ mrb ∘ (invOfPath path-ra)
 
- record stage4 : Set (ℓ-suc ℓ) where
-  constructor c4
-  field
-   mrb : A → B
-   erb : isEquiv mrb
-   pab : mab ≡p mrb
+ lemma0/1 : iseq' ≅ stage1
+ lemma0/1 = {!!}
 
- lemma01 : iseq' ≅ stage1
- lemma01 = {!!}
+ lemma1/2 : stage1 ≅ stage2
+ lemma1/2 = {!!}
 
- lemma12 : stage1 ≅ stage2
- lemma12 = {!!}
+ lemma2/3 : stage2 ≅ stage3
+ lemma2/3 = {!!}
 
- lemma23 : stage2 ≅ stage3
- lemma23 = {!!}
 
- lemma34 : stage3 ≅ stage4
- lemma34 = {!!}
+ stage3½ : Set ℓ
+ stage3½ = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡ mrb))
 
- lemma4■ : stage4 ≅ iseq
- lemma4■ = isoToEquiv (iso fore back sect retr) where
+ lemma3/3½ : stage3 ≅ stage3½
+ lemma3/3½ = {!!}
+
+ stage4 : Set ℓ
+ stage4 = Σ[ mrb ∈ (A → B) ] (isEquiv mrb × (mab ≡p mrb))
+
+ lemma3½/4 : stage3½ ≅ stage4
+ lemma3½/4 = Σ-cong-equiv (idEquiv (A → B)) λ mrb →
+              Σ-cong-equiv (idEquiv (isEquiv mrb)) λ _ →
+              (isoToEquiv Cubical.Data.Equality.Conversion.PathIsoEq)
+
+ lemma4/■ : stage4 ≅ iseq
+ lemma4/■ = isoToEquiv (iso fore back sect retr) where
   fore : stage4 → iseq
-  fore (c4 .f erb reflp) = erb
+  fore (_ , (erb , reflp)) = erb
 
   back : iseq → stage4
-  back e = c4 f e reflp
+  back e = (f , (e , reflp))
 
   sect : (e : iseq) → fore (back e) ≡ e
   sect e = refl
 
   retr : (e : stage4) → back (fore e) ≡ e
-  retr (c4 mrb erb reflp) = refl
+  retr (_ , (_ , reflp)) = refl
 
  isEquiv'IsProp : isProp iseq'
  isEquiv'IsProp = equivPresProp (invEquiv bigEq) (isPropIsEquiv f)
   where
   bigEq : iseq' ≅ iseq
   bigEq = iseq'
-       ≃⟨ lemma01 ⟩ stage1
-       ≃⟨ lemma12 ⟩ stage2
-       ≃⟨ lemma23 ⟩ stage3
-       ≃⟨ lemma34 ⟩ stage4
-       ≃⟨ lemma4■ ⟩ iseq
+       ≃⟨ lemma0/1 ⟩ stage1
+       ≃⟨ lemma1/2 ⟩ stage2
+       ≃⟨ lemma2/3 ⟩ stage3
+       ≃⟨ lemma3/3½ ⟩ stage3½
+       ≃⟨ lemma3½/4 ⟩ stage4
+       ≃⟨ lemma4/■ ⟩ iseq
        ■
