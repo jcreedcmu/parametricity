@@ -185,16 +185,16 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
  required-path2' : (cp : A ≡p B) →
-         getFunp cp ≡p transport (eqToPath cp)
- required-path2' reflp = pathToEq λ i z → transportRefl z (~ i)
+         getFunp cp ≡ transport (eqToPath cp)
+ required-path2' reflp = λ i z → transportRefl z (~ i)
 
  required-path2 : (cp : A ≡ B) →
---       getFunp (equivFun univp2 cp) ≡p transport cp -- <-- definitionally equivalent to the following line
-         getFunp (pathToEq cp) ≡p transport cp
- required-path2 cp = required-path2' (pathToEq cp) ∙p (ap transport (pathToEq (eqToPath-pathToEq cp)))
+--       getFunp (equivFun univp2 cp) ≡ transport cp -- <-- definitionally equivalent to the following line
+         getFunp (pathToEq cp) ≡ transport cp
+ required-path2 cp = (required-path2' (pathToEq cp) ∙ cong transport (eqToPath-pathToEq cp))
 
  lemma2/3 : stage2 ≅ stage3
- lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (ua s) ∙p (pathToEq λ i a → uaβ s a i))
+ lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (pathToEq (required-path2 (ua s) ∙ (λ i a → uaβ s a i)))
 
  lemma3/■ : stage3 ≅ iseq
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
