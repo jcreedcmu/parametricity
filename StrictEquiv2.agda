@@ -1,7 +1,8 @@
 {-# OPTIONS --cubical --rewriting --allow-unsolved-metas  #-}
 
 open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
-open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_ ; refl to reflp)
+open import Agda.Builtin.Equality using () renaming (_≡_ to _≡p_ ; refl to reflp )
+open import Cubical.Data.Equality using () renaming (_∙_ to _∙p_ )
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma
 open import Cubical.Foundations.Equiv hiding (isEquiv')
@@ -161,9 +162,13 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  lemma-inner : (A ≅ B) ≅ (A ≡p B)
  lemma-inner = compEquiv lemma-inner1 lemma-inner2
 
- required-path : (eab : Σ (A → B) isEquiv) →
-                 getFunp (equivFun lemma-inner eab) ≡p fst eab
- required-path (f , iseq) = {!!}
+ required-path1 : (eab : A ≅ B) →
+                 transport (equivFun lemma-inner1 eab) ≡p fst eab
+ required-path1 (f , iseq) = {!!}
+
+ required-path2 : (cp : A ≡ B) →
+         getFunp (equivFun lemma-inner2 cp) ≡p transport cp
+ required-path2 cp = {!!}
 
  stage2 : Set (ℓ)
  stage2 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p getFunp (equivFun lemma-inner eab)
@@ -174,11 +179,11 @@ module _ {ℓ : Level} {A B : Set ℓ} (f : A → B) where
  stage3 : Set (ℓ)
  stage3 = Σ[ eab ∈ Σ (A → B) isEquiv ] f ≡p fst eab
 
- lemma-thing : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
- lemma-thing {a = a} {b = b} reflp = idEquiv (a ≡p b)
+ concat-lemma : ∀ {ℓ} {A : Set ℓ} {a b c : A} → (b ≡p c) → (a ≡p b) ≅ (a ≡p c)
+ concat-lemma {a = a} {b = b} reflp = idEquiv (a ≡p b)
 
  lemma2/3 : stage2 ≅ stage3
- lemma2/3 = Σ-cong-equiv-snd λ s → lemma-thing (required-path s)
+ lemma2/3 = Σ-cong-equiv-snd λ s → concat-lemma (required-path2 (equivFun lemma-inner1 s) ∙p required-path1 s)
 
  lemma3/■ : stage3 ≅ iseq
  lemma3/■ = isoToEquiv (iso fore back sect retr) where
