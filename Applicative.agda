@@ -71,7 +71,7 @@ module App where
  dsnd = dmap snd
 
  postulate
-  ηd : {ℓ : Level} → (x : F (Set ℓ)) → Fd x
+  ηd : ? -- do we need a more dependent version of η?
 
 
 
