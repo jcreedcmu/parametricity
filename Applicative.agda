@@ -43,42 +43,31 @@ data Unit {ℓ : Level} : Set ℓ where
 --  zipthm tnil tnil * = * , *
 --  zipthm (tcons t x) (tcons t' x') (z , p , p') = (zipthm t t' z .fst , p) , (zipthm t t' z .snd , p')
 
-＠ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → ((A → B) × A) → B
-＠ (f , x) = f x
-
 module App where
  postulate
   F : {ℓ : Level} → Set ℓ → Set ℓ
-  fmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → (A → B) → F A → F B
-  η : {ℓ : Level} {A : Set ℓ} → A → F A
-  Fd : {ℓ : Level} → F (Set ℓ) → Set ℓ
+  _·_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → F (A → B) → F A → F B
   ⟪_,_⟫ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → F A → F B → F (A × B)
-  d⟪_,_⟫ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → (N : F A) → Fd (fmap ＠  ⟪ η B , N ⟫) → F (Σ A B)
+  η : {ℓ : Level} {A : Set ℓ} → A → F A
 
- _·_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → F (A → B) → F A → F B
- f · x = fmap ＠ ⟪ f , x ⟫
+  Fd : {ℓ : Level} → F (Set ℓ) → Set ℓ
+  _·d_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
+  d⟪_,_⟫ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → (a : F A) → Fd (η B · a) → F (Σ A B)
+
+ fmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → (A → B) → F A → F B
+ fmap f x = η f · x
 
  dfst : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → F (Σ A B) → F A
  dfst = fmap fst
 
- postulate
-  dmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
+ dmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
+ dmap f x = η f ·d x
 
  -- This doesn't work with definitionally with my first guess, which was
  -- ⋯ → Fd (η B · dfst M) because I'd need some reductions about consecutive fmaps…
  -- But that's fine, this definition works.
  dsnd : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → (M : F (Σ A B)) → Fd (η (B ∘ fst) · M)
- dsnd = dmap snd
+ dsnd M = η snd ·d M
 
  postulate
   ηd : {!!} -- do we need a more dependent version of η?
-
- -- wanted result type of Fd (η B · x)
- _·d_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η (λ z → B (z .snd)) · ⟪ f , x ⟫)
- f ·d x =  dmap (λ p →  (p .fst) (p .snd) ) ⟪ f , x ⟫
-
- postulate
-  _·d2_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
-
- dmap2 : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
- dmap2 f a = η f ·d2 a
