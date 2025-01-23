@@ -71,9 +71,14 @@ module App where
  dsnd = dmap snd
 
  postulate
-  ηd : ? -- do we need a more dependent version of η?
+  ηd : {!!} -- do we need a more dependent version of η?
 
+ -- wanted result type of Fd (η B · x)
+ _·d_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η (λ z → B (z .snd)) · ⟪ f , x ⟫)
+ f ·d x =  dmap (λ p →  (p .fst) (p .snd) ) ⟪ f , x ⟫
 
+ postulate
+  _·d2_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
 
-
- -- (_·d_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → F ((x : A) → B x) → (a : F A) → Fd (η B · a))
+ dmap2 : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
+ dmap2 f a = η f ·d2 a
