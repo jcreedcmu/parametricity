@@ -21,6 +21,9 @@ open import Function.Base
 
 module Applicative where
 
+data Unit {ℓ : Level} : Type ℓ where
+ ⋆ : Unit
+
 record Dapp : Typeω where
  field
   F : {ℓ : Level} → Set ℓ → Set ℓ
@@ -58,22 +61,48 @@ nary S = record
           ; d⟪_,_⟫ = λ x1 x2 s → (x1 s) , (x2 s)
           }
 
-module _ where
- open Dapp
+binary : Dapp
+binary = record
+          { F = λ A → A × A
+          ; _·_ = λ fs xs → (fst fs) (fst xs) , (snd fs) (snd xs)
+          ; ⟪_,_⟫ = λ as bs → (fst as , fst bs) , (snd as , snd bs)
+          ; η = λ a → (a , a)
+          ; Fd = λ A → (fst A) × (snd A)
+          ; _·d_ = λ fs xs → (fst fs) (fst xs) , (snd fs) (snd xs)
+          ; d⟪_,_⟫ = λ as bs → (fst as , fst bs) , (snd as , snd bs)
+          }
+
+postulate
+ dlift : Dapp → Dapp
+
+module _ {D : Dapp} where
+ open Dapp D
+ open Dapp (dlift D) using () renaming (F to Fbar ; η to ηbar ; Fd to Fdbar)
  postulate
-  dlift : Dapp → Dapp
-  ∂ : ∀ {ℓ} {D : Dapp} {A : Set ℓ} → dlift D .F A → D .F A
+  ∂ : ∀ {ℓ} {A : Set ℓ} → Fbar A → F A
+  fib : ∀ {ℓ} (A : Type ℓ) (x : F A) → Type ℓ
+  getBar : ∀ {ℓ} {A : Type ℓ} {x : F A} → fib _ x → Fbar A
+  fibIn : ∀ {ℓ} {A : Type ℓ} (abar : Fbar A) → fib _ (∂ abar)
 
- postulate
-  fib : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) (b : B) → Type (ℓ ⊔ ℓ')
-  getA : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} {f : A → B} {b : B} → fib f b → A
-  fibIn : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) (a : A) → fib f (f a)
-  inGetA : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) (a : A) → getA (fibIn f a) ≡p a
-  {-# REWRITE inGetA #-}
+  getBarIn : ∀ {ℓ} {A : Type ℓ} (abar : Fbar A) → getBar (fibIn abar) ≡p abar
+  {-# REWRITE getBarIn #-}
 
-  appA : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) → A → B
-  fGetA : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) (b : B) (ϕ : fib f b) → appA f (getA ϕ) ≡p b
-  {-# REWRITE fGetA #-}
+  ∂GetBar : ∀ {ℓ} {A : Type ℓ} (b : F A) (ϕ : fib _ b) → ∂ (getBar ϕ) ≡p b
+  {-# REWRITE ∂GetBar #-}
 
-  appAapp : ∀ {ℓ ℓ'} {A : Type ℓ} {B : Type ℓ'} (f : A → B) (a : A) → appA f a ≡p f a
-  {-# REWRITE appAapp #-}
+  ∂η : ∀ {ℓ} {A : Type ℓ} (a : A) → ∂ {A = A} (ηbar a) ≡p (η a)
+  {-# REWRITE ∂η #-}
+
+  -- stub : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} (x : F ((x : A) → B x)) → fib ((x : A) → B x) x ≡p Unit
+  -- {-# REWRITE stub #-}
+
+  star : (id : F ((X : Type) → X → X)) (FX : F Type) (Fx : Fd FX) → Fd FX
+
+  stub : (id : F ((X : Type) → X → X)) → fib ((X : Type) → X → X) id ≡p ((X : Fbar Type) (x : Fdbar X) → fib {!!} {!star id (∂ X) (∂ x)!})
+  {-# REWRITE stub #-}
+
+
+pthm : (id : (X : Type) → X → X) (A B : Set) (R : A × B → Set) (a : A) (b : B) (r : R (a , b)) → R (id A a , id B b)
+pthm id A B R a b r = {!fibIn (ηbar id)!} where
+ open Dapp binary
+ open Dapp (dlift binary) using () renaming (F to Fbar ; η to ηbar)
