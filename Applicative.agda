@@ -100,8 +100,8 @@ module _ (D : Dapp) {ℓ : Level}  where
  open Dapp D
  open Substs D
 
- extend : {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : F/ θ A) → F ⟦ {!tcons ? ?!} ⟧
- extend = {!!}
+ extend : {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : F/ θ A) → F ⟦ tcons t A ⟧
+ extend θ M = d⟪ θ , M ⟫
 
 postulate
  dlift : Dapp → Dapp
