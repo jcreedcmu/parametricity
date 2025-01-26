@@ -83,16 +83,25 @@ binary = record
           ; d⟪_,_⟫ = λ as bs → (fst as , fst bs) , (snd as , snd bs)
           }
 
-module _ (D : Dapp) where
+--- Define some operations that generalize F, η to include substitutions
+
+module Substs (D : Dapp) {ℓ : Level} {t : Tele ℓ} where
  open Dapp D
- ρ/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → F (Type ℓ)
- F/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → Type ℓ
- η/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : (g : ⟦ t ⟧) → A g) → F/ θ A
+ ρ/ : (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → F (Type ℓ)
+ F/ : (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → Type ℓ
+ η/ : (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : (g : ⟦ t ⟧) → A g) → F/ θ A
 
  ρ/ θ A = η A · θ
  F/ θ A = Fd (ρ/ θ A)
  η/ θ M = η M ·d θ
 
+-- Define how to extend F'ed substitutions incrementally
+module _ (D : Dapp) {ℓ : Level}  where
+ open Dapp D
+ open Substs D
+
+ extend : {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : F/ θ A) → F ⟦ {!tcons ? ?!} ⟧
+ extend = {!!}
 
 postulate
  dlift : Dapp → Dapp
