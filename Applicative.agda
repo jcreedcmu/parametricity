@@ -145,6 +145,12 @@ module Main (D : Dapp) where
   ∂η : ∀ {ℓ} {A : Type ℓ} (a : A) → ∂ {A = A} (ηbar a) ≡p (η a)
   {-# REWRITE ∂η #-}
 
+-- (fst (∂ (Extend.extend (dbar binary) (ηbar ⋆) a₁)) .snd) !=
+-- (fst (∂/ (ηbar ⋆) a₁))
+-- (a₁ : F/bar (ηbar ⋆) (λ _ → Type))
+  ∂/η : ∀ {ℓ} {A : Type ℓ} (a : F/bar (ηbar ⋆) (λ _ → A)) → ∂/ {t = tnil} {A = λ _ → A} (ηbar ⋆) a ≡p {!!}
+  -- {-# REWRITE ∂/η #-}
+
   fib : ∀ {ℓ} (A : Type ℓ) (x : F A) → Type ℓ
   fib/ : ∀ {ℓ ℓ'} {t : Tele ℓ} (ϕ : Fbar ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ') → F/ (∂ ϕ) A → Type ℓ'
 

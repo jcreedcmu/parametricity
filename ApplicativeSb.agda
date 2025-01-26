@@ -56,15 +56,15 @@ module _ where
  open Star binary
  open Applicative.Main binary
 
- pthm2Res : (a₁ : Substs.F/ (dbar binary) (ηbar ⋆) (λ _ → Type)) (id : (X : Type) → X → X) → Type₁
- pthm2Res a₁ id = {!!} where
+ pthm2Res : (a₁ : F/bar (ηbar ⋆) (λ _ → Type)) (id : (X : Type) → X → X) → Type₁
+ pthm2Res a₁ id = fib/ (extendbar (ηbar ⋆) a₁) (λ g → g .snd → g .snd) {!foo!} where
    foo : Substs.F/ binary
       (extend (⋆ , ⋆) (∂/ (ηbar ⋆) a₁))
       (λ g → g .snd → g .snd)
    foo = star (∂ (ηbar ⋆)) (λ _ → Type) (λ _ X → X → X) (into/ (id , id)) (∂/ (ηbar ⋆) a₁)
 
  pthm2 : (id : (X : Type) → X → X) (A B : Type) (R : A × B → Type) (a : A) (b : B) (r : R (a , b)) →
-     {!!}
+     (a₁ : F/bar (ηbar ⋆) (λ _ → Type)) → pthm2Res a₁ id
       -- (a₁ : Substs.F/ (dbar binary) (ηbar ⋆) (λ _ → Type)) →
       -- fib/ (Extend.extend (dbar binary) (ηbar ⋆) a₁)
       -- (λ g → g .snd → g .snd)
