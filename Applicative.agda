@@ -21,33 +21,44 @@ open import Function.Base
 
 module Applicative where
 
-data Unit {ℓ : Level} : Type ℓ where
+data Unit {ℓ : Level} : Type ℓ  where
  ⋆ : Unit
+
+
+data Tele (ℓ : Level) : Type (lsuc ℓ)
+⟦_⟧ : ∀ {ℓ} → Tele ℓ → Type ℓ
+
+data Tele ℓ where
+ tnil : Tele ℓ
+ tcons : (t : Tele ℓ) (A : ⟦ t ⟧ → Type ℓ) → Tele ℓ
+
+⟦ tnil ⟧ = Unit
+⟦ tcons t A ⟧ = Σ[ g ∈ ⟦ t ⟧ ] A g
 
 record Dapp : Typeω where
  field
-  F : {ℓ : Level} → Set ℓ → Set ℓ
-  _·_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → F (A → B) → F A → F B
-  ⟪_,_⟫ : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → F A → F B → F (A × B)
-  η : {ℓ : Level} {A : Set ℓ} → A → F A
+  F : {ℓ : Level} → Type ℓ → Type ℓ
+  _·_ : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → F (A → B) → F A → F B
+  ⟪_,_⟫ : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → F A → F B → F (A × B)
+  η : {ℓ : Level} {A : Type ℓ} → A → F A
 
-  Fd : {ℓ : Level} → F (Set ℓ) → Set ℓ
-  _·d_ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
-  d⟪_,_⟫ : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → (a : F A) → Fd (η B · a) → F (Σ A B)
+  Fd : {ℓ : Level} → F (Type ℓ) → Type ℓ
+  _·d_ : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
+  d⟪_,_⟫ : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → Fd (η B · a) → F (Σ A B)
 
 module _ (dapp : Dapp) where
  open Dapp dapp
 
- fmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : Set ℓ'} → (A → B) → F A → F B
+ fmap : {ℓ ℓ' : Level} {A : Type ℓ} {B : Type ℓ'} → (A → B) → F A → F B
  fmap f x = η f · x
 
- dfst : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → F (Σ A B) → F A
+ dfst : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → F (Σ A B) → F A
  dfst = fmap fst
 
- dmap : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
+ dmap : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → ((x : A) → B x) → (a : F A) → Fd (η B · a)
  dmap f x = η f ·d x
 
- dsnd : {ℓ ℓ' : Level} {A : Set ℓ} {B : A → Set ℓ'} → (M : F (Σ A B)) → Fd (η (B ∘ fst) · M)
+ dsnd : {ℓ ℓ' : Level} {A : Type ℓ} {B : A → Type ℓ'} → (M : F (Σ A B)) → Fd (η (B ∘ fst) · M)
  dsnd M = η snd ·d M
 
 nary : (S : Type) → Dapp
@@ -72,6 +83,17 @@ binary = record
           ; d⟪_,_⟫ = λ as bs → (fst as , fst bs) , (snd as , snd bs)
           }
 
+module _ (D : Dapp) where
+ open Dapp D
+ ρ/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → F (Type ℓ)
+ F/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → Type ℓ
+ η/ : {ℓ : Level} {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : (g : ⟦ t ⟧) → A g) → F/ θ A
+
+ ρ/ θ A = η A · θ
+ F/ θ A = Fd (ρ/ θ A)
+ η/ θ M = η M ·d θ
+
+
 postulate
  dlift : Dapp → Dapp
 
@@ -79,7 +101,7 @@ module _ {D : Dapp} where
  open Dapp D
  open Dapp (dlift D) using () renaming (F to Fbar ; η to ηbar ; Fd to Fdbar)
  postulate
-  ∂ : ∀ {ℓ} {A : Set ℓ} → Fbar A → F A
+  ∂ : ∀ {ℓ} {A : Type ℓ} → Fbar A → F A
   fib : ∀ {ℓ} (A : Type ℓ) (x : F A) → Type ℓ
   getBar : ∀ {ℓ} {A : Type ℓ} {x : F A} → fib _ x → Fbar A
   fibIn : ∀ {ℓ} {A : Type ℓ} (abar : Fbar A) → fib _ (∂ abar)
@@ -102,7 +124,7 @@ module _ {D : Dapp} where
   {-# REWRITE stub #-}
 
 
-pthm : (id : (X : Type) → X → X) (A B : Set) (R : A × B → Set) (a : A) (b : B) (r : R (a , b)) → R (id A a , id B b)
+pthm : (id : (X : Type) → X → X) (A B : Type) (R : A × B → Type) (a : A) (b : B) (r : R (a , b)) → R (id A a , id B b)
 pthm id A B R a b r = {!fibIn (ηbar id)!} where
  open Dapp binary
  open Dapp (dlift binary) using () renaming (F to Fbar ; η to ηbar)
