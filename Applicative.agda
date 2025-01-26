@@ -87,16 +87,16 @@ binary = record
 
 module Substs (D : Dapp) {ℓ : Level} {t : Tele ℓ} where
  open Dapp D
- ρ/ : (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → F (Type ℓ)
- F/ : (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → Type ℓ
- η/ : (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} (M : (g : ⟦ t ⟧) → A g) → F/ θ A
+ ρ/ : ∀ {ℓ'} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ') → F (Type ℓ')
+ F/ : ∀ {ℓ'} (θ : F ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ') → Type ℓ'
+ η/ : ∀ {ℓ'} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ'} (M : (g : ⟦ t ⟧) → A g) → F/ θ A
 
  ρ/ θ A = η A · θ
  F/ θ A = Fd (ρ/ θ A)
  η/ θ M = η M ·d θ
 
 -- Define how to extend F'ed substitutions incrementally
-module _ (D : Dapp) {ℓ : Level}  where
+module Extend (D : Dapp) {ℓ : Level}  where
  open Dapp D
  open Substs D
 
@@ -104,14 +104,31 @@ module _ (D : Dapp) {ℓ : Level}  where
  extend θ M = d⟪ θ , M ⟫
 
 postulate
- dlift : Dapp → Dapp
+ dbar : Dapp → Dapp
+
+module Star (D : Dapp) where
+ open Dapp D
+ open Substs D
+ open Extend D
+ postulate
+  star : ∀ {ℓ} {t : Tele ℓ} (θ : F ⟦ t ⟧) {A : ⟦ t ⟧ → Type ℓ} {B : (g : ⟦ t ⟧) → A g → Type ℓ}
+         (f : F/ θ (λ g → (a : A g) → B g a)) (M : F/ θ A) → F/ (extend θ M) (λ g → B (g .fst) (g .snd))
 
 module _ {D : Dapp} where
  open Dapp D
- open Dapp (dlift D) using () renaming (F to Fbar ; η to ηbar ; Fd to Fdbar)
+ open Dapp (dbar D) using () renaming (F to Fbar ; η to ηbar ; Fd to Fdbar ; _·_ to _·bar_ ; d⟪_,_⟫ to d⟪_,_⟫bar)
+ open Substs D
+ open Substs (dbar D) using () renaming (F/ to F/bar)
+ open Extend (dbar D)
+ open Star D
+
  postulate
   ∂ : ∀ {ℓ} {A : Type ℓ} → Fbar A → F A
+  ∂/ : ∀ {ℓ ℓ'} {t : Tele ℓ} {A : ⟦ t ⟧ → Type ℓ'} (ϕ : Fbar ⟦ t ⟧) → F/bar ϕ A → F/ (∂ ϕ) A
+
   fib : ∀ {ℓ} (A : Type ℓ) (x : F A) → Type ℓ
+  fib/ : ∀ {ℓ} {t : Tele ℓ} (ϕ : Fbar ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) → F/ (∂ ϕ) A → Type ℓ
+
   getBar : ∀ {ℓ} {A : Type ℓ} {x : F A} → fib _ x → Fbar A
   fibIn : ∀ {ℓ} {A : Type ℓ} (abar : Fbar A) → fib _ (∂ abar)
 
@@ -124,16 +141,19 @@ module _ {D : Dapp} where
   ∂η : ∀ {ℓ} {A : Type ℓ} (a : A) → ∂ {A = A} (ηbar a) ≡p (η a)
   {-# REWRITE ∂η #-}
 
-  -- stub : ∀ {ℓ ℓ'} {A : Type ℓ} {B : A → Type ℓ'} (x : F ((x : A) → B x)) → fib ((x : A) → B x) x ≡p Unit
-  -- {-# REWRITE stub #-}
+  -- getting boundary of a pair is the pair of the boundaries
+  ∂d⟪—⟫ : ∀ {ℓ ℓ'} {t : Tele ℓ} (ϕ : Fbar ⟦ t ⟧) {B : ⟦ t ⟧ → Type ℓ'} (a : Fdbar (ηbar B ·bar ϕ))
+               → ∂ d⟪ ϕ , a ⟫bar ≡p d⟪ ∂ ϕ , ∂/ ϕ a ⟫
+  {-# REWRITE ∂d⟪—⟫ #-}
 
-  star : (id : F ((X : Type) → X → X)) (FX : F Type) (Fx : Fd FX) → Fd FX
 
-  stub : (id : F ((X : Type) → X → X)) → fib ((X : Type) → X → X) id ≡p ((X : Fbar Type) (x : Fdbar X) → fib {!!} {!star id (∂ X) (∂ x)!})
-  {-# REWRITE stub #-}
+  piRule : ∀ {ℓ} {t : Tele ℓ} (ϕ : Fbar ⟦ t ⟧) (A : ⟦ t ⟧ → Type ℓ) (B : (g : ⟦ t ⟧) → A g → Type ℓ)
+          (f : F/ (∂ ϕ) (λ g → (a : A g) → B g a)) →
+          fib/ ϕ (λ g → (a : A g) → B g a) f ≡p ((a : F/bar ϕ A) → fib/ (extend ϕ a) (λ g → B (g .fst) (g .snd)) ((star (∂ ϕ) f (∂/ ϕ a))))
+  {-# REWRITE piRule #-}
 
 
 pthm : (id : (X : Type) → X → X) (A B : Type) (R : A × B → Type) (a : A) (b : B) (r : R (a , b)) → R (id A a , id B b)
 pthm id A B R a b r = {!fibIn (ηbar id)!} where
  open Dapp binary
- open Dapp (dlift binary) using () renaming (F to Fbar ; η to ηbar)
+ open Dapp (dbar binary) using () renaming (F to Fbar ; η to ηbar)
