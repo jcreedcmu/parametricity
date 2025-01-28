@@ -27,7 +27,7 @@ module _ where
 
 postulate
  F : Type ℓ → Type ℓ
- Fd : F (Type ℓ) → Type ℓ
+ G : F (Type ℓ) → Type ℓ
  η : {A : Type ℓ} → A → F A
 
 
@@ -35,8 +35,8 @@ postulate
 postulate
  ⟪_,_⟫F : {A : Type ℓ} {B : Type ℓ'} → F A → F B → F (A × B)
  _·_ : {A : Type ℓ} {B : Type ℓ'} → F (A → B) → F A → F B
- d⟪_,_⟫F : {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → Fd (η B · a) → F (Σ A B)
- _·d_ : {A : Type ℓ} {B : A → Type ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
+ d⟪_,_⟫F : {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → G (η B · a) → F (Σ A B)
+ _·d_ : {A : Type ℓ} {B : A → Type ℓ'} (f : F ((x : A) → B x)) (x : F A) → G (η B · x)
 
 
 module _ {A : Type ℓ} {B : Type ℓ'} where
@@ -59,33 +59,37 @@ postulate
 Fsub : {A : Type ℓ} (B : A → Type ℓ') (M : F A) → F (Type ℓ')
 Fsub B M = η B · M
 
-_×F_ : (A B : F (Type ℓ)) → F (Type ℓ)
+_×F_ : (A : F (Type ℓ)) (B : F (Type ℓ')) → F (Type (ℓ ⊔ ℓ'))
 A ×F B = Fsub (λ x → (x .fst) × (x .snd)) ⟪ A , B ⟫F
 
 _→F_ : (A : F (Type ℓ)) (B : F (Type ℓ')) → F (Type (ℓ ⊔ ℓ'))
 A →F B = Fsub (λ x → (x .fst) → (x .snd)) ⟪ A , B ⟫F
 
-ΣF : (A : F (Type ℓ)) (B : Fd(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
+ΣF : (A : F (Type ℓ)) (B : G(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
 ΣF {ℓ} {ℓ'} A B = Fsub (λ x → Σ (x .fst) (x .snd)) (d⟪_,_⟫F A B)
 
-ΠF : (A : F (Type ℓ)) (B : Fd(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
+ΠF : (A : F (Type ℓ)) (B : G(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
 ΠF {ℓ} {ℓ'} A B = Fsub (λ x → (y : x .fst) → x .snd y) (d⟪_,_⟫F A B)
 
 postulate
- GηF : {A : Type ℓ} → Fd (η A) ≡p F A
+ GηF : {A : Type ℓ} → G (η A) ≡p F A
  {-# REWRITE GηF #-}
 
- η·η : {A : Type ℓ} (f : A → Type ℓ') (a : A) → Fd (η f · η a) ≡p F (f a)
+ η·η : {A : Type ℓ} (f : A → Type ℓ') (a : A) → G (η f · η a) ≡p F (f a)
  {-# REWRITE η·η #-}
 
-
+postulate
+ ⟪_,_⟫G : {A : F (Type ℓ)} {B : F (Type ℓ')} (M : G A) (N : G B) → G (A ×F B)
+ _·G_ : {A : F (Type ℓ)} {B : F (Type ℓ')} (M : G (A →F B)) (N : G A) → G B
+ d⟪_,_⟫G : {A : F (Type ℓ)} {B : G(A →F η (Type ℓ'))} (M : G A) (N : G (_·G_ {A = A} {B = η (Type ℓ')} B M)) → G (ΣF A B)
+ _·dG_ : {A : F (Type ℓ)} {B : G(A →F η (Type ℓ'))} (M : G (ΠF A B)) (N : G A) → G (_·G_ {A = A} {B = η (Type ℓ')} B N)
 
 module _ {A : Type ℓ} {B : A → Type ℓ'} where
  dfst : F (Σ A B) → F A
  dfst = fmap fst
 
- dmap : ((x : A) → B x) → (a : F A) → Fd (η B · a)
+ dmap : ((x : A) → B x) → (a : F A) → G (η B · a)
  dmap f x = η f ·d x
 
- dsnd : (M : F (Σ A B)) → Fd (η (B ∘ fst) · M)
+ dsnd : (M : F (Σ A B)) → G (η (B ∘ fst) · M)
  dsnd M = η snd ·d M
