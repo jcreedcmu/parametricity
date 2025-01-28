@@ -35,7 +35,7 @@ postulate
 postulate
  ⟪_,_⟫F : {A : Type ℓ} {B : Type ℓ'} → F A → F B → F (A × B)
  _·_ : {A : Type ℓ} {B : Type ℓ'} → F (A → B) → F A → F B
- d⟪_,_⟫F : {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → G (η B · a) → F (Σ A B)
+ ⟪_,_⟫dF : {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → G (η B · a) → F (Σ A B)
  _·d_ : {A : Type ℓ} {B : A → Type ℓ'} (f : F ((x : A) → B x)) (x : F A) → G (η B · x)
 
 
@@ -66,10 +66,10 @@ _→F_ : (A : F (Type ℓ)) (B : F (Type ℓ')) → F (Type (ℓ ⊔ ℓ'))
 A →F B = Fsub (λ x → (x .fst) → (x .snd)) ⟪ A , B ⟫F
 
 ΣF : (A : F (Type ℓ)) (B : G(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
-ΣF {ℓ} {ℓ'} A B = Fsub (λ x → Σ (x .fst) (x .snd)) (d⟪_,_⟫F A B)
+ΣF {ℓ} {ℓ'} A B = Fsub (λ x → Σ (x .fst) (x .snd)) (⟪_,_⟫dF A B)
 
 ΠF : (A : F (Type ℓ)) (B : G(A →F η (Type ℓ'))) → F (Type (ℓ ⊔ ℓ'))
-ΠF {ℓ} {ℓ'} A B = Fsub (λ x → (y : x .fst) → x .snd y) (d⟪_,_⟫F A B)
+ΠF {ℓ} {ℓ'} A B = Fsub (λ x → (y : x .fst) → x .snd y) (⟪_,_⟫dF A B)
 
 postulate
  GηF : {A : Type ℓ} → G (η A) ≡p F A
@@ -81,7 +81,7 @@ postulate
 postulate
  ⟪_,_⟫G : {A : F (Type ℓ)} {B : F (Type ℓ')} (M : G A) (N : G B) → G (A ×F B)
  _·G_ : {A : F (Type ℓ)} {B : F (Type ℓ')} (M : G (A →F B)) (N : G A) → G B
- d⟪_,_⟫G : {A : F (Type ℓ)} {B : G(A →F η (Type ℓ'))} (M : G A) (N : G (_·G_ {A = A} {B = η (Type ℓ')} B M)) → G (ΣF A B)
+ ⟪_,_⟫dG : {A : F (Type ℓ)} {B : G(A →F η (Type ℓ'))} (M : G A) (N : G (_·G_ {A = A} {B = η (Type ℓ')} B M)) → G (ΣF A B)
  _·dG_ : {A : F (Type ℓ)} {B : G(A →F η (Type ℓ'))} (M : G (ΠF A B)) (N : G A) → G (_·G_ {A = A} {B = η (Type ℓ')} B N)
 
 module _ {A : Type ℓ} {B : A → Type ℓ'} where
