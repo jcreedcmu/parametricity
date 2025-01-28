@@ -83,3 +83,18 @@ module _ {A : Type ℓ} {B : A → Type ℓ'} where
 
  dsnd : (M : F (Σ A B)) → G (η (B ∘ fst) · M)
  dsnd M = η snd ·d M
+
+idExercise : (C : F (Type ℓ)) →  G (η (λ x → x → x) · C) -- ≠ G (C →F C)
+idExercise C = η (λ _ x → x) ·d C
+
+context-pairingF : (C : F (Type ℓ)) (A : F (Type ℓ')) (B : F (Type ℓ''))
+    → G (((C →F A) ×F (C →F B)) →F (C →F (A ×F B)))
+context-pairingF = {!!}
+
+context-pairingG : {C : F (Type ℓ)} {A : F (Type ℓ')} {B : F (Type ℓ'')}
+                  (M : G (C →F A)) (N : G (C →F B))
+                  → G (C →F (A ×F B))
+context-pairingG {C = C} {A} {B} M N = _·G_ {A = (C →F A) ×F (C →F B)} {B = C →F (A ×F B)} (context-pairingF C A B) (⟪_,_⟫G {A = C →F A} {B = C →F B} M N)
+
+goal : (C : F (Type ℓ)) (A : G (C →F η (Type ℓ'))) (B : G (ΣF C A →F η (Type ℓ''))) → G(C →F η (Type ℓ''))
+goal = {!!}
