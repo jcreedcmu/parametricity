@@ -30,17 +30,30 @@ postulate
  Fd : F (Type ℓ) → Type ℓ
  η : {A : Type ℓ} → A → F A
 
+
+
 postulate
  ⟪_,_⟫F : {A : Type ℓ} {B : Type ℓ'} → F A → F B → F (A × B)
  _·_ : {A : Type ℓ} {B : Type ℓ'} → F (A → B) → F A → F B
  d⟪_,_⟫F : {A : Type ℓ} {B : A → Type ℓ'} → (a : F A) → Fd (η B · a) → F (Σ A B)
  _·d_ : {A : Type ℓ} {B : A → Type ℓ'} (f : F ((x : A) → B x)) (x : F A) → Fd (η B · x)
 
- -- needed for ΣF and ΠF to typecheck
- -- I don't like how specialized this is to the second argument
- -- Surely there is some more general truth here?
- η·β : {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} (fa : F A) (b : B) (g : A × B → C) → η g · ⟪ fa , η b ⟫F ≡p η (λ a → g (a , b)) · fa
- {-# REWRITE η·β #-}
+
+module _ {A : Type ℓ} {B : Type ℓ'} where
+ fmap : (A → B) → F A → F B
+ fmap f x = η f · x
+
+postulate
+ -- η·β2 needed for ΣF and ΠF to typecheck
+ --
+ -- I don't love how specialized this is to the particular pair
+ -- arguments, but I can't think of a better consequence of
+ -- applicative axioms that reduce directionally in a nice way.
+ η·β1 : {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} (a : A) (fb : F B) (g : A × B → C) → η g · ⟪ η a , fb ⟫F ≡p fmap (λ b → g (a , b)) fb
+ η·β2 : {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''} (fa : F A) (b : B) (g : A × B → C) → η g · ⟪ fa , η b ⟫F ≡p fmap (λ a → g (a , b)) fa
+ {-# REWRITE η·β1 #-}
+ {-# REWRITE η·β2 #-}
+
 
 
 Fsub : {A : Type ℓ} (B : A → Type ℓ') (M : F A) → F (Type ℓ')
@@ -65,9 +78,7 @@ postulate
  η·η : {A : Type ℓ} (f : A → Type ℓ') (a : A) → Fd (η f · η a) ≡p F (f a)
  {-# REWRITE η·η #-}
 
-module _ {A : Type ℓ} {B : Type ℓ'} where
- fmap : (A → B) → F A → F B
- fmap f x = η f · x
+
 
 module _ {A : Type ℓ} {B : A → Type ℓ'} where
  dfst : F (Σ A B) → F A
