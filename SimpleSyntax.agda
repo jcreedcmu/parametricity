@@ -26,7 +26,7 @@ postulate
  ♯ : ∀ {ℓ} → Type ℓ → Type ℓ
  ι : ∀ {ℓ} {A : Type ℓ} → A → ♯ A
 module Param {ℓ ℓ' ℓ'' : Level}
-         (A : Type ℓ) {S : Type ℓ'} (B : S → Type ℓ'')
+         (A : Type ℓ) (S : Type ℓ') (B : S → Type ℓ'')
          (M : A → (s : S) → B s)
  where
  postulate
@@ -53,7 +53,7 @@ data unit : Type where
  * : unit
 
 module RelThm (M : (X : Type) → X → X) (R : Type) (A : two → Type) (f : R → (t : two) → A t) (r : R) where
- open Param R A f
+ open Param R two A f
 
  r' : R
  r' = ungel (λ s' → M (Gel s') (gel r s'))
@@ -71,7 +71,7 @@ module Exact (M : (X : Type) → X → X) (A B : Type) (a : A) where
 
 
 module Exact2 (M : (X : Type) → X → X) (A : Type) (a : A) where
- open Param A {S = unit} (λ _ → A) (λ _ _ → a )
+ open Param A unit (λ _ → A) (λ _ _ → a )
 
  thm : a ≡ M A a
  thm = H (λ s' → M (Gel s') (gel a s')) *
