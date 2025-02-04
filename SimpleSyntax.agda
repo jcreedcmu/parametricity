@@ -107,6 +107,19 @@ module RelThmIx
  thm : R (M A a) (M B b)
  thm = subst (λ z → R (M A a) z) (lemma t1) (subst (λ z → R z (proj p' t1)) (lemma t0) (snd (snd p')))
 
+module Practice
+    (S : Type)
+    (C1 C2 : Type) -- total spaces
+    (D1 D2 : S → Type) -- boundaries
+    (f1 : C1 → (s : S) → D1 s) -- structure map of the relations
+    (f2 : C2 → (s : S) → D2 s)
+    where
+ record relhom : Type where
+  field
+   totalMap : C1 → C2
+   bdMap : (s : S) → D1 s → D2 s
+   pbck : (c1 : C1) (s : S) → f2 (totalMap c1) s ≡ bdMap s (f1 c1 s)
+
 module RelThmHigher
     (M : (X : Type) → (X → X) → X)
     (Total : Type)
