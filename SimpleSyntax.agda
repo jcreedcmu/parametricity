@@ -49,6 +49,9 @@ module Param {ℓ ℓ' ℓ'' : Level}
 data two : Type where
  t0 t1 : two
 
+data unit : Type where
+ * : unit
+
 module RelThm (M : (X : Type) → X → X) (R : Type) (A : two → Type) (f : R → (t : two) → A t) (r : R) where
  open Param R A f
 
@@ -68,7 +71,7 @@ module Exact (M : (X : Type) → X → X) (A B : Type) (a : A) where
 
 
 module Exact2 (M : (X : Type) → X → X) (A : Type) (a : A) where
- open Param A {S = two} (λ _ → A) (λ { a' t0 → a' ; a' t1 → a })
+ open Param A {S = unit} (λ _ → A) (λ _ _ → a )
 
  thm : a ≡ M A a
- thm = H (λ s' → M (Gel s') (gel a s')) t1
+ thm = H (λ s' → M (Gel s') (gel a s')) *
