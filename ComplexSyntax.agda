@@ -110,4 +110,4 @@ module RelThmHigher
  p' = ungel (λ s' → M (Gel s') (gel2 (Arity.mkHom f~ f f~p) s'))
 
  thm : (t : two) → proj p' t ≡ M (Bd t) (f t)
- thm = {!!}
+ thm = {!!} -- hm no I'm stuck here because I need interaction between ungel and gel2
