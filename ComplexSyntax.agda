@@ -20,63 +20,94 @@ import Interval.Gel
 import Interval.Functoriality
 open import Function.Base
 
-module ComplexSyntax {ℓ0 : Level} (S : Type ℓ0) where
-
-postulate
- ♯ : ∀ {ℓ} → Type ℓ → Type ℓ
- ι : ∀ {ℓ} {A : Type ℓ} → A → ♯ A
-
-
-record Rel (ℓ ℓ' : Level) : Type (ℓ-suc (ℓ ⊔ ℓ' ⊔ ℓ0)) where
- constructor mkRel
- field
-  rA : Type ℓ
-  rB : S → Type ℓ'
-  rM : rA → (s : S) → rB s
-
-record Hom {ℓ ℓ' : Level} (R1 R2 : Rel ℓ ℓ') : Type (ℓ ⊔ ℓ' ⊔ ℓ0)  where -- more level flexibility here?
- constructor mkHom
- open Rel
- field
-  fA : R1 .rA → R2 .rA
-  fB : (s : S) → R1 .rB s → R2 .rB s
-  f= : (s : S) (a : R1 .rA) → R2 .rM (fA a) s  ≡ fB s (R1 .rM a s)
-
-module GelType {ℓ ℓ' : Level} (R : Rel ℓ ℓ') where
- open Rel
+module ComplexSyntax where
+module Arity {ℓ0 : Level} (S : Type ℓ0) where
  postulate
-  Gel : ♯ S → Type ℓ'
-  Gel-ι : (s : S) → Gel (ι s) ≡p (R .rB) s
-  {-# REWRITE Gel-ι #-}
+  ♯ : ∀ {ℓ} → Type ℓ → Type ℓ
+  ι : ∀ {ℓ} {A : Type ℓ} → A → ♯ A
 
-module GelOps1 {ℓ ℓ' ℓ'' : Level}
-  (A : Type ℓ) (B : S → Type ℓ'')
-  (M : A → (s : S) → B s) where
- open GelType (mkRel A B M)
- postulate
 
-  -- I think gel and ungel can be implemented in terms of gel2 and ungel2 below
-  gel : (a : A) (s' : ♯ S) → Gel s'
-  gel-ι : (a : A) (s : S) → gel a (ι s) ≡p M a s
-  {-# REWRITE gel-ι #-}
-  ungel : ((s' : ♯ S) → Gel s') → A
+ record Rel (ℓ ℓ' : Level) : Type (ℓ-suc (ℓ ⊔ ℓ' ⊔ ℓ0)) where
+  constructor mkRel
+  field
+   rA : Type ℓ
+   rB : S → Type ℓ'
+   rM : rA → (s : S) → rB s
 
-  gelβ : (a : A) → ungel (λ s' → gel a s') ≡p a
-  {-# REWRITE gelβ #-}
-  gelη : (f : (s' : ♯ S) → Gel s') (s' : ♯ S) → gel (ungel f) s' ≡p f s'
-  {-# REWRITE gelη #-}
-
- H : (f : (s' : ♯ S) → Gel s') (s : S) → M (ungel f) s ≡ f (ι s)
- H f s = sym (eqToPath (gel-ι (ungel f) s))
-
-module GelOps2 {ℓ ℓ' : Level} (R1 R2 : Rel ℓ ℓ') where -- more level flexibility here?
+ record Hom {ℓ ℓ' : Level} (R1 R2 : Rel ℓ ℓ') : Type (ℓ ⊔ ℓ' ⊔ ℓ0)  where -- more level flexibility here?
+  constructor mkHom
   open Rel
-  open Hom
-  open GelType
+  field
+   fA : R1 .rA → R2 .rA
+   fB : (s : S) → R1 .rB s → R2 .rB s
+   f= : (s : S) (a : R1 .rA) → R2 .rM (fA a) s  ≡ fB s (R1 .rM a s)
 
+ module GelType {ℓ ℓ' : Level} (R : Rel ℓ ℓ') where
+  open Rel
   postulate
-   gel2 : (h : Hom R1 R2) (s' : ♯ S) → Gel R1 s' → Gel R2 s'
-   ungel2 : ((s' : ♯ S) → Gel R1 s' → Gel R2 s') → Hom R1 R2
-   gel2-ι : (h : Hom R1 R2) (N : S) → gel2 h (ι N) ≡p h .fB N
-   gel2β : (h : Hom R1 R2) → ungel2 (gel2 h) ≡p h
-   gel2η : (g : (s' : ♯ S) → Gel R1 s' → Gel R2 s') → gel2 (ungel2 g) ≡p g
+   Gel : ♯ S → Type ℓ'
+   Gel-ι : (s : S) → Gel (ι s) ≡p (R .rB) s
+   {-# REWRITE Gel-ι #-}
+
+ module GelOps {ℓ ℓ' : Level}
+   (A : Type ℓ) (B : S → Type ℓ')
+   (M : A → (s : S) → B s) where
+  open GelType (mkRel A B M)
+  postulate
+
+   -- I think gel and ungel can be implemented in terms of gel2 and ungel2 below
+   gel : (a : A) (s' : ♯ S) → Gel s'
+   gel-ι : (a : A) (s : S) → gel a (ι s) ≡p M a s
+   {-# REWRITE gel-ι #-}
+   ungel : ((s' : ♯ S) → Gel s') → A
+
+   gelβ : (a : A) → ungel (λ s' → gel a s') ≡p a
+   {-# REWRITE gelβ #-}
+   gelη : (f : (s' : ♯ S) → Gel s') (s' : ♯ S) → gel (ungel f) s' ≡p f s'
+   {-# REWRITE gelη #-}
+
+  H : (f : (s' : ♯ S) → Gel s') (s : S) → M (ungel f) s ≡ f (ι s)
+  H f s = sym (eqToPath (gel-ι (ungel f) s))
+
+ module GelOps2 {ℓ ℓ' : Level} (R1 R2 : Rel ℓ ℓ') where -- more level flexibility here?
+   open Rel
+   open Hom
+   open GelType
+
+   postulate
+    gel2 : (h : Hom R1 R2) (s' : ♯ S) → Gel R1 s' → Gel R2 s'
+    ungel2 : ((s' : ♯ S) → Gel R1 s' → Gel R2 s') → Hom R1 R2
+    gel2-ι : (h : Hom R1 R2) (N : S) → gel2 h (ι N) ≡p h .fB N
+    {-# REWRITE gel2-ι #-}
+    gel2β : (h : Hom R1 R2) → ungel2 (gel2 h) ≡p h
+    {-# REWRITE gel2β #-}
+    gel2η : (g : (s' : ♯ S) → Gel R1 s' → Gel R2 s') → gel2 (ungel2 g) ≡p g
+    {-# REWRITE gel2η #-}
+
+   H2 : (f : ((s' : ♯ S) → Gel R1 s' → Gel R2 s')) (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
+   H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
+
+data two : Type where
+ t0 t1 : two
+
+module RelThmHigher
+    (M : (X : Type) → (X → X) → X)
+    (Total : Type)
+    (Bd : two → Type)
+    (proj : Total → (t : two) → Bd t)
+    (f : (t : two) → Bd t → Bd t) -- a pair of functions...
+    (f~ : (r : Total) → Total) -- ...for which there is evidence that they are related...
+    (f~p : (t : two) (r : Total) → proj (f~ r) t ≡ f t (proj r t)) -- ...which really is a relation homomorphism
+    where
+ -- the theorem I want to prove at this point is there
+ -- exists an p' : Total whose boundary is (M (Bd t0) (f t0), M (Bd t1) (f t1))
+ open Arity two
+ open GelType (mkRel Total Bd proj)
+ open GelOps Total Bd proj
+ open GelOps2 (mkRel Total Bd proj) (mkRel Total Bd proj)
+
+ p' : Total
+ p' = ungel (λ s' → M (Gel s') (gel2 (Arity.mkHom f~ f f~p) s'))
+
+ thm : (t : two) → proj p' t ≡ M (Bd t) (f t)
+ thm = {!!}
