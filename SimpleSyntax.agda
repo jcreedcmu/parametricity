@@ -75,3 +75,34 @@ module Exact2 (M : (X : Type) → X → X) (A : Type) (a : A) where
 
  thm : a ≡ M A a
  thm = H (λ s' → M (Gel s') (gel a s')) *
+
+module RelThmIx
+    (M : (X : Type) → X → X)
+    (A B : Type) (R : A → B → Type)
+    (a : A) (b : B) (r : R a b)
+    where
+
+ Total : Type
+ Total = Σ[ a ∈ A ] Σ[ b ∈ B ] R a b
+
+ p : Total
+ p = a , (b , r)
+
+ Bd : two → Type
+ Bd t0 = A
+ Bd t1 = B
+
+ proj : Total → (t : two) → Bd t
+ proj (a , b , r) t0 = a
+ proj (a , b , r) t1 = b
+
+ open Param Total two Bd proj
+
+ p' : Total
+ p' = ungel (λ s' → M (Gel s') (gel p s'))
+
+ lemma : (t : two) → proj p' t ≡ M (Bd t) (proj p t)
+ lemma = H (λ s' → M (Gel s') (gel p s'))
+
+ thm : R (M A a) (M B b)
+ thm = subst (λ z → R (M A a) z) (lemma t1) (subst (λ z → R z (proj p' t1)) (lemma t0) (snd (snd p')))
