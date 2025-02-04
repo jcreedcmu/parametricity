@@ -106,3 +106,20 @@ module RelThmIx
 
  thm : R (M A a) (M B b)
  thm = subst (λ z → R (M A a) z) (lemma t1) (subst (λ z → R z (proj p' t1)) (lemma t0) (snd (snd p')))
+
+module RelThmHigher
+    (M : (X : Type) → (X → X) → X)
+    (Total : Type)
+    (Bd : two → Type)
+    (proj : Total → (t : two) → Bd t)
+    (f : (t : two) → Bd t → Bd t) -- a pair of functions...
+    (f~ : (r : Total) → Total) -- ...for which there is evidence that they are related...
+    (f~p : (r : Total) (t : two) → f t (proj r t) ≡ proj (f~ r) t) -- ...which really is a relation homomorphism
+    where
+ -- the theorem I want to prove at this point is there
+ -- exists an p' : Total whose boundary is (M (Bd t0) (f t0), M (Bd t1) (f t1))
+ p' : Total
+ p' = {!!}
+
+ thm : (t : two) → proj p' t ≡ M (Bd t) (f t)
+ thm = {!!}
