@@ -92,6 +92,21 @@ module Arity {ℓ0 : Level} (S : Type ℓ0) where
   prodR : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')
   prodR = mkRel ((z : Z) → Rs z .rA) (λ s → (z : Z) → Rs z .rB s) λ v s z → Rs z .rM (v z) s
 
+ module BinProductRelation {ℓ' ℓ'' : Level} (R1 R2 : Rel ℓ' ℓ'') where
+  open Rel
+  prodR : Rel ℓ' ℓ''
+  prodR = mkRel (R1 .rA × R2 .rA) (λ s → R1 .rB s × R2 .rB s) λ v s → (R1 .rM (v .fst) s) , (R2 .rM (v .snd) s)
+
+  module G1 = GelType R1
+  module G2 = GelType R2
+  module G = GelType prodR
+  module GO1 = GelOps (R1 .rA) (R1 .rB) (R1 .rM)
+  module GO2 = GelOps (R2 .rA) (R2 .rB) (R2 .rM)
+  module GO = GelOps (prodR .rA) (prodR .rB) (prodR .rM)
+
+  fore : (s' : ♯ S) → G1.Gel s' → G2.Gel s' → G.Gel s'
+  fore = {!!}
+
  module GelOpsN {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') (R0 : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')) where
    open Rel
    open Hom
