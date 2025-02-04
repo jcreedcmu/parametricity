@@ -97,26 +97,33 @@ data Unit {ℓ : Level} : Type ℓ where
 
 module RelThmHigher
     (S : Type)
-    (M : (X : Type) → (X → X) → X)
+    (M : (X : Type) → (X → X) → (X → X))
     (Total : Type)
     (Bd : S → Type)
     (proj : Total → (s : S) → Bd s)
-    (f : (s : S) → Bd s → Bd s) -- a pair of functions...
-    (f~ : (r : Total) → Total) -- ...for which there is evidence that they are related...
-    (f~p : (s : S) (r : Total) → proj (f~ r) s ≡ f s (proj r s)) -- ...which really is a relation homomorphism
+    (succ : (s : S) → Bd s → Bd s) -- a pair of functions...
+    (succ~ : (r : Total) → Total) -- ...for which there is evidence that they are related...
+    (succ~p : (s : S) (r : Total) → proj (succ~ r) s ≡ succ s (proj r s)) -- ...which really is a relation homomorphism
+    (zero~ : Total)
     where
  -- the theorem I want to prove at this point is there
- -- exists an p' : Total whose boundary is (M (Bd t0) (f t0), M (Bd t1) (f t1))
+ -- exists an p' : Total whose boundary is (M (Bd t0) (succ t0), M (Bd t1) (succ t1))
  open Arity S
  open GelType (mkRel Total Bd proj)
  open GelOps Total Bd proj
  open GelOpsN Unit (λ _ → mkRel Total Bd proj) (mkRel Total Bd proj)
 
- Mres : (s' : ♯ S) → Gel s'
- Mres s' = M (Gel s') (λ c → gelN (Arity.mkHom (λ z → f~ (z ⋆)) (λ s b → f s (b ⋆)) λ s a → f~p s (a ⋆)) s' (λ _ → c))
+ succ-gel : (s' : ♯ S) → Gel s' → Gel s'
+ succ-gel s' = (λ c → gelN (Arity.mkHom (λ z → succ~ (z ⋆)) (λ s b → succ s (b ⋆)) λ s a → succ~p s (a ⋆)) s' (λ _ → c))
 
- p' : Total
- p' = ungel Mres
+ x-gel : (s' : ♯ S) → Gel s'
+ x-gel s' = gel zero~ s'
 
- thm : (s : S) → proj p' s ≡ M (Bd s) (f s)
- thm s = H Mres s
+ out-gel : (s' : ♯ S) → Gel s'
+ out-gel s' = M (Gel s') (succ-gel s') (x-gel s')
+
+ out : Total
+ out = ungel out-gel
+
+ thm : (s : S) → proj out s ≡ M (Bd s) (succ s) (proj zero~ s)
+ thm s = H out-gel s
