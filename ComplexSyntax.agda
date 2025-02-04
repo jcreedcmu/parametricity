@@ -87,6 +87,52 @@ module Arity {ℓ0 : Level} (S : Type ℓ0) where
    H2 : (f : ((s' : ♯ S) → Gel R1 s' → Gel R2 s')) (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
    H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
 
+ module TerminalRelation where
+  open Rel
+
+  data Unit {ℓ : Level} : Type ℓ where
+   ⋆ : Unit
+
+  termRel : {ℓ ℓ' : Level} → Rel ℓ ℓ'
+  termRel = mkRel Unit (λ _ → Unit) λ _ _ → ⋆
+
+  module Canonical {ℓ1 ℓ1' : Level} (R : Rel ℓ1 ℓ1') where
+
+   fore : R .rA → Hom termRel R
+   fore a = mkHom (λ _ → a) (λ s _ → R .rM a s) (λ s a' → refl)
+
+   back : Hom termRel R → R .rA
+   back (mkHom fA fB f=) = fA ⋆
+
+   sect : (h : Hom termRel R) → fore (back h) ≡ h
+   sect (mkHom fA fB f=) = {!!}
+
+   retr : (a : R .rA) → back (fore a) ≡ a
+   retr a = refl
+
+
+ module GelOpsRebuild {ℓ ℓ' : Level}
+   (A : Type ℓ) (B : S → Type ℓ')
+   (M : A → (s : S) → B s) where
+  open GelType (mkRel A B M)
+  open GelOps2 TerminalRelation.termRel (mkRel A B M)
+
+  gel : (a : A) (s' : ♯ S) → Gel s'
+  gel a s' = gel2 (TerminalRelation.Canonical.fore (mkRel A B M) a) s' {!!}
+
+  gel-ι : (a : A) (s : S) → gel a (ι s) ≡p M a s
+  gel-ι = {!!}
+
+  ungel : ((s' : ♯ S) → Gel s') → A
+  ungel = {!!}
+
+  gelβ : (a : A) → ungel (λ s' → gel a s') ≡p a
+  gelβ = {!!}
+
+  gelη : (f : (s' : ♯ S) → Gel s') (s' : ♯ S) → gel (ungel f) s' ≡p f s'
+  gelη = {!!}
+
+
 data two : Type where
  t0 t1 : two
 
