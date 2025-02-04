@@ -20,7 +20,7 @@ import Interval.Gel
 import Interval.Functoriality
 open import Function.Base
 
-module ComplexSyntax where
+module NarySyntax where
 module Arity {ℓ0 : Level} (S : Type ℓ0) where
  postulate
   ♯ : ∀ {ℓ} → Type ℓ → Type ℓ
@@ -87,67 +87,28 @@ module Arity {ℓ0 : Level} (S : Type ℓ0) where
    H2 : (f : ((s' : ♯ S) → Gel R1 s' → Gel R2 s')) (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
    H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
 
- module TerminalRelation where
+ module ProductRelation {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') where
   open Rel
+  prodR : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')
+  prodR = mkRel ((z : Z) → Rs z .rA) (λ s → (z : Z) → Rs z .rB s) λ v s z → Rs z .rM (v z) s
 
-  data Unit {ℓ : Level} : Type ℓ where
-   ⋆ : Unit
-
-  termRel : {ℓ ℓ' : Level} → Rel ℓ ℓ'
-  termRel = mkRel Unit (λ _ → Unit) λ _ _ → ⋆
-
-  module Canonical {ℓ1 ℓ1' : Level} (R : Rel ℓ1 ℓ1') where
-
-   fore : R .rA → Hom termRel R
-   fore a = mkHom (λ _ → a) (λ s _ → R .rM a s) (λ s a' → refl)
-
-   back : Hom termRel R → R .rA
-   back (mkHom fA fB f=) = fA ⋆
-
-   sect : (h : Hom termRel R) → fore (back h) ≡ h
-   sect (mkHom fA fB f=) = {!!}
-
-   retr : (a : R .rA) → back (fore a) ≡ a
-   retr a = refl
-
-
- module GelOpsRebuild {ℓ ℓ' : Level}
-   (A : Type ℓ) (B : S → Type ℓ')
-   (M : A → (s : S) → B s) where
-  open GelType (mkRel A B M)
-  open GelOps2 TerminalRelation.termRel (mkRel A B M)
-
-  gel : (a : A) (s' : ♯ S) → Gel s'
-  gel a s' = gel2 (TerminalRelation.Canonical.fore (mkRel A B M) a) s' {!!}
-
-  gel-ι : (a : A) (s : S) → gel a (ι s) ≡p M a s
-  gel-ι = {!!}
-
-  ungel : ((s' : ♯ S) → Gel s') → A
-  ungel = {!!}
-
-  gelβ : (a : A) → ungel (λ s' → gel a s') ≡p a
-  gelβ = {!!}
-
-  gelη : (f : (s' : ♯ S) → Gel s') (s' : ♯ S) → gel (ungel f) s' ≡p f s'
-  gelη = {!!}
-
- module GelOpsN {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (R : Z → Rel ℓ' ℓ'') where
+ module GelOpsN {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') (R0 : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')) where
    open Rel
    open Hom
    open GelType
+   open ProductRelation Z Rs
 
    postulate
-    gel2 : (h : Hom R1 R2) (s' : ♯ S) → Gel R1 s' → Gel R2 s'
-    ungel2 : ((s' : ♯ S) → Gel R1 s' → Gel R2 s') → Hom R1 R2
-    gel2-ι : (h : Hom R1 R2) (N : S) → gel2 h (ι N) ≡p h .fB N
+    gel2 : (h : Hom prodR R0) (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s'
+    ungel2 : ((s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → Hom prodR R0
+    gel2-ι : (h : Hom prodR R0) (N : S) → gel2 h (ι N) ≡p h .fB N
     {-# REWRITE gel2-ι #-}
-    gel2β : (h : Hom R1 R2) → ungel2 (gel2 h) ≡p h
+    gel2β : (h : Hom prodR R0) → ungel2 (gel2 h) ≡p h
     {-# REWRITE gel2β #-}
-    gel2η : (g : (s' : ♯ S) → Gel R1 s' → Gel R2 s') → gel2 (ungel2 g) ≡p g
+    gel2η : (g : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → gel2 (ungel2 g) ≡p g
     {-# REWRITE gel2η #-}
 
-   H2 : (f : ((s' : ♯ S) → Gel R1 s' → Gel R2 s')) (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
+   H2 : (f : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
    H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
 
 data two : Type where
