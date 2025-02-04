@@ -26,7 +26,6 @@ module Arity {ℓ0 : Level} (S : Type ℓ0) where
   ♯ : ∀ {ℓ} → Type ℓ → Type ℓ
   ι : ∀ {ℓ} {A : Type ℓ} → A → ♯ A
 
-
  record Rel (ℓ ℓ' : Level) : Type (ℓ-suc (ℓ ⊔ ℓ' ⊔ ℓ0)) where
   constructor mkRel
   field
@@ -69,84 +68,55 @@ module Arity {ℓ0 : Level} (S : Type ℓ0) where
   H : (f : (s' : ♯ S) → Gel s') (s : S) → M (ungel f) s ≡ f (ι s)
   H f s = sym (eqToPath (gel-ι (ungel f) s))
 
- module GelOps2 {ℓ ℓ' : Level} (R1 R2 : Rel ℓ ℓ') where -- more level flexibility here?
-   open Rel
-   open Hom
-   open GelType
-
-   postulate
-    gel2 : (h : Hom R1 R2) (s' : ♯ S) → Gel R1 s' → Gel R2 s'
-    ungel2 : ((s' : ♯ S) → Gel R1 s' → Gel R2 s') → Hom R1 R2
-    gel2-ι : (h : Hom R1 R2) (N : S) → gel2 h (ι N) ≡p h .fB N
-    {-# REWRITE gel2-ι #-}
-    gel2β : (h : Hom R1 R2) → ungel2 (gel2 h) ≡p h
-    {-# REWRITE gel2β #-}
-    gel2η : (g : (s' : ♯ S) → Gel R1 s' → Gel R2 s') → gel2 (ungel2 g) ≡p g
-    {-# REWRITE gel2η #-}
-
-   H2 : (f : ((s' : ♯ S) → Gel R1 s' → Gel R2 s')) (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
-   H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
-
  module ProductRelation {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') where
   open Rel
+
+ module GelOpsN {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') (R0 : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')) where
+  open Rel
+  open Hom
+  open GelType
+
   prodR : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')
   prodR = mkRel ((z : Z) → Rs z .rA) (λ s → (z : Z) → Rs z .rB s) λ v s z → Rs z .rM (v z) s
 
- module BinProductRelation {ℓ' ℓ'' : Level} (R1 R2 : Rel ℓ' ℓ'') where
-  open Rel
-  prodR : Rel ℓ' ℓ''
-  prodR = mkRel (R1 .rA × R2 .rA) (λ s → R1 .rB s × R2 .rB s) λ v s → (R1 .rM (v .fst) s) , (R2 .rM (v .snd) s)
+  postulate
+   gelN : (h : Hom prodR R0) (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s'
+   ungelN : ((s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → Hom prodR R0
+   gelN-ι : (h : Hom prodR R0) (N : S) → gelN h (ι N) ≡p h .fB N
+   {-# REWRITE gelN-ι #-}
+   gelNβ : (h : Hom prodR R0) → ungelN (gelN h) ≡p h
+   {-# REWRITE gelNβ #-}
+   gelNη : (g : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → gelN (ungelN g) ≡p g
+   {-# REWRITE gelNη #-}
 
-  module G1 = GelType R1
-  module G2 = GelType R2
-  module G = GelType prodR
-  module GO1 = GelOps (R1 .rA) (R1 .rB) (R1 .rM)
-  module GO2 = GelOps (R2 .rA) (R2 .rB) (R2 .rM)
-  module GO = GelOps (prodR .rA) (prodR .rB) (prodR .rM)
+  HN : (f : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') (s : S) → ungelN f .fB s ≡ (λ s' → f (ι s) s')
+  HN f s = sym (eqToPath (gelN-ι (ungelN f) s))
 
-  fore : (s' : ♯ S) → G1.Gel s' → G2.Gel s' → G.Gel s'
-  fore = {!!}
-
- module GelOpsN {ℓ ℓ' ℓ'' : Level} (Z : Set ℓ) (Rs : Z → Rel ℓ' ℓ'') (R0 : Rel (ℓ ⊔ ℓ') (ℓ ⊔ ℓ'')) where
-   open Rel
-   open Hom
-   open GelType
-   open ProductRelation Z Rs
-
-   postulate
-    gel2 : (h : Hom prodR R0) (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s'
-    ungel2 : ((s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → Hom prodR R0
-    gel2-ι : (h : Hom prodR R0) (N : S) → gel2 h (ι N) ≡p h .fB N
-    {-# REWRITE gel2-ι #-}
-    gel2β : (h : Hom prodR R0) → ungel2 (gel2 h) ≡p h
-    {-# REWRITE gel2β #-}
-    gel2η : (g : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') → gel2 (ungel2 g) ≡p g
-    {-# REWRITE gel2η #-}
-
-   H2 : (f : (s' : ♯ S) → ((z : Z) → Gel (Rs z) s') → Gel R0 s') (s : S) → ungel2 f .fB s ≡ (λ s' → f (ι s) s')
-   H2 f s = sym (eqToPath (gel2-ι (ungel2 f) s))
-
-data two : Type where
- t0 t1 : two
+data Unit {ℓ : Level} : Type ℓ where
+ ⋆ : Unit
 
 module RelThmHigher
+    (S : Type)
     (M : (X : Type) → (X → X) → X)
     (Total : Type)
-    (Bd : two → Type)
-    (proj : Total → (t : two) → Bd t)
-    (f : (t : two) → Bd t → Bd t) -- a pair of functions...
+    (Bd : S → Type)
+    (proj : Total → (s : S) → Bd s)
+    (f : (s : S) → Bd s → Bd s) -- a pair of functions...
     (f~ : (r : Total) → Total) -- ...for which there is evidence that they are related...
-    (f~p : (t : two) (r : Total) → proj (f~ r) t ≡ f t (proj r t)) -- ...which really is a relation homomorphism
+    (f~p : (s : S) (r : Total) → proj (f~ r) s ≡ f s (proj r s)) -- ...which really is a relation homomorphism
     where
  -- the theorem I want to prove at this point is there
  -- exists an p' : Total whose boundary is (M (Bd t0) (f t0), M (Bd t1) (f t1))
- open Arity two
+ open Arity S
  open GelType (mkRel Total Bd proj)
  open GelOps Total Bd proj
- open GelOps2 (mkRel Total Bd proj) (mkRel Total Bd proj)
+ open GelOpsN Unit (λ _ → mkRel Total Bd proj) (mkRel Total Bd proj)
+
+ Mres : (s' : ♯ S) → Gel s'
+ Mres s' = M (Gel s') (λ c → gelN (Arity.mkHom (λ z → f~ (z ⋆)) (λ s b → f s (b ⋆)) λ s a → f~p s (a ⋆)) s' (λ _ → c))
 
  p' : Total
- p' = ungel (λ s' → M (Gel s') (gel2 (Arity.mkHom f~ f f~p) s'))
+ p' = ungel Mres
 
- thm : (t : two) → proj p' t ≡ M (Bd t) (f t)
- thm t = H (λ s' → M (Gel s') (gel2 (Arity.mkHom f~ f f~p) s')) t
+ thm : (s : S) → proj p' s ≡ M (Bd s) (f s)
+ thm s = H Mres s
