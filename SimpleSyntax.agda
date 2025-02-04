@@ -43,17 +43,32 @@ module Param {ℓ ℓ' ℓ'' : Level}
   gelη : (f : (s' : ♯ S) → Gel s') (s' : ♯ S) → gel (ungel f) s' ≡p f s'
   {-# REWRITE gelη #-}
 
- H : (f : (s' : ♯ S) → Gel s') (s : S) → M (ungel f) s ≡p f (ι s)
- H f s = symp (gel-ι (ungel f) s)
+ H : (f : (s' : ♯ S) → Gel s') (s : S) → M (ungel f) s ≡ f (ι s)
+ H f s = sym (eqToPath (gel-ι (ungel f) s))
 
 data two : Type where
  t0 t1 : two
 
-module _ (M : (X : Type) → X → X) (R : Type) (A : two → Type) (f : R → (t : two) → A t) (r : R) where
+module RelThm (M : (X : Type) → X → X) (R : Type) (A : two → Type) (f : R → (t : two) → A t) (r : R) where
  open Param R A f
 
  r' : R
  r' = ungel (λ s' → M (Gel s') (gel r s'))
 
- thm : (t : two) → f r' t ≡p M (A t) (f r t)
- thm = H (λ s' → M (Gel s') (gel r s'))
+ lemma : (t : two) → f r' t ≡ M (A t) (f r t)
+ lemma = H (λ s' → M (Gel s') (gel r s'))
+
+module Exact (M : (X : Type) → X → X) (A B : Type) (a : A) where
+ myf : A → (t : two) → A
+ myf a' t0 = a'
+ myf a' t1 = a
+
+ combine : a ≡ M A a
+ combine = RelThm.lemma M A (λ _ → A) myf a t1
+
+
+module Exact2 (M : (X : Type) → X → X) (A : Type) (a : A) where
+ open Param A {S = two} (λ _ → A) (λ { a' t0 → a' ; a' t1 → a })
+
+ thm : a ≡ M A a
+ thm = H (λ s' → M (Gel s') (gel a s')) t1
