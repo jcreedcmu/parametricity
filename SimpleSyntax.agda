@@ -114,11 +114,23 @@ module Practice
     (f1 : C1 → (s : S) → D1 s) -- structure map of the relations
     (f2 : C2 → (s : S) → D2 s)
     where
- record relhom : Type where
+ record Relhom : Type where
   field
    totalMap : C1 → C2
    bdMap : (s : S) → D1 s → D2 s
    pbck : (c1 : C1) (s : S) → f2 (totalMap c1) s ≡ bdMap s (f1 c1 s)
+
+ bdMapf1 : Relhom × C1 → (s : S) → (D1 s → D2 s) × D1 s
+ bdMapf1 (rh , c1) s = (Relhom.bdMap rh s) , (f1 c1 s)
+
+ module Pf = Param Relhom S (λ s → D1 s → D2 s) Relhom.bdMap
+ module Pf1 = Param (Relhom × C1) S (λ s → (D1 s → D2 s) × D1 s) bdMapf1
+
+ module P1 = Param C1 S (λ s → D1 s) f1
+ module P2 = Param C2 S (λ s → D2 s) f2
+
+ evalMap : (s' : ♯ S) → Pf.Gel s' × P1.Gel s' → P2.Gel s'
+ evalMap = {!!}
 
 module RelThmHigher
     (M : (X : Type) → (X → X) → X)
