@@ -118,8 +118,14 @@ module RelThmHigher
     where
  -- the theorem I want to prove at this point is there
  -- exists an p' : Total whose boundary is (M (Bd t0) (f t0), M (Bd t1) (f t1))
+
+ open Param Total two Bd proj
+
+ cvt-f : (s' : ♯ two) → Gel s' → Gel s'
+ cvt-f s' g = gel {!!} s'
+
  p' : Total
- p' = {!!}
+ p' = ungel (λ s' → M (Gel s') (cvt-f s'))
 
  thm : (t : two) → proj p' t ≡ M (Bd t) (f t)
  thm = {!!}
