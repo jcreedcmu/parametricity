@@ -36,20 +36,29 @@ module _ (A : Set) where
  Ball (tcons t src tgt) = src ⇒ tgt
 
 postulate
- isFull : {A : Set} {t : Tele A} (b : Ball A t) → Set -- is a prop
+ isFull : {A : Set} (t : Tele A) (b : Ball A t) → Set -- is a prop
 
 
-record GoodEdge : Set₁ where constructor mkGoodEdge ; field
+record GoodEdge1 : Set₁ where constructor mkGoodEdge ; field
  A : Set
- bd : two → A
- path : bd t0 ⇒ bd t1
- full : isFull {!!}
+ a0 a1 : A
+ path : a0 ⇒ a1
+ full : isFull (tcons tnil a0 a1) path
 
-module _ (ge1 : two → GoodEdge) where
+postulate
+ cell1 : GoodEdge1
+
+module _ (ge1 : two → GoodEdge1) where
  postulate
-  mergedSpace1 : Set
-  mergedBd1 : two → mergedSpace1
+  merged1 : Set -- pushout of ge1
 
- -- record GoodEdge2 : Set₁ where constructor mkGoodEdge2 ; field
- --  A : Set
- --  bd : {!!}
+ record GoodEdge2 : Set₁ where constructor mkGoodEdge2 ; field
+  A : Set
+  a0 a1 : A
+  p0 p1 : a0 ⇒ a1
+  path : p0 ⇒ p1
+  full : isFull (tcons (tcons tnil a0 a1) p0 p1) path
+
+ postulate
+  cell2 : GoodEdge2
+  bd2 : merged1 → cell2 .GoodEdge2.A
