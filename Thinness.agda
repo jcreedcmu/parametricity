@@ -21,41 +21,53 @@ module Thinness where
 data two : Set where
  t0 t1 : two
 
-record Skel : Set₁ where constructor mkSkel ; field
+postulate
+ -- paths of unbounded length
+ _⇒_ : {A : Set} (a a' : A) → Set
+ isFull1 : {A : Set} {a a' : A} → (a ⇒ a') → Set -- is a prop
+ isFull2 : {A : Set} {a a' : A} {f f' : a ⇒ a'} → (f ⇒ f') → Set -- is a prop
+
+Ball0 : (A : Set) → Set
+Ball0 A = A
+
+Sphere0 : (A : Set) → Set
+Sphere0 A = A × A
+
+Ball1 : (A : Set) (s0 : Sphere0 A) → Set
+Ball1 A (src , tgt) = src ⇒ tgt
+
+Sphere1 : (A : Set) (s0 : Sphere0 A) → Set
+Sphere1 A s0 = Ball1 A s0 × Ball1 A s0
+
+Ball2 : (A : Set) (s0 : Sphere0 A) (s1 : Sphere1 A s0) → Set
+Ball2 A s0 (src , tgt) = src ⇒ tgt
+
+Sphere2 : (A : Set) (s0 : Sphere0 A) (s1 : Sphere1 A s0) → Set
+Sphere2 A s0 s1 = Ball2 A s0 s1 × Ball2 A s0 s1
+
+module _ (A : Set) where
+ data Tele : (n : ℕ) → Set
+ Ball : {n : ℕ} → Tele n → Set
+ Sphere : (n : ℕ) → Tele n → Set
+
+ data Tele where
+  tnil : Tele zero
+  tcons : {n : ℕ} (t : Tele n) (s : Sphere n t) → Tele (suc n)
+ Sphere n t = Ball t × Ball t
+ Ball tnil = A
+ Ball (tcons t (src , tgt)) = src ⇒ tgt
+
+record GoodEdge : Set₁ where constructor mkGoodEdge ; field
  A : Set
- boundary : two → A
+ bd : two → A
+ path : bd t0 ⇒ bd t1
+ full : isFull1 path
 
-postulate
- Path : Skel → Set
- isSpan : {s : Skel} (p : Path s) → Set -- should be a prop?
- merge : Skel → Skel → Set
-
-record GoodSkel : Set₁ where constructor mkGoodSkel ; field
- s : Skel
- p : Path s
- j : isSpan p
-
-postulate
- Cell1 : GoodSkel
-
-module _ (gs1 gs2 : GoodSkel) where
-
- Bsh : Set
- Bsh = merge (gs1 .GoodSkel.s) (gs2 .GoodSkel.s)
-
- record Skel2 : Set₁ where constructor mkSkel2 ; field
-  A : Set
-  boundary : Bsh → A
-
+module _ (ge1 : two → GoodEdge) where
  postulate
-  Path2 : Skel2 → Set
-  isSpan2 : {s : Skel2} (p : Path2 s) → Set -- should be a prop?
-  merge2 : Skel2 → Skel2 → Set
+  mergedSpace1 : Set
+  mergedBd1 : two → mergedSpace1
 
- record GoodSkel2 : Set₁ where constructor mkGoodSkel2 ; field
-  s : Skel2
-  p : Path2 s
-  j : isSpan2 p
-
- postulate
-  Cell2 : GoodSkel2
+ -- record GoodEdge2 : Set₁ where constructor mkGoodEdge2 ; field
+ --  A : Set
+ --  bd : {!!}
