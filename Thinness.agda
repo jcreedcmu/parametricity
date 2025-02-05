@@ -28,14 +28,12 @@ postulate
 module _ (A : Set) where
  data Tele : Set
  Ball : Tele → Set
- Sphere : Tele → Set
 
  data Tele where
   tnil : Tele
-  tcons : (t : Tele) (s : Sphere t) → Tele
- Sphere t = Ball t × Ball t
+  tcons : (t : Tele) (b1 b2 : Ball t) → Tele
  Ball tnil = A
- Ball (tcons t (src , tgt)) = src ⇒ tgt
+ Ball (tcons t src tgt) = src ⇒ tgt
 
 postulate
  isFull : {A : Set} {t : Tele A} (b : Ball A t) → Set -- is a prop
