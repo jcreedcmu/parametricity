@@ -18,6 +18,9 @@ open import Function.Base
 
 module Thinness where
 
+data Unit : Set where
+ ⋆ : Unit
+
 data two : Set where
  t0 t1 : two
 
@@ -38,6 +41,26 @@ module _ (A : Set) where
 postulate
  isFull : {A : Set} (t : Tele A) (b : Ball A t) → Set -- is a prop
 
+-- Ball0 : Set
+-- Ball0 = Unit
+
+-- Sphere0 : Set
+-- Sphere0 = Unit
+
+-- record Ball1 : Set₁ where field
+--  A : Set
+--  a0 a1 : A
+--  path : a0 ⇒ a1
+--  full : isFull (tcons tnil a0 a1) path
+
+-- Sphere1 : Set₁
+-- Sphere1 = Ball1 × Ball1
+
+-- record Ball2 (s1 : Sphere1) : Set₁ where field
+--  A : Set
+--  a0 a1 : A
+--  path : a0 ⇒ a1
+--  full : isFull (tcons tnil a0 a1) path
 
 record GoodEdge1 : Set₁ where constructor mkGoodEdge ; field
  A : Set
