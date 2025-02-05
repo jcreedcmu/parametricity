@@ -24,44 +24,28 @@ data two : Set where
 postulate
  -- paths of unbounded length
  _⇒_ : {A : Set} (a a' : A) → Set
- isFull1 : {A : Set} {a a' : A} → (a ⇒ a') → Set -- is a prop
- isFull2 : {A : Set} {a a' : A} {f f' : a ⇒ a'} → (f ⇒ f') → Set -- is a prop
-
-Ball0 : (A : Set) → Set
-Ball0 A = A
-
-Sphere0 : (A : Set) → Set
-Sphere0 A = A × A
-
-Ball1 : (A : Set) (s0 : Sphere0 A) → Set
-Ball1 A (src , tgt) = src ⇒ tgt
-
-Sphere1 : (A : Set) (s0 : Sphere0 A) → Set
-Sphere1 A s0 = Ball1 A s0 × Ball1 A s0
-
-Ball2 : (A : Set) (s0 : Sphere0 A) (s1 : Sphere1 A s0) → Set
-Ball2 A s0 (src , tgt) = src ⇒ tgt
-
-Sphere2 : (A : Set) (s0 : Sphere0 A) (s1 : Sphere1 A s0) → Set
-Sphere2 A s0 s1 = Ball2 A s0 s1 × Ball2 A s0 s1
 
 module _ (A : Set) where
- data Tele : (n : ℕ) → Set
- Ball : {n : ℕ} → Tele n → Set
- Sphere : {n : ℕ} → Tele n → Set
+ data Tele : Set
+ Ball : Tele → Set
+ Sphere : Tele → Set
 
  data Tele where
-  tnil : Tele zero
-  tcons : {n : ℕ} (t : Tele n) (s : Sphere t) → Tele (suc n)
+  tnil : Tele
+  tcons : (t : Tele) (s : Sphere t) → Tele
  Sphere t = Ball t × Ball t
  Ball tnil = A
  Ball (tcons t (src , tgt)) = src ⇒ tgt
+
+postulate
+ isFull : {A : Set} {t : Tele A} (b : Ball A t) → Set -- is a prop
+
 
 record GoodEdge : Set₁ where constructor mkGoodEdge ; field
  A : Set
  bd : two → A
  path : bd t0 ⇒ bd t1
- full : isFull1 path
+ full : isFull {!!}
 
 module _ (ge1 : two → GoodEdge) where
  postulate
