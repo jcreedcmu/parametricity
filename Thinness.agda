@@ -18,29 +18,44 @@ open import Function.Base
 
 module Thinness where
 
+data two : Set where
+ t0 t1 : two
+
 record Skel : Set₁ where constructor mkSkel ; field
  A : Set
- a a' : A
+ boundary : two → A
 
 postulate
  Path : Skel → Set
  isSpan : {s : Skel} (p : Path s) → Set -- should be a prop?
  merge : Skel → Skel → Set
 
- Arrow : Set
- a0 a1 : Arrow
-
 record GoodSkel : Set₁ where constructor mkGoodSkel ; field
  s : Skel
  p : Path s
  j : isSpan p
 
-arrowSkel : Skel
-arrowSkel = mkSkel Arrow a0 a1
-
 postulate
- arrowPath : Path arrowSkel
- arrowPathIsSpan : isSpan arrowPath
+ Cell1 : GoodSkel
 
- Cell2 : (gs1 gs2 : GoodSkel) → Set
- Cell2Boundary : (gs1 gs2 : GoodSkel) → merge (gs1 .GoodSkel.s) (gs2 .GoodSkel.s) → Cell2 gs1 gs2
+module _ (gs1 gs2 : GoodSkel) where
+
+ Bsh : Set
+ Bsh = merge (gs1 .GoodSkel.s) (gs2 .GoodSkel.s)
+
+ record Skel2 : Set₁ where constructor mkSkel2 ; field
+  A : Set
+  boundary : Bsh → A
+
+ postulate
+  Path2 : Skel2 → Set
+  isSpan2 : {s : Skel2} (p : Path2 s) → Set -- should be a prop?
+  merge2 : Skel2 → Skel2 → Set
+
+ record GoodSkel2 : Set₁ where constructor mkGoodSkel2 ; field
+  s : Skel2
+  p : Path2 s
+  j : isSpan2 p
+
+ postulate
+  Cell2 : GoodSkel2
