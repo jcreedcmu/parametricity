@@ -48,12 +48,12 @@ Sphere2 A s0 s1 = Ball2 A s0 s1 × Ball2 A s0 s1
 module _ (A : Set) where
  data Tele : (n : ℕ) → Set
  Ball : {n : ℕ} → Tele n → Set
- Sphere : (n : ℕ) → Tele n → Set
+ Sphere : {n : ℕ} → Tele n → Set
 
  data Tele where
   tnil : Tele zero
-  tcons : {n : ℕ} (t : Tele n) (s : Sphere n t) → Tele (suc n)
- Sphere n t = Ball t × Ball t
+  tcons : {n : ℕ} (t : Tele n) (s : Sphere t) → Tele (suc n)
+ Sphere t = Ball t × Ball t
  Ball tnil = A
  Ball (tcons t (src , tgt)) = src ⇒ tgt
 
