@@ -25,21 +25,26 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-record Ball1 : Set₁ where field
+record Ball1 (S : Set) : Set₁ where field
  Cr : Set
- Bd : two → Cr
+ Bd : S → Cr
 
 postulate
- C1 : Ball1
+ C1 : Ball1 two
 
-
-module _ (C D : Ball1) where
- b1comp : Ball1
+module _ (C D : Ball1 two) where
+ b1comp : Ball1 two
  Ball1.Cr b1comp = Pushout (λ (x : Unit) → C .Ball1.Bd t1) (λ (x : Unit) → D .Ball1.Bd t0)
  Ball1.Bd b1comp t0 = inl (C .Ball1.Bd t0)
  Ball1.Bd b1comp t1 = inr (D .Ball1.Bd t1)
 
+record Ball2 (S : Set) (Bd1a Bd1b : Ball1 S) : Set₁ where field
+ Cr : Set
+ Bd : Pushout (Bd1a .Ball1.Bd) (Bd1b .Ball1.Bd) → Cr
 
+record Ball3 (S : Set) (Bd1a Bd1b : Ball1 S) (Bd2a Bd2b : Ball2 S Bd1a Bd1b) : Set₁ where field
+ Cr : Set
+ Bd : Pushout (Bd2a .Ball2.Bd) (Bd2b .Ball2.Bd) → Cr
 
 --------------------------------------------------------------------------------
 -- postulate
