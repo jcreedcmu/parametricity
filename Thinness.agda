@@ -19,6 +19,8 @@ open import Function.Base
 
 module Thinness where
 
+data Void : Set where
+
 data Unit : Set where
  ⋆ : Unit
 
@@ -45,6 +47,23 @@ record Ball2 (S : Set) (Bd1a Bd1b : Ball1 S) : Set₁ where field
 record Ball3 (S : Set) (Bd1a Bd1b : Ball1 S) (Bd2a Bd2b : Ball2 S Bd1a Bd1b) : Set₁ where field
  Cr : Set
  Bd : Pushout (Bd2a .Ball2.Bd) (Bd2b .Ball2.Bd) → Cr
+
+
+data Tele : Set₁
+Ball : Tele → Set₁
+BallDom : Tele → Set
+
+data Tele where
+ tnil : Tele
+ tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+
+Ball t = Σ[ Cr ∈ Set ] (BallDom t → Cr)
+BallDom tnil = Void
+BallDom (tcons t b1 b2) = Pushout (b1 .snd) (b2 .snd)
+
+-- Ball tnil = Σ[ Cr ∈ Set ] void → Cr -- just a set, ideally Unit
+-- Ball (tcons tnil b1 b2) = Σ[ Cr ∈ Set ] (b1 .fst + .b2 fst) → Cr  -- a set with two points
+
 
 --------------------------------------------------------------------------------
 -- postulate
