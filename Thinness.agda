@@ -19,89 +19,70 @@ open import Function.Base
 
 module Thinness where
 
-data Void : Set where
-
 data Unit : Set where
  ⋆ : Unit
 
 data two : Set where
  t0 t1 : two
 
-data Tele : Set₁
-Ball : Tele → Set₁
-BallDom : Tele → Set
+postulate
+ -- paths of unbounded length
+ _⇒_ : {A : Set} (a a' : A) → Set
 
-data Tele where
- tnil : Tele
- tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+module _ (A : Set) where
+ data Tele : Set
+ Ball : Tele → Set
 
-Ball t = Σ[ Cr ∈ Set ] (BallDom t → Cr)
-BallDom tnil = Void
-BallDom (tcons t b1 b2) = Pushout (b1 .snd) (b2 .snd)
+ data Tele where
+  tnil : Tele
+  tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+ Ball tnil = A
+ Ball (tcons t src tgt) = src ⇒ tgt
 
--- Ball tnil = Σ[ Cr ∈ Set ] void → Cr -- just a set, ideally Unit
--- Ball (tcons tnil b1 b2) = Σ[ Cr ∈ Set ] (b1 .fst + .b2 fst) → Cr  -- a set with two points
+postulate
+ isFull : {A : Set} (t : Tele A) (b : Ball A t) → Set -- is a prop
 
+-- Ball0 : Set
+-- Ball0 = Unit
 
---------------------------------------------------------------------------------
--- postulate
---  -- paths of unbounded length
---  _⇒_ : {A : Set} (a a' : A) → Set
+-- Sphere0 : Set
+-- Sphere0 = Unit
 
--- module _ (A : Set) where
---  data Tele : Set
---  Ball : Tele → Set
-
---  data Tele where
---   tnil : Tele
---   tcons : (t : Tele) (b1 b2 : Ball t) → Tele
---  Ball tnil = A
---  Ball (tcons t src tgt) = src ⇒ tgt
-
--- postulate
---  isFull : {A : Set} (t : Tele A) (b : Ball A t) → Set -- is a prop
-
--- -- Ball0 : Set
--- -- Ball0 = Unit
-
--- -- Sphere0 : Set
--- -- Sphere0 = Unit
-
--- -- record Ball1 : Set₁ where field
--- --  A : Set
--- --  a0 a1 : A
--- --  path : a0 ⇒ a1
--- --  full : isFull (tcons tnil a0 a1) path
-
--- -- Sphere1 : Set₁
--- -- Sphere1 = Ball1 × Ball1
-
--- -- record Ball2 (s1 : Sphere1) : Set₁ where field
--- --  A : Set
--- --  a0 a1 : A
--- --  path : a0 ⇒ a1
--- --  full : isFull (tcons tnil a0 a1) path
-
--- record GoodEdge1 : Set₁ where constructor mkGoodEdge ; field
+-- record Ball1 : Set₁ where field
 --  A : Set
 --  a0 a1 : A
 --  path : a0 ⇒ a1
 --  full : isFull (tcons tnil a0 a1) path
 
--- postulate
---  cell1 : GoodEdge1
+-- Sphere1 : Set₁
+-- Sphere1 = Ball1 × Ball1
 
--- module _ (ge1 : two → GoodEdge1) where
---  postulate
---   merged1 : Set -- pushout of ge1
+-- record Ball2 (s1 : Sphere1) : Set₁ where field
+--  A : Set
+--  a0 a1 : A
+--  path : a0 ⇒ a1
+--  full : isFull (tcons tnil a0 a1) path
 
---  record GoodEdge2 : Set₁ where constructor mkGoodEdge2 ; field
---   A : Set
---   a0 a1 : A
---   p0 p1 : a0 ⇒ a1
---   path : p0 ⇒ p1
---   full : isFull (tcons (tcons tnil a0 a1) p0 p1) path
+record GoodEdge1 : Set₁ where constructor mkGoodEdge ; field
+ A : Set
+ a0 a1 : A
+ path : a0 ⇒ a1
+ full : isFull (tcons tnil a0 a1) path
 
---  postulate
---   cell2 : GoodEdge2
---   bd2 : merged1 → cell2 .GoodEdge2.A
+postulate
+ cell1 : GoodEdge1
+
+module _ (ge1 : two → GoodEdge1) where
+ postulate
+  merged1 : Set -- pushout of ge1
+
+ record GoodEdge2 : Set₁ where constructor mkGoodEdge2 ; field
+  A : Set
+  a0 a1 : A
+  p0 p1 : a0 ⇒ a1
+  path : p0 ⇒ p1
+  full : isFull (tcons (tcons tnil a0 a1) p0 p1) path
+
+ postulate
+  cell2 : GoodEdge2
+  bd2 : merged1 → cell2 .GoodEdge2.A
