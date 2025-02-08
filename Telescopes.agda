@@ -34,31 +34,28 @@ module Usage where
  -- Forward declarations for mutual recursion:
  data Tele : Set
  data SubTele : Tele → Set
- record Ball (t : Tele) : Set
  data subset : {t : Tele} → SubTele t → SubTele t → Set
 
  -- Definitions:
  data Tele where
   tnil : Tele
-  tcons : (t : Tele)  (b : Ball t) → Tele
-
- record Ball t where inductive ; constructor mkBall ; field
-   use : SubTele t
+  tcons : (t : Tele)  (b : SubTele t) → Tele
 
  data SubTele where
   stnil : SubTele tnil
-  stskip : (t : Tele) (st : SubTele t) (b : Ball t) → SubTele (tcons t b)
-  stuse : (t : Tele) (st : SubTele t) (b : Ball t) → (subset (Ball.use b) st) → SubTele (tcons t b)
+  stskip : (t : Tele) (st : SubTele t) (b : SubTele t) → SubTele (tcons t b)
+  stuse : (t : Tele) (st : SubTele t) (b : SubTele t) → (subset b st) → SubTele (tcons t b)
 
  data subset where
   subnil : subset stnil stnil
-  subskips : (t : Tele) (st st' : SubTele t) (b : Ball t)
+  subskips : (t : Tele) (st st' : SubTele t) (b : SubTele t)
     → subset st st' → subset (stskip t st b) (stskip t st' b)
-  subchange : (t : Tele) (st st' : SubTele t) (b : Ball t) (σ' : subset (Ball.use b) st')
+  subchange : (t : Tele) (st st' : SubTele t) (b : SubTele t) (σ' : subset b st')
     → subset st st' → subset (stskip t st b) (stuse t st' b σ')
-  subuses : (t : Tele) (st st' : SubTele t) (b : Ball t)
-            (σ : subset (Ball.use b) st) (σ' : subset (Ball.use b) st')
+  subuses : (t : Tele) (st st' : SubTele t) (b : SubTele t)
+            (σ : subset b st) (σ' : subset b st')
     → subset st st' → subset (stuse t st b σ) (stuse t st' b σ')
+
 
 
 
