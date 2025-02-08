@@ -117,3 +117,9 @@ vcompose {f} {g} {h} α β = mkBall carrier bound where
  bound (inl fx) = inl (α .Bd (inl fx))
  bound (inr hx) = inr (β .Bd (inr hx))
  bound (push a i) = boundLemma a i
+
+-- horizontal composition of 2-cells
+hcompose : {f g h k : C1} → C2 f g → C2 h k → C2 (compose f h) (compose g k)
+hcompose {f} {g} {h} {k} α β = mkBall carrier {!bound!} where
+ carrier : Set
+ carrier = Pushout {!!} {!!}
