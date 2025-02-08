@@ -99,56 +99,19 @@ vcompose {f} {g} {h} α β = mkBall carrier bound where
  carrier : Set
  carrier = Pushout (α .Bd ∘ inr) (β .Bd ∘ inl)
 
- -- f : Cr g → Cr α
- -- g : Cr g → Cr β
- zinl : Cr α → carrier
- zinl = inl
+ cinl : Cr α → carrier
+ cinl = inl
 
- zinr : Cr β → carrier
- zinr = inr
-
- test : (a : Cr g) → zinl (α .Bd (inr a)) ≡ zinr (β .Bd (inl a))
- test = push
+ cinr : Cr β → carrier
+ cinr = inr
 
  two' : Set
  two' = Pushout (c0 .Bd) (c0 .Bd)
 
- test2 : (a : two') → zinl (α .Bd (inr (g .Bd a))) ≡ zinr (β .Bd (inl (g .Bd a)))
- test2 a = test (g .Bd a)
-
- αBdcopy : Pushout (f .Bd) (g .Bd) → α .Cr
- αBdcopy = α .Bd
-
-
- fbdcopy : two' → f .Cr
- fbdcopy = f .Bd
-
- winl : Cr f → Pushout (f .Bd) (g .Bd)
- winl = inl
-
- winr : Cr g → Pushout (f .Bd) (g .Bd)
- winr = inr
-
- winl' : Cr g → Pushout (g .Bd) (h .Bd)
- winl' = inl
-
- winr' : Cr h → Pushout (g .Bd) (h .Bd)
- winr' = inr
-
- wtest : (a : two') → winl (f .Bd a) ≡ winr (g .Bd a)
- wtest = push
-
- wtest2 : (a : two') → zinl (α .Bd (winl (f .Bd a))) ≡ zinl (α .Bd (winr (g .Bd a)))
- wtest2 a = cong (λ q → zinl (α .Bd q)) (push a)
-
-
- wtest' : (a : two') → winl' (g .Bd a) ≡ winr' (h .Bd a)
- wtest' = push
-
- boundLemma : (a : two') → zinl (α .Bd (winl (f .Bd a))) ≡ zinr (β .Bd (inr (h .Bd a)))
- boundLemma a = cong (λ q → zinl (α .Bd q)) (push a)
-              ∙ test (g .Bd a)
-              ∙ cong (λ q → zinr (β .Bd q)) (push a)
+ boundLemma : (a : two') → cinl (α .Bd (inl (f .Bd a))) ≡ cinr (β .Bd (inr (h .Bd a)))
+ boundLemma a = cong (λ q → cinl (α .Bd q)) (push a)
+              ∙ push (g .Bd a)
+              ∙ cong (λ q → cinr (β .Bd q)) (push a)
 
  bound : Pushout (f .Bd) (h .Bd) → carrier
  bound (inl fx) = inl (α .Bd (inl fx))
