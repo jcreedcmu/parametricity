@@ -30,6 +30,27 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
+module Hide where
+ -- Forward declarations for mutual recursion:
+ data Tele : Set₁
+ record Ball (t : Tele) : Set₁
+ Boundary : Tele → Set → Set -- Boundary t Cr ≡ BallDom t → Cr
+ MapB : {A B : Set} {t : Tele} (f : A → B) → Boundary t A → Boundary t B
+
+ -- Definitions:
+ data Tele where
+  tnil : Tele
+  tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+ record Ball t where constructor mkBall ; field
+   Cr : Set
+   Bd' : Boundary t Cr
+ open Ball
+ Boundary tnil C = Unit
+ Boundary (tcons t b1 b2) C = Σ[ f1 ∈ (b1 .Cr → C)] Σ[ f2 ∈ (b2 .Cr → C)]
+          MapB f1 (b1 .Bd') ≡ MapB f2 (b2 .Bd')
+ MapB {t = tnil} f x = x
+ MapB {t = tcons t b1 b2} f (f1 , f2 , m) = f ∘ f1 , f ∘ f2 , {!!}
+
 module _ where
  -- Forward declarations for mutual recursion:
  data Tele : Set₁
