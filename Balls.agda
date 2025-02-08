@@ -71,9 +71,8 @@ module _ where
  cod : (P : C1) → P .Cr
  cod P = P .Bd (inr ⋆)
 
-
-compose : (p1 p2 : C1) → C1
-compose (p1@(mkBall Cr1 Bd1)) (p2@(mkBall Cr2 Bd2)) = mkBall carrier bound where
+compose : C1 → C1 → C1
+compose p1 p2 = mkBall carrier bound where
    open Ball
 
    two' : Set
@@ -85,3 +84,73 @@ compose (p1@(mkBall Cr1 Bd1)) (p2@(mkBall Cr2 Bd2)) = mkBall carrier bound where
    bound : two' → carrier
    bound (inl _) = inl (dom p1)
    bound (inr _) = inr (cod p2)
+
+-- To show: compose is associative
+
+-- This is the type of 2-dimensional cells over some boundaries f and g
+C2 : C1 → C1 → Set₁
+C2 f g = Ball (tcons (tcons tnil c0 c0) f g)
+
+-- Vertical composition of 2-cells
+vcompose : {f g h : C1} → C2 f g → C2 g h → C2 f h
+vcompose {f} {g} {h} α β = mkBall carrier bound where
+ open Ball
+
+ carrier : Set
+ carrier = Pushout (α .Bd ∘ inr) (β .Bd ∘ inl)
+
+ -- f : Cr g → Cr α
+ -- g : Cr g → Cr β
+ zinl : Cr α → carrier
+ zinl = inl
+
+ zinr : Cr β → carrier
+ zinr = inr
+
+ test : (a : Cr g) → zinl (α .Bd (inr a)) ≡ zinr (β .Bd (inl a))
+ test = push
+
+ two' : Set
+ two' = Pushout (c0 .Bd) (c0 .Bd)
+
+ test2 : (a : two') → zinl (α .Bd (inr (g .Bd a))) ≡ zinr (β .Bd (inl (g .Bd a)))
+ test2 a = test (g .Bd a)
+
+ αBdcopy : Pushout (f .Bd) (g .Bd) → α .Cr
+ αBdcopy = α .Bd
+
+
+ fbdcopy : two' → f .Cr
+ fbdcopy = f .Bd
+
+ winl : Cr f → Pushout (f .Bd) (g .Bd)
+ winl = inl
+
+ winr : Cr g → Pushout (f .Bd) (g .Bd)
+ winr = inr
+
+ winl' : Cr g → Pushout (g .Bd) (h .Bd)
+ winl' = inl
+
+ winr' : Cr h → Pushout (g .Bd) (h .Bd)
+ winr' = inr
+
+ wtest : (a : two') → winl (f .Bd a) ≡ winr (g .Bd a)
+ wtest = push
+
+ wtest2 : (a : two') → zinl (α .Bd (winl (f .Bd a))) ≡ zinl (α .Bd (winr (g .Bd a)))
+ wtest2 a = cong (λ q → zinl (α .Bd q)) (push a)
+
+
+ wtest' : (a : two') → winl' (g .Bd a) ≡ winr' (h .Bd a)
+ wtest' = push
+
+ boundLemma : (a : two') → zinl (α .Bd (winl (f .Bd a))) ≡ zinr (β .Bd (inr (h .Bd a)))
+ boundLemma a = cong (λ q → zinl (α .Bd q)) (push a)
+              ∙ test (g .Bd a)
+              ∙ cong (λ q → zinr (β .Bd q)) (push a)
+
+ bound : Pushout (f .Bd) (h .Bd) → carrier
+ bound (inl fx) = inl (α .Bd (inl fx))
+ bound (inr hx) = inr (β .Bd (inr hx))
+ bound (push a i) = boundLemma a i
