@@ -76,14 +76,23 @@ module Hide2 where
  open Ball
 
  compv : {t : Tele} (A B C : Ball t) → Ball (tcons t A B) → Ball (tcons t B C) → Ball (tcons t A C)
- compv A B C b1 b2 = mkBall carrier bd where
+ compv A B C f g = mkBall carrier bd where
   carrier : Set
-  carrier = (Pushout (λ (bx : ⟦ B ⟧) → ∂ b1 (inr bx)) (λ (bx : ⟦ B ⟧) → ∂ b2 (inl bx)))
+  carrier = (Pushout (λ (bx : ⟦ B ⟧) → ∂ f (inr bx)) (λ (bx : ⟦ B ⟧) → ∂ g (inl bx)))
+
+
+  binl : ⟦ f ⟧ → carrier
+  binl = inl
+
+  binr : ⟦ g ⟧ → carrier
+  binr = inr
 
   bd : Pushout (∂ A) (∂ C) → carrier
-  bd (inl x) = inl (∂ b1 (inl x))
-  bd (inr x) = inr (∂ b2 (inr x))
-  bd (push a i) = {!!} -- I think I can prove this
+  bd (inl x) = binl (∂ f (inl x))
+  bd (inr x) = binr (∂ g (inr x))
+  bd (push a i) = lemma i where
+   lemma : bd (inl (∂ A a)) ≡ bd (inr (∂ C a))
+   lemma = cong (λ q → binl (∂ f q)) (push a) ∙ push (∂ B a) ∙ cong (λ q → binr (∂ g q)) (push a)
 
 
  comph : {t₁ t₂ t₃ : Tele} (compo : Ball t₁ → Ball t₂ → Ball t₃)
