@@ -24,59 +24,89 @@ data Void : Set where
 abort : (A : Set) → Void → A
 abort A ()
 
-data Unit : Set where
+data Unit {ℓ : Level} : Set ℓ where
  ⋆ : Unit
 
 data two : Set where
  t0 t1 : two
 
-module Usage where
- -- Forward declarations for mutual recursion:
- data Tele : Set
- data SubTele : Tele → Set
- data subset : {t : Tele} → SubTele t → SubTele t → Set
+record Tele : Set₂ where constructor mkTele ; field
+ -- the type of weights
+ Wt : Set₁
+ -- the realization of the telescope for some particular weight vector
+ Re : Wt → Set
+ -- maps from one weight vector to another?
+ Hom : Wt → Wt → Set
 
- -- Definitions:
- data Tele where
-  tnil : Tele
-  tcons : (t : Tele)  (b : SubTele t) → Tele
+record Ball (t : Tele) : Set₁ where open Tele ; field
+ -- The carrier of the ball
+ Cr : Set
+ -- The weight vector of the ball - how much it uses each element of the telescope
+ wv : Wt t
+ -- The boundary map of the ball
+ ∂ : Re t wv → Cr
 
- data SubTele where
-  stnil : SubTele tnil
-  stskip : (t : Tele) (st : SubTele t) (b : SubTele t) → SubTele (tcons t b)
-  stuse : (t : Tele) (st : SubTele t) (b : SubTele t) → (subset b st) → SubTele (tcons t b)
+open Tele
+open Ball
 
- data subset where
-  subnil : subset stnil stnil
-  subskips : (t : Tele) (st st' : SubTele t) (b : SubTele t)
-    → subset st st' → subset (stskip t st b) (stskip t st' b)
-  subchange : (t : Tele) (st st' : SubTele t) (b : SubTele t) (σ' : subset b st')
-    → subset st st' → subset (stskip t st b) (stuse t st' b σ')
-  subuses : (t : Tele) (st st' : SubTele t) (b : SubTele t)
-            (σ : subset b st) (σ' : subset b st')
-    → subset st st' → subset (stuse t st b σ) (stuse t st' b σ')
+nilTele : Tele
+nilTele = mkTele Unit (λ _ → Void) (λ _ _ → Unit)
+
+consTele : (t : Tele) (b : Ball t) → Tele
+consTele t b = mkTele
+    (Σ[ ω ∈ Wt t ] Σ[ ω' ∈ Type ] Hom t (wv b) ω)
+    doRe
+    {!!} where
+  doRe : (Σ[ ω ∈ Wt t ] Σ[ ω' ∈ Type ] Hom t (wv b) ω) → Set
+  doRe = {!!}
+
+-- module Usage where
+--  -- Forward declarations for mutual recursion:
+--  data Tele : Set
+--  data SubTele : Tele → Set
+--  data subset : {t : Tele} → SubTele t → SubTele t → Set
+
+--  -- Definitions:
+--  data Tele where
+--   tnil : Tele
+--   tcons : (t : Tele)  (b : SubTele t) → Tele
+
+--  data SubTele where
+--   stnil : SubTele tnil
+--   stskip : (t : Tele) (st : SubTele t) (b : SubTele t) → SubTele (tcons t b)
+--   stuse : (t : Tele) (st : SubTele t) (b : SubTele t) → (subset b st) → SubTele (tcons t b)
+
+--  data subset where
+--   subnil : subset stnil stnil
+--   subskips : (t : Tele) (st st' : SubTele t) (b : SubTele t)
+--     → subset st st' → subset (stskip t st b) (stskip t st' b)
+--   subchange : (t : Tele) (st st' : SubTele t) (b : SubTele t) (σ' : subset b st')
+--     → subset st st' → subset (stskip t st b) (stuse t st' b σ')
+--   subuses : (t : Tele) (st st' : SubTele t) (b : SubTele t)
+--             (σ : subset b st) (σ' : subset b st')
+--     → subset st st' → subset (stuse t st b σ) (stuse t st' b σ')
 
 
 
 
-module _ where
- -- Forward declarations for mutual recursion:
- data Tele : Set₁
- data SubTele : Tele → Set₁
- record Ball (t : Tele) : Set₁
- Realize : (t : Tele) → SubTele t → Set
+-- module _ where
+--  -- Forward declarations for mutual recursion:
+--  data Tele : Set₁
+--  data SubTele : Tele → Set₁
+--  record Ball (t : Tele) : Set₁
+--  Realize : (t : Tele) → SubTele t → Set
 
- -- Definitions:
- data Tele where
-  tnil : Tele
-  tcons : (t : Tele)  (b : Ball t) → Tele
+--  -- Definitions:
+--  data Tele where
+--   tnil : Tele
+--   tcons : (t : Tele)  (b : Ball t) → Tele
 
- data SubTele where
+--  data SubTele where
 
 
- record Ball t where constructor mkBall ; field
-   ⟦_⟧ : Set
-   sub : SubTele t
-   ∂ : Realize t sub → ⟦_⟧
+--  record Ball t where constructor mkBall ; field
+--    ⟦_⟧ : Set
+--    sub : SubTele t
+--    ∂ : Realize t sub → ⟦_⟧
 
- Realize x = {!!}
+--  Realize x = {!!}
