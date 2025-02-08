@@ -30,23 +30,30 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-data Tele : Set₁
-record Ball (t : Tele) : Set₁
-BallDom : Tele → Set
+module _ where
+ -- Forward declarations for mutual recursion:
+ data Tele : Set₁
+ record Ball (t : Tele) : Set₁
+ BallDom : Tele → Set
 
-data Tele where
- tnil : Tele
- tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+ -- Definitions:
+ data Tele where
+  tnil : Tele
+  tcons : (t : Tele) (b1 b2 : Ball t) → Tele
+ record Ball t where constructor mkBall ; field
+   Cr : Set
+   Bd : BallDom t → Cr
+ open Ball
+ BallDom tnil = Void
+ BallDom (tcons t b1 b2) = Pushout (b1 .Bd) (b2 .Bd)
 
-record Ball t where constructor mkBall ; field
-  Cr : Set
-  Bd : BallDom t → Cr
-open Ball
-BallDom tnil = Void
-BallDom (tcons t b1 b2) = Pushout (b1 .Bd) (b2 .Bd)
-
--- Ball tnil = Σ[ Cr ∈ Set ] void → Cr -- just a set, ideally Unit
--- Ball (tcons tnil b1 b2) = Σ[ Cr ∈ Set ] (b1 .fst + .b2 fst) → Cr  -- a set with two points
+-- For example:
+--
+-- Ball tnil = { Cr : Set, Bd : void → Cr }
+-- just a set, ideally Unit
+--
+-- Ball (tcons tnil b1 b2) = { Cr : Set, (b1 .fst + .b2 fst) → Cr }
+-- a set with two points
 
 -- This is the canonical 1-point 0-dimensional ball
 c0 : Ball tnil
@@ -56,5 +63,25 @@ c0 = mkBall Unit (abort Unit)
 C1 : Set₁
 C1 = Ball (tcons tnil c0 c0)
 
+module _ where
+ open Ball
+ dom : (P : C1) → P .Cr
+ dom P = P .Bd (inl ⋆)
+
+ cod : (P : C1) → P .Cr
+ cod P = P .Bd (inr ⋆)
+
+
 compose : (p1 p2 : C1) → C1
-compose p1 p2 = {!!}
+compose (p1@(mkBall Cr1 Bd1)) (p2@(mkBall Cr2 Bd2)) = mkBall carrier bound where
+   open Ball
+
+   two' : Set
+   two' = Pushout (c0 .Bd) (c0 .Bd) -- pushout of two copies of ! : 0 → 1
+
+   carrier : Set
+   carrier = (Pushout (λ (_ : Unit) → cod p1) (λ (_ : Unit) → dom p2))
+
+   bound : two' → carrier
+   bound (inl _) = inl (dom p1)
+   bound (inr _) = inr (cod p2)
