@@ -80,7 +80,6 @@ module Hide2 where
   carrier : Set
   carrier = (Pushout (λ (bx : ⟦ B ⟧) → ∂ f (inr bx)) (λ (bx : ⟦ B ⟧) → ∂ g (inl bx)))
 
-
   binl : ⟦ f ⟧ → carrier
   binl = inl
 
@@ -95,10 +94,17 @@ module Hide2 where
    lemma = cong (λ q → binl (∂ f q)) (push a) ∙ push (∂ B a) ∙ cong (λ q → binr (∂ g q)) (push a)
 
 
- comph : {t₁ t₂ t₃ : Tele} (compo : Ball t₁ → Ball t₂ → Ball t₃)
+ comph : {t₁ t₂ t₃ : Tele}
+          → (compo : Ball t₁ → Ball t₂ → Ball t₃)
+          → (common : Set) -- between telescopes t₁ and t₂
           → (f h : Ball t₁) (g k : Ball t₂)
           → Ball (tcons t₁ f h) → Ball (tcons t₂ g k) → Ball (tcons t₃ (compo f g) (compo h k))
- comph = {!!}
+ comph compo common f h g k α β = mkBall carrier bd where
+  carrier : Set
+  carrier = {!!}
+
+  bd : Pushout (∂ (compo f g)) (∂ (compo h k)) → carrier
+  bd = {!!}
 module Hide where
  open Ball
 
