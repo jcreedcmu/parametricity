@@ -72,7 +72,25 @@ module _ where
  CodN zero (tms t b1 b2 tm) = ⟦ b2 ⟧
  CodN (suc n) (tms t b1 b2 tm) = CodN n tm
 
-module _ where
+module Hide2 where
+ open Ball
+
+ compv : {t : Tele} (A B C : Ball t) → Ball (tcons t A B) → Ball (tcons t B C) → Ball (tcons t A C)
+ compv A B C b1 b2 = mkBall carrier bd where
+  carrier : Set
+  carrier = (Pushout (λ (bx : ⟦ B ⟧) → ∂ b1 (inr bx)) (λ (bx : ⟦ B ⟧) → ∂ b2 (inl bx)))
+
+  bd : Pushout (∂ A) (∂ C) → carrier
+  bd (inl x) = inl (∂ b1 (inl x))
+  bd (inr x) = inr (∂ b2 (inr x))
+  bd (push a i) = {!!} -- I think I can prove this
+
+
+ comph : {t₁ t₂ t₃ : Tele} (compo : Ball t₁ → Ball t₂ → Ball t₃)
+          → (f h : Ball t₁) (g k : Ball t₂)
+          → Ball (tcons t₁ f h) → Ball (tcons t₂ g k) → Ball (tcons t₃ (compo f g) (compo h k))
+ comph = {!!}
+module Hide where
  open Ball
 
  -- Forward Declarations:
