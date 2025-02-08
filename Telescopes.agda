@@ -1,0 +1,85 @@
+{-# OPTIONS --cubical --rewriting #-}
+
+open import Agda.Primitive
+open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
+open import Agda.Builtin.Equality  renaming (_≡_ to _≡p_ ; refl to reflp)
+open import Agda.Builtin.Equality.Rewrite
+open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
+open import Cubical.Data.Sigma hiding (Path)
+open import Cubical.Data.Nat hiding (Unit ; _·_)
+open import Cubical.Data.Empty renaming (rec to aborti)
+open import Cubical.Data.Equality using () renaming (sym to symp)
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.Prelude hiding (Path)
+open import Cubical.Functions.Embedding
+open import Cubical.HITs.Pushout
+open import Function.Base
+
+module Telescopes where
+
+data Void : Set where
+
+abort : (A : Set) → Void → A
+abort A ()
+
+data Unit : Set where
+ ⋆ : Unit
+
+data two : Set where
+ t0 t1 : two
+
+module Usage where
+ -- Forward declarations for mutual recursion:
+ data Tele : Set
+ data SubTele : Tele → Set
+ record Ball (t : Tele) : Set
+ data subset : {t : Tele} → SubTele t → SubTele t → Set
+
+ -- Definitions:
+ data Tele where
+  tnil : Tele
+  tcons : (t : Tele)  (b : Ball t) → Tele
+
+ record Ball t where inductive ; constructor mkBall ; field
+   use : SubTele t
+
+ data SubTele where
+  stnil : SubTele tnil
+  stskip : (t : Tele) (st : SubTele t) (b : Ball t) → SubTele (tcons t b)
+  stuse : (t : Tele) (st : SubTele t) (b : Ball t) → (subset (Ball.use b) st) → SubTele (tcons t b)
+
+ data subset where
+  subnil : subset stnil stnil
+  subskips : (t : Tele) (st st' : SubTele t) (b : Ball t)
+    → subset st st' → subset (stskip t st b) (stskip t st' b)
+  subchange : (t : Tele) (st st' : SubTele t) (b : Ball t) (σ' : subset (Ball.use b) st')
+    → subset st st' → subset (stskip t st b) (stuse t st' b σ')
+  subuses : (t : Tele) (st st' : SubTele t) (b : Ball t)
+            (σ : subset (Ball.use b) st) (σ' : subset (Ball.use b) st')
+    → subset st st' → subset (stuse t st b σ) (stuse t st' b σ')
+
+
+
+module _ where
+ -- Forward declarations for mutual recursion:
+ data Tele : Set₁
+ data SubTele : Tele → Set₁
+ record Ball (t : Tele) : Set₁
+ Realize : (t : Tele) → SubTele t → Set
+
+ -- Definitions:
+ data Tele where
+  tnil : Tele
+  tcons : (t : Tele)  (b : Ball t) → Tele
+
+ data SubTele where
+
+
+ record Ball t where constructor mkBall ; field
+   ⟦_⟧ : Set
+   sub : SubTele t
+   ∂ : Realize t sub → ⟦_⟧
+
+ Realize x = {!!}
