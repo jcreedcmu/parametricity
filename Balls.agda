@@ -41,11 +41,11 @@ module _ where
   tnil : Tele
   tcons : (t : Tele) (b1 b2 : Ball t) → Tele
  record Ball t where constructor mkBall ; field
-   Cr : Set
-   Bd : BallDom t → Cr
+   ⟦_⟧ : Set
+   ∂ : BallDom t → ⟦_⟧
  open Ball
  BallDom tnil = Void
- BallDom (tcons t b1 b2) = Pushout (b1 .Bd) (b2 .Bd)
+ BallDom (tcons t b1 b2) = Pushout (∂ b1) (∂ b2)
 
 data TeleMin : ℕ → Tele → Set₁ where
  tmz : TeleMin zero tnil
@@ -54,30 +54,51 @@ data TeleMin : ℕ → Tele → Set₁ where
 module _ where
  open Ball
  Dom1 : {t : Tele} → TeleMin 1 t → Set
- Dom1 (tms _ b _ _) = b .Cr
+ Dom1 (tms _ b _ _) = ⟦ b ⟧
  Cod1 : {t : Tele} → TeleMin 1 t → Set
- Cod1 (tms _ _ b _) = b .Cr
+ Cod1 (tms _ _ b _) = ⟦ b ⟧
 
  Dom2 : {t : Tele} → TeleMin 2 t → Set
- Dom2 (tms _ _ _ (tms t b _ _)) = b .Cr
+ Dom2 (tms _ _ _ (tms t b _ _)) = ⟦ b ⟧
 
  Cod2 : {t : Tele} → TeleMin 2 t → Set
- Cod2 (tms _ _ _ (tms t _ b _)) = b .Cr
+ Cod2 (tms _ _ _ (tms t _ b _)) = ⟦ b ⟧
 
  DomN : {t : Tele} (n : ℕ) → TeleMin (suc n) t → Set
- DomN zero (tms t b1 b2 tm) = b1 .Cr
+ DomN zero (tms t b1 b2 tm) = ⟦ b1 ⟧
  DomN (suc n) (tms t b1 b2 tm) = DomN n tm
 
  CodN : {t : Tele} (n : ℕ) → TeleMin (suc n) t → Set
- CodN zero (tms t b1 b2 tm) = b2 .Cr
+ CodN zero (tms t b1 b2 tm) = ⟦ b2 ⟧
  CodN (suc n) (tms t b1 b2 tm) = CodN n tm
+
+module _ where
+ open Ball
+
+ -- Composable t₁ t₂ t₃ means balls of telescope t₁ and t₂ are composable,
+ -- yielding a ball over t₃
+ data Composable : Tele → Tele → Tele → Set₁
+ -- Actually compute the composite ball
+ Compose : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) → (b₁ : Ball t₁) (b₂ : Ball t₂) → Ball t₃
+ -- Now some helpers for composition. Common yields the "common territory" of a composable
+ -- pair of telescopes. This is the domain of the two functions that we'll want to push out.
+ Common : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) → Set
+ data Composable where
+  compz : {t : Tele} (A B C : Ball t) → Composable (tcons t A B) (tcons t B C) (tcons t A C)
+  comps : {t₁ t₂ t₃ : Tele}
+          (c : Composable t₁ t₂ t₃)
+          → (f h : Ball t₁) (g k : Ball t₂)
+          → Composable (tcons t₁ f h) (tcons t₂ g k) (tcons t₃ (Compose c f g) (Compose c h k))
+ Compose = {!!}
+ Common (compz A B C) = {!⟦ b ⟧!}
+ Common (comps c f h g k) = {!!}
 
 -- For example:
 --
--- Ball tnil = { Cr : Set, Bd : void → Cr }
+-- Ball tnil = { ⟦_⟧ : Set, ∂ : void → ⟦_⟧ }
 -- just a set, ideally Unit
 --
--- Ball (tcons tnil b1 b2) = { Cr : Set, (b1 .fst + .b2 fst) → Cr }
+-- Ball (tcons tnil b1 b2) = { ⟦_⟧ : Set, (b1 .fst + .b2 fst) → ⟦_⟧ }
 -- a set with two points
 
 -- This is the canonical 1-point 0-dimensional ball
@@ -91,18 +112,18 @@ C1 = Ball (tcons tnil c0 c0)
 
 module _ where
  open Ball
- dom : (P : C1) → P .Cr
- dom P = P .Bd (inl ⋆)
+ dom : (P : C1) → P .⟦_⟧
+ dom P = P .∂ (inl ⋆)
 
- cod : (P : C1) → P .Cr
- cod P = P .Bd (inr ⋆)
+ cod : (P : C1) → P .⟦_⟧
+ cod P = P .∂ (inr ⋆)
 
 compose : C1 → C1 → C1
 compose p1 p2 = mkBall carrier bound where
    open Ball
 
    two' : Set
-   two' = Pushout (c0 .Bd) (c0 .Bd) -- pushout of two copies of ! : 0 → 1
+   two' = Pushout (c0 .∂) (c0 .∂) -- pushout of two copies of ! : 0 → 1
 
    carrier : Set
    carrier = (Pushout (λ (_ : Unit) → cod p1) (λ (_ : Unit) → dom p2))
@@ -123,25 +144,25 @@ vcompose {f} {g} {h} α β = mkBall carrier bound where
  open Ball
 
  carrier : Set
- carrier = Pushout (α .Bd ∘ inr) (β .Bd ∘ inl)
+ carrier = Pushout (α .∂ ∘ inr) (β .∂ ∘ inl)
 
- cinl : Cr α → carrier
+ cinl : ⟦ α ⟧ → carrier
  cinl = inl
 
- cinr : Cr β → carrier
+ cinr : ⟦ β ⟧ → carrier
  cinr = inr
 
  two' : Set
- two' = Pushout (c0 .Bd) (c0 .Bd)
+ two' = Pushout (c0 .∂) (c0 .∂)
 
- boundLemma : (a : two') → cinl (α .Bd (inl (f .Bd a))) ≡ cinr (β .Bd (inr (h .Bd a)))
- boundLemma a = cong (λ q → cinl (α .Bd q)) (push a)
-              ∙ push (g .Bd a)
-              ∙ cong (λ q → cinr (β .Bd q)) (push a)
+ boundLemma : (a : two') → cinl (α .∂ (inl (f .∂ a))) ≡ cinr (β .∂ (inr (h .∂ a)))
+ boundLemma a = cong (λ q → cinl (α .∂ q)) (push a)
+              ∙ push (g .∂ a)
+              ∙ cong (λ q → cinr (β .∂ q)) (push a)
 
- bound : Pushout (f .Bd) (h .Bd) → carrier
- bound (inl fx) = inl (α .Bd (inl fx))
- bound (inr hx) = inr (β .Bd (inr hx))
+ bound : Pushout (f .∂) (h .∂) → carrier
+ bound (inl fx) = inl (α .∂ (inl fx))
+ bound (inr hx) = inr (β .∂ (inr hx))
  bound (push a i) = boundLemma a i
 
 -- horizontal composition of 2-cells
