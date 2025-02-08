@@ -75,6 +75,8 @@ module _ where
 module _ where
  open Ball
 
+ -- Forward Declarations:
+
  -- Composable t₁ t₂ t₃ means balls of telescope t₁ and t₂ are composable,
  -- yielding a ball over t₃
  data Composable : Tele → Tele → Tele → Set₁
@@ -85,14 +87,13 @@ module _ where
  Common : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) → Set
  -- Here's how the Common type injects into the "codomain side" of the first map being composed
  CodOf : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₁ : Ball t₁) → Common c → ⟦ b₁ ⟧
- CodOf = {!!}
  -- Here's how the Common type injects into the "domain side" of the second map being composed
  DomOf : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₂ : Ball t₂) → Common c → ⟦ b₂ ⟧
- DomOf = {!!}
- -- Here's how we construct the boundary
+ -- Here's how we construct the boundary injection map
  MkBd : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₁ : Ball t₁) (b₂ : Ball t₂) (b : BallDom t₃)
      → Pushout (CodOf c b₁) (DomOf c b₂)
- MkBd = {!!}
+
+ -- Definitions:
  data Composable where
   compz : {t : Tele} (A B C : Ball t) → Composable (tcons t A B) (tcons t B C) (tcons t A C)
   comps : {t₁ t₂ t₃ : Tele}
@@ -102,6 +103,14 @@ module _ where
  Compose c b₁ b₂ = mkBall (Pushout (CodOf c b₁) (DomOf c b₂)) (MkBd c b₁ b₂)
  Common (compz A B C) = ⟦ B ⟧
  Common (comps c f h g k) = Common c
+ CodOf (compz A B C) b₁ xB = ∂ b₁ (inr xB)
+ CodOf (comps c f h g k) b₁ x = {!!}
+ DomOf (compz A B C) b₂ xB = ∂ b₂ (inl xB)
+ DomOf (comps c f h g k) b₂ xB = {!!}
+ MkBd (compz A B C) b₁ b₂ (inl xA) = inl (∂ b₁ (inl xA))
+ MkBd (compz A B C) b₁ b₂ (inr xC) = inr (∂ b₂ (inr xC))
+ MkBd (compz A B C) b₁ b₂ (push a i) = {!!}
+ MkBd (comps c f h g k) b₁ b₂ b = {!!}
 
 -- For example:
 --
