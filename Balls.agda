@@ -104,13 +104,15 @@ module _ where
  Common (compz A B C) = ⟦ B ⟧
  Common (comps c f h g k) = Common c
  CodOf (compz A B C) b₁ xB = ∂ b₁ (inr xB)
- CodOf (comps c f h g k) b₁ x = {!!}
+ CodOf (comps c f h g k) b₁ xc = ∂ b₁ (inl (CodOf c f xc)) -- asymmetric! why not ∂ b₁ (inr (CodOf c h xc)) ?
  DomOf (compz A B C) b₂ xB = ∂ b₂ (inl xB)
- DomOf (comps c f h g k) b₂ xB = {!!}
+ DomOf (comps c f h g k) b₂ xc = ∂ b₂ (inr (DomOf c k xc)) -- asymmetric! why not ∂ b₂ (inl (DomOf c g xc)) ?
  MkBd (compz A B C) b₁ b₂ (inl xA) = inl (∂ b₁ (inl xA))
  MkBd (compz A B C) b₁ b₂ (inr xC) = inr (∂ b₂ (inr xC))
  MkBd (compz A B C) b₁ b₂ (push a i) = {!!}
- MkBd (comps c f h g k) b₁ b₂ b = {!!}
+ MkBd (comps c f h g k) b₁ b₂ (inl x) = {!x!}
+ MkBd (comps c f h g k) b₁ b₂ (inr x) = {!!}
+ MkBd (comps c f h g k) b₁ b₂ (push a i) = {!!}
 
 -- For example:
 --
