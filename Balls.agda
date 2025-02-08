@@ -83,15 +83,25 @@ module _ where
  -- Now some helpers for composition. Common yields the "common territory" of a composable
  -- pair of telescopes. This is the domain of the two functions that we'll want to push out.
  Common : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) → Set
+ -- Here's how the Common type injects into the "codomain side" of the first map being composed
+ CodOf : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₁ : Ball t₁) → Common c → ⟦ b₁ ⟧
+ CodOf = {!!}
+ -- Here's how the Common type injects into the "domain side" of the second map being composed
+ DomOf : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₂ : Ball t₂) → Common c → ⟦ b₂ ⟧
+ DomOf = {!!}
+ -- Here's how we construct the boundary
+ MkBd : {t₁ t₂ t₃ : Tele} (c : Composable t₁ t₂ t₃) (b₁ : Ball t₁) (b₂ : Ball t₂) (b : BallDom t₃)
+     → Pushout (CodOf c b₁) (DomOf c b₂)
+ MkBd = {!!}
  data Composable where
   compz : {t : Tele} (A B C : Ball t) → Composable (tcons t A B) (tcons t B C) (tcons t A C)
   comps : {t₁ t₂ t₃ : Tele}
           (c : Composable t₁ t₂ t₃)
           → (f h : Ball t₁) (g k : Ball t₂)
           → Composable (tcons t₁ f h) (tcons t₂ g k) (tcons t₃ (Compose c f g) (Compose c h k))
- Compose = {!!}
- Common (compz A B C) = {!⟦ b ⟧!}
- Common (comps c f h g k) = {!!}
+ Compose c b₁ b₂ = mkBall (Pushout (CodOf c b₁) (DomOf c b₂)) (MkBd c b₁ b₂)
+ Common (compz A B C) = ⟦ B ⟧
+ Common (comps c f h g k) = Common c
 
 -- For example:
 --
