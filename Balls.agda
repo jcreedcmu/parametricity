@@ -30,27 +30,6 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-module Hide where
- -- Forward declarations for mutual recursion:
- data Tele : Set₁
- record Ball (t : Tele) : Set₁
- Boundary : Tele → Set → Set -- Boundary t Cr ≡ BallDom t → Cr
- MapB : {A B : Set} {t : Tele} (f : A → B) → Boundary t A → Boundary t B
-
- -- Definitions:
- data Tele where
-  tnil : Tele
-  tcons : (t : Tele) (b1 b2 : Ball t) → Tele
- record Ball t where constructor mkBall ; field
-   Cr : Set
-   Bd' : Boundary t Cr
- open Ball
- Boundary tnil C = Unit
- Boundary (tcons t b1 b2) C = Σ[ f1 ∈ (b1 .Cr → C)] Σ[ f2 ∈ (b2 .Cr → C)]
-          MapB f1 (b1 .Bd') ≡ MapB f2 (b2 .Bd')
- MapB {t = tnil} f x = x
- MapB {t = tcons t b1 b2} f (f1 , f2 , m) = f ∘ f1 , f ∘ f2 , {!!}
-
 module _ where
  -- Forward declarations for mutual recursion:
  data Tele : Set₁
@@ -68,6 +47,31 @@ module _ where
  BallDom tnil = Void
  BallDom (tcons t b1 b2) = Pushout (b1 .Bd) (b2 .Bd)
 
+data TeleMin : ℕ → Tele → Set₁ where
+ tmz : TeleMin zero tnil
+ tms : {n : ℕ} (t : Tele) (b1 b2 : Ball t) → TeleMin n t → TeleMin (suc n) (tcons t b1 b2)
+
+module _ where
+ open Ball
+ Dom1 : {t : Tele} → TeleMin 1 t → Set
+ Dom1 (tms _ b _ _) = b .Cr
+ Cod1 : {t : Tele} → TeleMin 1 t → Set
+ Cod1 (tms _ _ b _) = b .Cr
+
+ Dom2 : {t : Tele} → TeleMin 2 t → Set
+ Dom2 (tms _ _ _ (tms t b _ _)) = b .Cr
+
+ Cod2 : {t : Tele} → TeleMin 2 t → Set
+ Cod2 (tms _ _ _ (tms t _ b _)) = b .Cr
+
+ DomN : {t : Tele} (n : ℕ) → TeleMin (suc n) t → Set
+ DomN zero (tms t b1 b2 tm) = b1 .Cr
+ DomN (suc n) (tms t b1 b2 tm) = DomN n tm
+
+ CodN : {t : Tele} (n : ℕ) → TeleMin (suc n) t → Set
+ CodN zero (tms t b1 b2 tm) = b2 .Cr
+ CodN (suc n) (tms t b1 b2 tm) = CodN n tm
+
 -- For example:
 --
 -- Ball tnil = { Cr : Set, Bd : void → Cr }
@@ -83,6 +87,7 @@ c0 = mkBall Unit (abort Unit)
 -- This is the canonical type of 1-dimensional balls
 C1 : Set₁
 C1 = Ball (tcons tnil c0 c0)
+
 
 module _ where
  open Ball
