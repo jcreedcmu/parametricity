@@ -1,0 +1,73 @@
+{-# OPTIONS --cubical --rewriting #-}
+
+open import Agda.Primitive
+open import Agda.Builtin.Cubical.Equiv  renaming (_≃_ to _≅_)
+open import Agda.Builtin.Equality  renaming (_≡_ to _≡p_ ; refl to reflp)
+open import Agda.Builtin.Equality.Rewrite
+open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
+open import Cubical.Data.Sigma hiding (Path)
+open import Cubical.Data.Nat hiding (Unit ; _·_)
+open import Cubical.Data.Empty renaming (rec to aborti)
+open import Cubical.Relation.Nullary
+open import Cubical.Data.Equality using () renaming (sym to symp)
+open import Cubical.Foundations.Equiv
+open import Cubical.Foundations.Isomorphism
+open import Cubical.Foundations.Univalence
+open import Cubical.Foundations.Prelude hiding (Path)
+open import Cubical.Functions.Embedding
+open import Cubical.HITs.Pushout
+open import Function.Base
+open import Cubical.HITs.S1
+
+module Braids where
+
+data Unit {ℓ : Level} : Set ℓ where
+ ⋆ : Unit
+
+record Cset : Set₁ where constructor mkCset ; field
+ Cr : Set
+ Bd : S¹ → Cr
+
+_⊗_ : Cset → Cset → Cset
+_⊗_ (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = mkCset carrier boundary where
+ carrier : Set
+ carrier = Pushout {A = Unit {ℓ-zero}} {B = Cr1} {C = Cr2} (λ _ → Bd1 base) (λ _ → Bd2 base)
+
+ boundary : S¹ → carrier
+ boundary base = inl (Bd1 base)
+ boundary (loop i) =
+    ((λ i → inl (Bd1 (loop i))) ∙ push ⋆ ∙ (λ i → inr (Bd2 (loop i))) ∙ sym (push ⋆)) i
+
+CsetHom : Cset → Cset → Set
+CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹) → f (Bd1 s) ≡ Bd2 s)
+
+⊗functor : {C1 C2 C1' C2' : Cset}
+  → CsetHom C1 C2 → CsetHom C1' C2' → CsetHom (C1 ⊗ C1') (C2 ⊗ C2')
+⊗functor {C1} {C2} {C1'} {C2'} (f , fp) (g , gp) = gf , gfp where
+ gf : Cset.Cr (C1 ⊗ C1') → Cset.Cr (C2 ⊗ C2')
+ gf (inl x) = inl (f x)
+ gf (inr x) = inr (g x)
+ gf (push a i) = lemma i where
+  lemma : inl (f (Cset.Bd C1 base)) ≡ inr (g (Cset.Bd C1' base))
+  lemma = cong inl (fp base) ∙ push ⋆ ∙ sym (cong inr (gp base))
+
+ gfp : (s : S¹) → gf (Cset.Bd (C1 ⊗ C1') s) ≡ Cset.Bd (C2 ⊗ C2') s
+ gfp base = cong inl (fp base)
+ gfp (loop i) = lemma i where
+  lemma : PathP (λ i → gf (Cset.Bd (C1 ⊗ C1') (loop i)) ≡ Cset.Bd (C2 ⊗ C2') (loop i))
+                (cong inl (fp base)) (cong inl (fp base))
+  lemma = {!!}
+
+
+-- data Void : Set where
+
+
+-- abort : (A : Set) → Void → A
+-- abort A ()
+
+
+-- data two : Set where
+--  t0 t1 : two
+
+-- data three : Set where
+--  c0 c1 c* : three
