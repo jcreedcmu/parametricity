@@ -25,6 +25,16 @@ data Ival : Set where
  i0 i1 : Ival
  p : i0 ≡ i1
 
+combUnder : {ℓ : Level} {A B : Set ℓ}
+       {a1 a2 a3 : A} {a12 : a1 ≡ a2} {a23 : a2 ≡ a3}
+       {b1 b2 b3 : B} {b12 : b1 ≡ b2} {b23 : b2 ≡ b3}
+       {f : A → B} {f1 : f a1 ≡ b1} {f2 : f a2 ≡ b2} {f3 : f a3 ≡ b3}
+     → PathP (λ i → f (a12 i) ≡ b12 i) f1 f2
+     → PathP (λ i → f (a23 i) ≡ b23 i) f2 f3
+     → PathP (λ i → f ((a12 ∙ a23) i) ≡ (b12 ∙ b23) i) f1 f3
+combUnder = {!!}
+infixr 30 combUnder
+
 postulate
  X : Set
  x0 x1 : X
@@ -77,42 +87,38 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
   --               (cong inl (fp base)) (cong inl (fp base))
 
 --  PathP : ∀ {ℓ} (A : I → Set ℓ) → A i0 → A i1 → Set ℓ
+-- Square a₀₋ a₁₋ a₋₀ a₋₁ = PathP (λ i → a₋₀ i ≡ a₋₁ i) a₀₋ a₁₋
 
-  lemma1 : PathP (λ i → gf ( inl (Cset.Bd C1 (loop i)))  ≡ ( inl (Cset.Bd C2 (loop i)) ))
-                (cong inl (fp base)) (cong inl (fp base))
-  lemma1 = {!!}
+  -- lemma1 : PathP (λ i → gf ( inl (Cset.Bd C1 (loop i)))  ≡ ( inl (Cset.Bd C2 (loop i)) ))
+  --               (cong inl (fp base)) (cong inl (fp base))
+  lemma1 : Square (cong inl (fp base)) (cong inl (fp base))
+                  (λ i → gf (inl (Cset.Bd C1 (loop i)))) (λ i →  inl (Cset.Bd C2 (loop i)) )
+
+  lemma1 i j = inl (fp (loop i) j)
 
   lemma2 : PathP (λ i → gf (push ⋆ i) ≡ push ⋆ i)
                 (cong inl (fp base)) (cong inr (gp base))
-  lemma2 = {!!}
+  lemma2 i j = {!!}
 
   lemma3 : PathP (λ i → gf ( inr (Cset.Bd C1' (loop i)))  ≡ ( inr (Cset.Bd C2' (loop i)) ))
                 (cong inr (gp base)) (cong inr (gp base))
-  lemma3 = {!!}
+  lemma3 i j = inr (gp (loop i) j)
 
   lemma4 : PathP (λ i → gf (sym (push ⋆) i) ≡ sym (push ⋆) i)
                 (cong inr (gp base)) (cong inl (fp base))
   lemma4 = {!!}
 
-  _p∙_ : {ℓ : Level} {A B : Set ℓ}
-         {a1 a2 a3 : A} {a12 : a1 ≡ a2} {a23 : a2 ≡ a3}
-         {b1 b2 b3 : B} {b12 : b1 ≡ b2} {b23 : b2 ≡ b3}
-         {f : A → B} {f1 : f a1 ≡ b1} {f2 : f a2 ≡ b2} {f3 : f a3 ≡ b3}
-       → PathP (λ i → f (a12 i) ≡ b12 i) f1 f2
-       → PathP (λ i → f (a23 i) ≡ b23 i) f2 f3
-       → PathP (λ i → f ((a12 ∙ a23) i) ≡ (b12 ∙ b23) i) f1 f3
-  _p∙_ = {!!}
-  infixr 30 _p∙_
+
 
   lemma34 :  PathP (λ i → gf (((λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i)
                          ≡ (((λ i → inr (Cset.Bd C2' (loop i))) ∙ sym (push ⋆) ) i))
                 (cong inr (gp base)) (cong inl (fp base))
-  lemma34 = _p∙_ {a12 = λ i → inr (Cset.Bd C1' (loop i))}  {a23 = λ i → sym (push ⋆) i} {f = gf} lemma3 lemma4
+  lemma34 = combUnder {a12 = λ i → inr (Cset.Bd C1' (loop i))}  {a23 = λ i → sym (push ⋆) i} {f = gf} lemma3 lemma4
 
   lemma234 :  PathP (λ i → gf ((push ⋆ ∙ (λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i)
                          ≡ ((push ⋆ ∙ (λ i → inr (Cset.Bd C2' (loop i))) ∙ sym (push ⋆) ) i))
                 (cong inl (fp base)) (cong inl (fp base))
-  lemma234 = _p∙_ {a12 = λ i → push ⋆ i}  {a23 = λ i → ((λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i} {f = gf}
+  lemma234 = combUnder {a12 = λ i → push ⋆ i}  {a23 = λ i → ((λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i} {f = gf}
              lemma2 lemma34
 
 
@@ -120,7 +126,7 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
                          ≡ (((λ i → inl (Cset.Bd C2 (loop i))) ∙ push ⋆ ∙ (λ i → inr (Cset.Bd C2' (loop i))) ∙ sym (push ⋆)) i))
                 (cong inl (fp base)) (cong inl (fp base))
 
-  lemma = _p∙_ {a12 = λ i → inl (Cset.Bd C1 (loop i))}
+  lemma = combUnder {a12 = λ i → inl (Cset.Bd C1 (loop i))}
                {a23 = λ i → (push ⋆ ∙ (λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i}
                {f = gf}
                lemma1 lemma234
