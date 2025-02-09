@@ -89,15 +89,16 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
 --  PathP : ∀ {ℓ} (A : I → Set ℓ) → A i0 → A i1 → Set ℓ
 -- Square a₀₋ a₁₋ a₋₀ a₋₁ = PathP (λ i → a₋₀ i ≡ a₋₁ i) a₀₋ a₁₋
 
-  -- lemma1 : PathP (λ i → gf ( inl (Cset.Bd C1 (loop i)))  ≡ ( inl (Cset.Bd C2 (loop i)) ))
-  --               (cong inl (fp base)) (cong inl (fp base))
-  lemma1 : Square (cong inl (fp base)) (cong inl (fp base))
-                  (λ i → gf (inl (Cset.Bd C1 (loop i)))) (λ i →  inl (Cset.Bd C2 (loop i)) )
-
+  lemma1 : PathP (λ i → gf ( inl (Cset.Bd C1 (loop i)))  ≡ ( inl (Cset.Bd C2 (loop i)) ))
+                (cong inl (fp base)) (cong inl (fp base))
   lemma1 i j = inl (fp (loop i) j)
 
-  lemma2 : PathP (λ i → gf (push ⋆ i) ≡ push ⋆ i)
-                (cong inl (fp base)) (cong inr (gp base))
+  -- lemma2 : PathP (λ i → gf (push ⋆ i) ≡ push ⋆ i)
+  --               (cong inl (fp base)) (cong inr (gp base))
+  -- lemma2 : Square (cong inl (fp base)) (cong inr (gp base)) (λ i → gf (push ⋆ i)) (push ⋆)
+
+  lemma2 : Square (cong inl (fp base)) (cong inr (gp base)) (cong inl (fp base) ∙ push ⋆ ∙ sym (cong inr (gp base))) (push ⋆)
+
   lemma2 i j = {!!}
 
   lemma3 : PathP (λ i → gf ( inr (Cset.Bd C1' (loop i)))  ≡ ( inr (Cset.Bd C2' (loop i)) ))
