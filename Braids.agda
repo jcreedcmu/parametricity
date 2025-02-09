@@ -104,11 +104,6 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
   _p∙_ = {!!}
   infixr 30 _p∙_
 
-  lemma12 :  PathP (λ i → gf (((λ i → inl (Cset.Bd C1 (loop i))) ∙ push ⋆ ) i)
-                         ≡ (((λ i → inl (Cset.Bd C2 (loop i))) ∙ push ⋆ ) i))
-                (cong inl (fp base)) (cong inr (gp base))
-  lemma12 = _p∙_ {a12 = λ i → inl (Cset.Bd C1 (loop i))}  {a23 = λ i → push ⋆ i} {f = gf} lemma1 lemma2
-
   lemma34 :  PathP (λ i → gf (((λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i)
                          ≡ (((λ i → inr (Cset.Bd C2' (loop i))) ∙ sym (push ⋆) ) i))
                 (cong inr (gp base)) (cong inl (fp base))
