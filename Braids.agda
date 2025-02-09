@@ -142,6 +142,9 @@ twist (Ac@(mkCset A As)) (Bc@(mkCset B Bs)) = func , pres where
  pres : (s : S¹) → func (Bd (Ac ⊗ Bc) s) ≡ Bd (Bc ⊗ Ac) s
  pres base = sym (push ⋆)
  pres (loop i) = lemma i where
+  -- lemma : Square (sym (push ⋆)) (sym (push ⋆))
+  --                (λ i → func (Bd (Ac ⊗ Bc) (loop i))) (λ i → Bd (Bc ⊗ Ac) (loop i))
   lemma : Square (sym (push ⋆)) (sym (push ⋆))
-                 (λ i → func (Bd (Ac ⊗ Bc) (loop i))) (λ i → Bd (Bc ⊗ Ac) (loop i))
+                 (λ i → func ( ((λ i → inl (Bd Ac (loop i))) ∙ push ⋆ ∙ (λ i → inr (Bd Bc (loop i))) ∙ sym (push ⋆)) i ))
+                 ((λ i → inl (Bd Bc (loop i))) ∙ push ⋆ ∙ (λ i → inr (Bd Ac (loop i))) ∙ sym (push ⋆))
   lemma = {!!}
