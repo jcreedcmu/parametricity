@@ -83,6 +83,22 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
 
   lemma = {!!}
 
+  lemma1 : PathP (λ i → gf ( inl (Cset.Bd C1 (loop i)))  ≡ ( inl (Cset.Bd C2 (loop i)) ))
+                (cong inl (fp base)) (cong inl (fp base))
+  lemma1 = {!!}
+
+  lemma2 : PathP (λ i → gf (push ⋆ i) ≡ push ⋆ i)
+                (cong inl (fp base)) (cong inr (gp base))
+  lemma2 = {!!}
+
+  lemma3 : PathP (λ i → gf ( inr (Cset.Bd C1' (loop i)))  ≡ ( inr (Cset.Bd C2' (loop i)) ))
+                (cong inr (gp base)) (cong inr (gp base))
+  lemma3 = {!!}
+
+  lemma4 : PathP (λ i → gf (sym (push ⋆) i) ≡ sym (push ⋆) i)
+                (cong inr (gp base)) (cong inl (fp base))
+  lemma4 = {!!}
+
 
 -- data Void : Set where
 
