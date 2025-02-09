@@ -78,7 +78,7 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
  gf (inr x) = inr (g x)
  gf (push a i) = lemma i where
   lemma : inl (f (Cset.Bd C1 base)) ≡ inr (g (Cset.Bd C1' base))
-  lemma = cong inl (fp base) ∙ push ⋆ ∙ sym (cong inr (gp base))
+  lemma = cong inl (fp base) ∙∙ push ⋆ ∙∙ sym (cong inr (gp base))
 
  gfp : (s : S¹) → gf (Cset.Bd (C1 ⊗ C1') s) ≡ Cset.Bd (C2 ⊗ C2') s
  gfp base = cong inl (fp base)
@@ -97,17 +97,19 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
   --               (cong inl (fp base)) (cong inr (gp base))
   -- lemma2 : Square (cong inl (fp base)) (cong inr (gp base)) (λ i → gf (push ⋆ i)) (push ⋆)
 
-  lemma2 : Square (cong inl (fp base)) (cong inr (gp base)) (cong inl (fp base) ∙ push ⋆ ∙ sym (cong inr (gp base))) (push ⋆)
+  lemma2 : Square (cong inl (fp base)) (cong inr (gp base)) (cong inl (fp base) ∙∙ push ⋆ ∙∙ sym (cong inr (gp base))) (push ⋆)
 
-  lemma2 i j = {!!}
+  lemma2 i j = doubleCompPath-filler (cong inl (fp base)) (push ⋆) (sym (cong inr (gp base))) (~ j) i
 
   lemma3 : PathP (λ i → gf ( inr (Cset.Bd C1' (loop i)))  ≡ ( inr (Cset.Bd C2' (loop i)) ))
                 (cong inr (gp base)) (cong inr (gp base))
   lemma3 i j = inr (gp (loop i) j)
 
-  lemma4 : PathP (λ i → gf (sym (push ⋆) i) ≡ sym (push ⋆) i)
-                (cong inr (gp base)) (cong inl (fp base))
-  lemma4 = {!!}
+  -- lemma4 : PathP (λ i → gf (sym (push ⋆) i) ≡ sym (push ⋆) i)
+  --               (cong inr (gp base)) (cong inl (fp base))
+  lemma4 : Square (cong inr (gp base)) (cong inl (fp base)) (λ i → gf (sym (push ⋆) i)) (sym (push ⋆))
+
+  lemma4 i j = doubleCompPath-filler (cong inl (fp base)) (push ⋆) (sym (cong inr (gp base))) (~ j) (~ i)
 
 
 
