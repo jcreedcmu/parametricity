@@ -130,3 +130,18 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
                {a23 = λ i → (push ⋆ ∙ (λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i}
                {f = gf}
                lemma1 lemma234
+
+twist : (A B : Cset) → CsetHom (A ⊗ B) (B ⊗ A)
+twist (Ac@(mkCset A As)) (Bc@(mkCset B Bs)) = func , pres where
+ open Cset
+ func : Cr (Ac ⊗ Bc) → Cr (Bc ⊗ Ac)
+ func (inl x) = inr x
+ func (inr x) = inl x
+ func (push a i) = push ⋆ (~ i)
+
+ pres : (s : S¹) → func (Bd (Ac ⊗ Bc) s) ≡ Bd (Bc ⊗ Ac) s
+ pres base = sym (push ⋆)
+ pres (loop i) = lemma i where
+  lemma : Square (sym (push ⋆)) (sym (push ⋆))
+                 (λ i → func (Bd (Ac ⊗ Bc) (loop i))) (λ i → Bd (Bc ⊗ Ac) (loop i))
+  lemma = {!!}
