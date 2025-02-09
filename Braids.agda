@@ -21,6 +21,25 @@ open import Cubical.HITs.S1
 
 module Braids where
 
+data Ival : Set where
+ i0 i1 : Ival
+ p : i0 ≡ i1
+
+postulate
+ X : Set
+ x0 x1 : X
+ xp : x0 ≡ x1
+
+ Y : Set
+ y0 y1 : Y
+ yp : y0 ≡ y1
+
+ f : X → Y
+ fp0 : f x0 ≡ y0
+ fp1 : f x1 ≡ y1
+
+ fpp : PathP ((λ (i : I) → f (xp i) ≡ yp i)) fp0 fp1
+
 data Unit {ℓ : Level} : Set ℓ where
  ⋆ : Unit
 
@@ -54,8 +73,14 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
  gfp : (s : S¹) → gf (Cset.Bd (C1 ⊗ C1') s) ≡ Cset.Bd (C2 ⊗ C2') s
  gfp base = cong inl (fp base)
  gfp (loop i) = lemma i where
-  lemma : PathP (λ i → gf (Cset.Bd (C1 ⊗ C1') (loop i)) ≡ Cset.Bd (C2 ⊗ C2') (loop i))
+  -- lemma : PathP (λ i → gf (Cset.Bd (C1 ⊗ C1') (loop i)) ≡ Cset.Bd (C2 ⊗ C2') (loop i))
+  --               (cong inl (fp base)) (cong inl (fp base))
+
+--  PathP : ∀ {ℓ} (A : I → Set ℓ) → A i0 → A i1 → Set ℓ
+  lemma : PathP (λ i → gf (((λ i → inl (Cset.Bd C1 (loop i))) ∙ push ⋆ ∙ (λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆)) i)
+                         ≡ (((λ i → inl (Cset.Bd C2 (loop i))) ∙ push ⋆ ∙ (λ i → inr (Cset.Bd C2' (loop i))) ∙ sym (push ⋆)) i))
                 (cong inl (fp base)) (cong inl (fp base))
+
   lemma = {!!}
 
 
