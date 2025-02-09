@@ -21,9 +21,21 @@ open import Cubical.HITs.S1
 
 module Braids where
 
-data Ival : Set where
- i0 i1 : Ival
- p : i0 ≡ i1
+combUnder2 : {ℓ : Level} {A B : Set ℓ}
+       {a1 a2 a3 a4 : A} {a12 : a1 ≡ a2} {a23 : a2 ≡ a3} {a34 : a3 ≡ a4}
+       {b1 b2 b3 b4 : B} {b12 : b1 ≡ b2} {b23 : b2 ≡ b3} {b34 : b3 ≡ b4}
+       {f : A → B} {f1 : f a1 ≡ b1} {f2 : f a2 ≡ b2} {f3 : f a3 ≡ b3} {f4 : f a4 ≡ b4}
+     → (f12 : Square f1 f2 (λ i → f (a12 i)) b12)
+     → (f23 : Square f2 f3 (λ i → f (a23 i)) b23)
+     → (f34 : Square f3 f4 (λ i → f (a34 i)) b34)
+     → Square f1 f4 (λ i → f ((a12 ∙∙ a23 ∙∙ a34) i)) (b12 ∙∙ b23 ∙∙ b34)
+combUnder2 {a12 = a12} {a23} {a34}
+           {b12 = b12} {b23} {b34} {f = f} f12 f23 f34  i j = hcomp (λ k → λ {
+     (i = i0) → f12 (~ k) j ;
+     (i = i1) → f34 k j ;
+     (j = i0) → f (doubleCompPath-filler a12 a23 a34 k i ) ;
+     (j = i1) → doubleCompPath-filler b12 b23 b34 k i
+   }) (f23 i j)
 
 combUnder : {ℓ : Level} {A B : Set ℓ}
        {a1 a2 a3 : A} {a12 : a1 ≡ a2} {a23 : a2 ≡ a3}
@@ -32,23 +44,8 @@ combUnder : {ℓ : Level} {A B : Set ℓ}
      → Square f1 f2 (λ i → f (a12 i)) b12
      → Square f2 f3 (λ i → f (a23 i)) b23
      → Square f1 f3 (λ i → f ((a12 ∙ a23) i)) (b12 ∙ b23)
-combUnder = {!!}
-infixr 30 combUnder
-
-postulate
- X : Set
- x0 x1 : X
- xp : x0 ≡ x1
-
- Y : Set
- y0 y1 : Y
- yp : y0 ≡ y1
-
- f : X → Y
- fp0 : f x0 ≡ y0
- fp1 : f x1 ≡ y1
-
- fpp : PathP ((λ (i : I) → f (xp i) ≡ yp i)) fp0 fp1
+combUnder {a12 = a12} {a23} {f1 = f1} f12 f23 =
+       combUnder2 {a12 = refl} {a12} {a23} (λ i → f1) f12 f23
 
 data Unit {ℓ : Level} : Set ℓ where
  ⋆ : Unit
@@ -133,18 +130,3 @@ CsetHom (mkCset Cr1 Bd1) (mkCset Cr2 Bd2) = Σ[ f ∈ (Cr1 → Cr2) ] ((s : S¹)
                {a23 = λ i → (push ⋆ ∙ (λ i → inr (Cset.Bd C1' (loop i))) ∙ sym (push ⋆) ) i}
                {f = gf}
                lemma1 lemma234
-
-
-
--- data Void : Set where
-
-
--- abort : (A : Set) → Void → A
--- abort A ()
-
-
--- data two : Set where
---  t0 t1 : two
-
--- data three : Set where
---  c0 c1 c* : three
