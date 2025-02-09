@@ -29,9 +29,9 @@ combUnder : {ℓ : Level} {A B : Set ℓ}
        {a1 a2 a3 : A} {a12 : a1 ≡ a2} {a23 : a2 ≡ a3}
        {b1 b2 b3 : B} {b12 : b1 ≡ b2} {b23 : b2 ≡ b3}
        {f : A → B} {f1 : f a1 ≡ b1} {f2 : f a2 ≡ b2} {f3 : f a3 ≡ b3}
-     → PathP (λ i → f (a12 i) ≡ b12 i) f1 f2
-     → PathP (λ i → f (a23 i) ≡ b23 i) f2 f3
-     → PathP (λ i → f ((a12 ∙ a23) i) ≡ (b12 ∙ b23) i) f1 f3
+     → Square f1 f2 (λ i → f (a12 i)) b12
+     → Square f2 f3 (λ i → f (a23 i)) b23
+     → Square f1 f3 (λ i → f ((a12 ∙ a23) i)) (b12 ∙ b23)
 combUnder = {!!}
 infixr 30 combUnder
 
