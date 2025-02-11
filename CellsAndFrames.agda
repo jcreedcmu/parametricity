@@ -62,9 +62,11 @@ module Composition where
  composeSet : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Set
  composeBd : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → fset f3 → composeSet b1 b2 k
  compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Cell f3
- commonSet : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Set
- leftMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet b1 b2 k → Cr b1
- rightMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet b1 b2 k → Cr b2
+ commonFrame : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Frame
+ commonCell : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Cell (commonFrame k)
+ commonSet : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Set
+ leftMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet k → Cr b1
+ rightMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet k → Cr b2
 
  data composable where
    vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
@@ -76,8 +78,10 @@ module Composition where
  composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
  composeBd b1 b2 k = {!!}
  compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
- commonSet b1 b2 (vcomp A B C) = Cr B
- commonSet b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) = {!!}
+ commonSet k = commonCell k .Cr
+ commonFrame (vcomp {f} A B C) = f
+ commonFrame (hzcomp f1 f2 f3 k m1 n1 m2 n2) = commonFrame k
+ commonCell = {!!}
  leftMap = {!!}
  rightMap = {!!}
 
