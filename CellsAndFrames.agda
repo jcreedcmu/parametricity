@@ -30,7 +30,8 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-module _ where
+
+module Basic where
  data Frame : Set₁
  record Cell (f : Frame) : Set₁
  fset : Frame → Set
@@ -38,49 +39,46 @@ module _ where
  data Frame where
   fnil : Frame
   fcons : {f : Frame} (c1 c2 : Cell f) → Frame
- record Cell f where field
+ record Cell f where constructor mkCell ; field
   Cr : Set
   Bd : fset f → Cr
  fset fnil = Void
  fset (fcons c1 c2) = Pushout (c1 .Cell.Bd) (c2 .Cell.Bd)
+open Basic
 
-module _ where
- cset : {f : Frame} → Cell f → Set
- cset = Cell.Cr
+data subFrames : Frame → Set₁ where
+ sfSkip : (f : Frame) (c1 c2 : Cell f) (sf : subFrames f) → subFrames (fcons c1 c2)
+ sfHere : (f : Frame) → subFrames f
 
- postulate
-  isPushout : {A B C D : Set} (f : A → B) (g : A → C) (in1 : B → D) (in2 : C → D) → Set
-  SubFrame1 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? codomain-y
-  SubFrame2 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? domain-y
+getSubFrame : {f : Frame} → subFrames f → Frame
+getSubFrame (sfSkip f c1 c2 sf) = getSubFrame sf
+getSubFrame (sfHere f) = f
 
-  -- realizations
+-- composition
 
-  sfmap1 : {f1 f2 : Frame} {b : Cell f1} → SubFrame1 b f2 → cset b → fset f2
-  sfmap2 : {f1 f2 : Frame} {b : Cell f1} → SubFrame2 b f2 → cset b → fset f2
+module Composition where
+ open Cell
+ data composable : Frame → Frame → Frame → Set₁
+ composeSet : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Set
+ composeBd : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → fset f3 → composeSet b1 b2 k
+ compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Cell f3
+ commonSet : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Set
+ leftMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet b1 b2 k → Cr b1
+ rightMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet b1 b2 k → Cr b2
 
+ data composable where
+   vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
+       → composable (fcons A B) (fcons B C) (fcons A C)
+   hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
+       (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
+       → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
 
-  composable : Frame → Frame → Frame → Set
+ composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
+ composeBd b1 b2 k = {!!}
+ compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
+ commonSet b1 b2 (vcomp A B C) = Cr B
+ commonSet b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) = {!!}
+ leftMap = {!!}
+ rightMap = {!!}
 
-  -- should be thought of as a consequence of the cell destructor
-  include : {f : Frame} (b : Cell f) → fset f → cset b
-
- module _ {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) where
-  postulate
-   common-f : Frame
-   common : Cell common-f
-   cinc1 : SubFrame1 common f1
-   cinc2 : SubFrame2 common f2
-   compose : Cell f3
-   comp-inl : cset b1 → cset compose
-   comp-inr : cset b2 → cset compose
-   comp-set : isPushout (include b1 ∘ sfmap1 cinc1) (include b2 ∘ sfmap2 cinc2) comp-inl comp-inr
-
- postulate
-  vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
-      → composable (fcons A B) (fcons B C) (fcons A C)
-  hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
-      (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
-      → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
-
-  vcomp-common : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f) (cf : Cell (fcons A B)) (cg : Cell (fcons B C))
-    → common-f cf cg (vcomp A B C) ≡ f
+ --   comp-set : isPushout (include b1 ∘ sfmap1 cinc1) (include b2 ∘ sfmap2 cinc2) comp-inl comp-inr
