@@ -88,7 +88,7 @@ module Composition where
  rightMap b1 b2 k csx = b2 .Bd (rightFmap k csx)
 
  leftFmap (vcomp A B C) csx = inr csx
- leftFmap (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
+ leftFmap (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = inl (m1 .Bd (leftFmap k csx)) -- asymmetric! why not n1?
  rightFmap (vcomp A B C) csx = inl csx
  rightFmap (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
 
