@@ -76,3 +76,6 @@ module _ where
   hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
       (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
       → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
+
+  vcomp-common : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f) (cf : Cell (fcons A B)) (cg : Cell (fcons B C))
+    → common cf cg (vcomp A B C) ≡ cset B
