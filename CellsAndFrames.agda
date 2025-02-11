@@ -75,14 +75,24 @@ module Composition where
        (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
        → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
 
- composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
- composeBd b1 b2 k = {!!}
- compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
- commonSet k = commonCell k .Cr
  commonFrame (vcomp {f} A B C) = f
  commonFrame (hzcomp f1 f2 f3 k m1 n1 m2 n2) = commonFrame k
- commonCell = {!!}
- leftMap = {!!}
- rightMap = {!!}
+ commonCell (vcomp A B C) = B
+ commonCell (hzcomp f1 f2 f3 k m1 n1 m2 n2) = commonCell k
+ commonSet k = commonCell k .Cr
+ composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
+ leftMap b1 b2 (vcomp A B C) csx = b1 .Bd (inr csx)
+ leftMap b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
+ rightMap b1 b2 (vcomp A B C) csx = b2 .Bd (inl csx)
+ rightMap b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
+ composeBd b1 b2 (vcomp A B C) (inl x) = inl1 (b1 .Bd (inl2 x)) where
+--  inl1 : Cr b1 → Pushout ((leftMap b1 b2 (vcomp A B C)) (rightMap b1 b2 (vcomp A B C))
+  inl1 : Cr b1 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
+  inl1 = inl
 
- --   comp-set : isPushout (include b1 ∘ sfmap1 cinc1) (include b2 ∘ sfmap2 cinc2) comp-inl comp-inr
+  inl2 : Cr A → Pushout (A .Bd) (B .Bd)
+  inl2 = inl
+ composeBd b1 b2 (vcomp A B C) (inr x) = inr (b2 .Bd (inr x))
+ composeBd b1 b2 (vcomp A B C) (push a i) = {!!}
+ composeBd b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) = {!!}
+ compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
