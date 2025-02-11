@@ -30,30 +30,34 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-postulate
- isPushout : {A B C D : Set} (f : A → B) (g : A → C) (in1 : B → D) (in2 : C → D) → Set
+module _ where
+ data Frame : Set₁
+ record Cell (f : Frame) : Set₁
+ fset : Frame → Set
+
+ data Frame where
+  fnil : Frame
+  fcons : {f : Frame} (c1 c2 : Cell f) → Frame
+ record Cell f where field
+  Cr : Set
+  Bd : fset f → Cr
+ fset fnil = Void
+ fset (fcons c1 c2) = Pushout (c1 .Cell.Bd) (c2 .Cell.Bd)
 
 module _ where
- postulate
-  Frame : Set
-  Cell : Frame → Set
+ cset : {f : Frame} → Cell f → Set
+ cset = Cell.Cr
 
+ postulate
+  isPushout : {A B C D : Set} (f : A → B) (g : A → C) (in1 : B → D) (in2 : C → D) → Set
   SubFrame1 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? codomain-y
   SubFrame2 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? domain-y
 
   -- realizations
-  cset : {f : Frame} → Cell f → Set
-  fset : Frame → Set
+
   sfmap1 : {f1 f2 : Frame} {b : Cell f1} → SubFrame1 b f2 → cset b → fset f2
   sfmap2 : {f1 f2 : Frame} {b : Cell f1} → SubFrame2 b f2 → cset b → fset f2
 
-
-  -- how to construct frames
-  fnil : Frame
-  fcons : {f : Frame} (c1 c2 : Cell f) → Frame
-
-  -- how to construct cells
-  mkcell : (f : Frame) (Cr : Set) → (fset f → Cr) → Cell f
 
   composable : Frame → Frame → Frame → Set
 
@@ -72,13 +76,6 @@ module _ where
    comp-set : isPushout (include b1 ∘ sfmap1 cinc1) (include b2 ∘ sfmap2 cinc2) comp-inl comp-inr
 
  postulate
-
-  fnil-set : fset fnil ≡ Void
-  fcons-inl : {f : Frame} {c1 c2 : Cell f} → cset c1 → fset (fcons c1 c2)
-  fcons-inr : {f : Frame} {c1 c2 : Cell f} → cset c2 → fset (fcons c1 c2)
-  fcons-set : {f : Frame} {c1 c2 : Cell f}
-       → isPushout (include c1) (include c2) fcons-inl fcons-inr
-
   vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
       → composable (fcons A B) (fcons B C) (fcons A C)
   hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
