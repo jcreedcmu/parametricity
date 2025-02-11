@@ -30,7 +30,6 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
-
 module Basic where
  data Frame : Set₁
  record Cell (f : Frame) : Set₁
@@ -65,6 +64,9 @@ module Composability where
        (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
        → composable (fcons m1 n1) (fcons m2 n2)
 
+-- extracting which element is in common between the two cells
+-- being composed
+
 module CommonElements where
  open Cell
  open Composability
@@ -77,46 +79,37 @@ module CommonElements where
  commonCell (vcomp A B C) = B
  commonCell (hzcomp f1 f2 k m1 n1 m2 n2) = commonCell k
 
- commonSet : {f1 f2 f3 : Frame} (k : composable f1 f2) → Set
+ commonSet : {f1 f2 : Frame} (k : composable f1 f2) → Set
  commonSet k = commonCell k .Cr
 
 -- composition
 
 module Composition where
  open Cell
- data composable : Frame → Frame → Frame → Set₁
- composeSet : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Set
- composeBd : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → fset f3 → composeSet b1 b2 k
- compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → Cell f3
- commonFrame : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Frame
- commonCell : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Cell (commonFrame k)
- commonSet : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → Set
- leftMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet k → Cr b1
- rightMap : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) → commonSet k → Cr b2
- leftFmap : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → commonSet k → fset f1
- rightFmap : {f1 f2 f3 : Frame} (k : composable f1 f2 f3) → commonSet k → fset f2
+ open Composability
+ open CommonElements
 
- data composable where
-   vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
-       → composable (fcons A B) (fcons B C) (fcons A C)
-   hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
-       (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
-       → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
+ outputFrame : {f1 f2 : Frame} → composable f1 f2 → Frame
+ composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
+ composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
+ compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
+ leftMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b1
+ rightMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b2
+ leftFmap : {f1 f2 : Frame} (k : composable f1 f2) → commonSet k → fset f1
+ rightFmap : {f1 f2 : Frame} (k : composable f1 f2) → commonSet k → fset f2
 
- commonFrame (vcomp {f} A B C) = f
- commonFrame (hzcomp f1 f2 f3 k m1 n1 m2 n2) = commonFrame k
- commonCell (vcomp A B C) = B
- commonCell (hzcomp f1 f2 f3 k m1 n1 m2 n2) = commonCell k
- commonSet k = commonCell k .Cr
+ outputFrame (vcomp A B C) = fcons A C
+ outputFrame (hzcomp f1 f2 k m1 n1 m2 n2) = fcons (compose m1 m2 k) (compose n1 n2 k)
+
  composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
 
  leftMap b1 b2 k csx = b1 .Bd (leftFmap k csx)
  rightMap b1 b2 k csx = b2 .Bd (rightFmap k csx)
 
  leftFmap (vcomp A B C) csx = inr csx
- leftFmap (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = inl (m1 .Bd (leftFmap k csx)) -- asymmetric! why not n1?
+ leftFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = inl (m1 .Bd (leftFmap k csx)) -- asymmetric! why not n1?
  rightFmap (vcomp A B C) csx = inl csx
- rightFmap (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
+ rightFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = {!!}
 
  composeBd b1 b2 (vcomp A B C) (inl x) = inl1 (b1 .Bd (inl2 x)) where
   inl1 : Cr b1 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
@@ -143,5 +136,5 @@ module Composition where
   cinr : b2 .Cr → composeSet b1 b2 k
   cinr = inr
 
- composeBd b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) = {!!}
+ composeBd b1 b2 (hzcomp f1 f2 k m1 n1 m2 n2) = {!!}
  compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
