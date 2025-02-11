@@ -38,9 +38,15 @@ module _ where
   Frame : Set
   Cell : Frame → Set
 
+  SubFrame1 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? codomain-y
+  SubFrame2 : {f : Frame} → Cell f → Frame → Set -- I think this might be a prop? domain-y
+
   -- realizations
   cset : {f : Frame} → Cell f → Set
   fset : Frame → Set
+  sfmap1 : {f1 f2 : Frame} {b : Cell f1} → SubFrame1 b f2 → cset b → fset f2
+  sfmap2 : {f1 f2 : Frame} {b : Cell f1} → SubFrame2 b f2 → cset b → fset f2
+
 
   -- how to construct frames
   fnil : Frame
@@ -51,19 +57,21 @@ module _ where
 
   composable : Frame → Frame → Frame → Set
 
+  -- should be thought of as a consequence of the cell destructor
+  include : {f : Frame} (b : Cell f) → fset f → cset b
+
  module _ {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) where
   postulate
-   common : Set
-   cinc1 : common → cset b1
-   cinc2 : common → cset b2
+   common-f : Frame
+   common : Cell common-f
+   cinc1 : SubFrame1 common f1
+   cinc2 : SubFrame2 common f2
    compose : Cell f3
    comp-inl : cset b1 → cset compose
    comp-inr : cset b2 → cset compose
-   comp-set : isPushout cinc1 cinc2 comp-inl comp-inr
+   comp-set : isPushout (include b1 ∘ sfmap1 cinc1) (include b2 ∘ sfmap2 cinc2) comp-inl comp-inr
 
  postulate
-  -- should be thought of as a consequence of the cell destructor
-  include : {f : Frame} (b : Cell f) → fset f → cset b
 
   fnil-set : fset fnil ≡ Void
   fcons-inl : {f : Frame} {c1 c2 : Cell f} → cset c1 → fset (fcons c1 c2)
@@ -78,4 +86,4 @@ module _ where
       → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
 
   vcomp-common : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f) (cf : Cell (fcons A B)) (cg : Cell (fcons B C))
-    → common cf cg (vcomp A B C) ≡ cset B
+    → common-f cf cg (vcomp A B C) ≡ f
