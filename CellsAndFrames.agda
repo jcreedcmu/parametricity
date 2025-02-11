@@ -30,33 +30,53 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
+postulate
+ isPushout : {A B C D : Set} (f : A → B) (g : A → C) (in1 : B → D) (in2 : C → D) → Set
+
 module _ where
  postulate
   Frame : Set
   Cell : Frame → Set
 
-
+  -- realizations
   cset : {f : Frame} → Cell f → Set
   fset : Frame → Set
 
-  -- prevFrame : Frame → Frame → Set -- prevFrame f1 f2 ≡ f2 is the next-lower-dimension frame contained in f1
-  -- dom : Frame → Cell → Set -- dom f d ≡ d is f's domain
-  -- cod : Frame → Cell → Set -- dom f c ≡ c is f's codomain
+  -- how to construct frames
+  fnil : Frame
+  fcons : {f : Frame} (c1 c2 : Cell f) → Frame
 
-  -- a way of constructing frames
-  mkFrame : {f : Frame} (c1 c2 : Cell f) → Frame
+  -- how to construct cells
+  mkcell : (f : Frame) (Cr : Set) → (fset f → Cr) → Cell f
 
   composable : Frame → Frame → Frame → Set
 
-  compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2: : Cell f2) (k : composable f1 f2 f3)
+  compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3)
            → Cell f3
 
-  vcomp : {f : Frame}
-          (b1 : Cell f) (b2 : Cell f) (b3 : Cell f)
-          → composable (mkFrame b1 b2) (mkFrame b2 b3) (mkFrame b1 b3)
+  -- should be thought of as a consequence of the cell destructor
+  include : {f : Frame} (b : Cell f) → fset f → cset b
 
-  hzcomp : (f1 f2 f3 : Frame)
-          (k : composable f1 f2 f3)
-          (m1 : Cell f1) (n1 : Cell f1)
-          (m2 : Cell f2) (n2 : Cell f2)
-          → composable (mkFrame m1 n1) (mkFrame m2 n2) (mkFrame (compose m1 m2 k) (compose n1 n2 k))
+  fnil-set : fset fnil ≡ Void
+  fcons-inl : {f : Frame} {c1 c2 : Cell f} → cset c1 → fset (fcons c1 c2)
+  fcons-inr : {f : Frame} {c1 c2 : Cell f} → cset c2 → fset (fcons c1 c2)
+  fcons-set : {f : Frame} {c1 c2 : Cell f}
+       → isPushout (include c1) (include c2) fcons-inl fcons-inr
+
+ module _  {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f) where
+  postulate
+   vcomp : composable (fcons A B) (fcons B C) (fcons A C)
+  module _ (cf : Cell (fcons A B)) (cg : Cell (fcons B C)) where postulate
+   vcomp-inl : cset cf → cset (compose cf cg vcomp)
+   vcomp-inr : cset cg → cset (compose cf cg vcomp)
+   vcomp-set : isPushout (include cf ∘ fcons-inr) (include cg ∘ fcons-inl) vcomp-inl vcomp-inr
+
+ module _ (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
+          (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
+          where
+  postulate
+   hzcomp : composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
+  module _ (cα : Cell (fcons m1 n1)) (cβ : Cell (fcons m2 n2)) where postulate
+   hzcomp-inl : cset cα → cset (compose cα cβ hzcomp)
+   hzcomp-inr : cset cβ → cset (compose cα cβ hzcomp)
+   hzcomp-set : isPushout {!!} {!!} hzcomp-inl hzcomp-inr
