@@ -32,36 +32,31 @@ data two : Set where
 
 module _ where
  postulate
-  Cell : Set
   Frame : Set
+  Cell : Frame → Set
 
-  frameOf : Cell → Frame → Set -- frameOf c f ≡ c's frame is f
 
-  cset : Cell → Set
+  cset : {f : Frame} → Cell f → Set
   fset : Frame → Set
 
-  prevFrame : Frame → Frame → Set -- prevFrame f1 f2 ≡ f2 is the next-lower-dimension frame contained in f1
-  dom : Frame → Cell → Set -- dom f d ≡ d is f's domain
-  cod : Frame → Cell → Set -- dom f c ≡ c is f's codomain
+  -- prevFrame : Frame → Frame → Set -- prevFrame f1 f2 ≡ f2 is the next-lower-dimension frame contained in f1
+  -- dom : Frame → Cell → Set -- dom f d ≡ d is f's domain
+  -- cod : Frame → Cell → Set -- dom f c ≡ c is f's codomain
 
   -- a way of constructing frames
-  mkFrame : {f : Frame} {c1 c2 : Cell} → frameOf c1 f → frameOf c2 f → Frame
+  mkFrame : {f : Frame} (c1 c2 : Cell f) → Frame
 
   composable : Frame → Frame → Frame → Set
 
- module _ {f1 f2 f3 : Frame} {b1 b2 : Cell}
-          (of1 : frameOf b1 f1) (of2 : frameOf b2 f2) (k : composable f1 f2 f3)
-          where
-  postulate
-   compose : Cell
-   composeFrame : frameOf compose f3
+  compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2: : Cell f2) (k : composable f1 f2 f3)
+           → Cell f3
 
- postulate
-  vcomp : {f : Frame} {b1 b2 b3 : Cell}
-          (of1 : frameOf b1 f) (of2 : frameOf b2 f) (of3 : frameOf b3 f)
-          → composable (mkFrame of1 of2) (mkFrame of2 of3) (mkFrame of1 of3)
+  vcomp : {f : Frame}
+          (b1 : Cell f) (b2 : Cell f) (b3 : Cell f)
+          → composable (mkFrame b1 b2) (mkFrame b2 b3) (mkFrame b1 b3)
+
   hzcomp : (f1 f2 f3 : Frame)
-           (k : composable f1 f2 f3) (m1 m2 n1 n2 : Cell)
-           (ofm1 : frameOf m1 f1) (ofn1 : frameOf n1 f1)
-           (ofm2 : frameOf m2 f2) (ofn2 : frameOf n2 f2)
-           → composable (mkFrame ofm1 ofn1) (mkFrame ofm2 ofn2) (mkFrame (composeFrame ofm1 ofm2 k) (composeFrame ofn1 ofn2 k))
+          (k : composable f1 f2 f3)
+          (m1 : Cell f1) (n1 : Cell f1)
+          (m2 : Cell f2) (n2 : Cell f2)
+          → composable (mkFrame m1 n1) (mkFrame m2 n2) (mkFrame (compose m1 m2 k) (compose n1 n2 k))
