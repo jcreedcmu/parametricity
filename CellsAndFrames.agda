@@ -54,6 +54,32 @@ getSubFrame : {f : Frame} → subFrames f → Frame
 getSubFrame (sfSkip f c1 c2 sf) = getSubFrame sf
 getSubFrame (sfHere f) = f
 
+-- composability
+
+module Composability where
+ open Cell
+ data composable : Frame → Frame → Set₁ where
+   vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
+       → composable (fcons A B) (fcons B C)
+   hzcomp : (f1 f2 : Frame) (k : composable f1 f2)
+       (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
+       → composable (fcons m1 n1) (fcons m2 n2)
+
+module CommonElements where
+ open Cell
+ open Composability
+
+ commonFrame : {f1 f2 : Frame} (k : composable f1 f2) → Frame
+ commonFrame (vcomp {f} A B C) = f
+ commonFrame (hzcomp f1 f2 k m1 n1 m2 n2) = commonFrame k
+
+ commonCell : {f1 f2 : Frame} (k : composable f1 f2) → Cell (commonFrame k)
+ commonCell (vcomp A B C) = B
+ commonCell (hzcomp f1 f2 k m1 n1 m2 n2) = commonCell k
+
+ commonSet : {f1 f2 f3 : Frame} (k : composable f1 f2) → Set
+ commonSet k = commonCell k .Cr
+
 -- composition
 
 module Composition where
