@@ -51,9 +51,17 @@ module _ where
 
   composable : Frame → Frame → Frame → Set
 
-  compose : {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3)
-           → Cell f3
+ module _ {f1 f2 f3 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2 f3) where
+  postulate
+   common : Set
+   cinc1 : common → cset b1
+   cinc2 : common → cset b2
+   compose : Cell f3
+   comp-inl : cset b1 → cset compose
+   comp-inr : cset b2 → cset compose
+   comp-set : isPushout cinc1 cinc2 comp-inl comp-inr
 
+ postulate
   -- should be thought of as a consequence of the cell destructor
   include : {f : Frame} (b : Cell f) → fset f → cset b
 
@@ -63,20 +71,8 @@ module _ where
   fcons-set : {f : Frame} {c1 c2 : Cell f}
        → isPushout (include c1) (include c2) fcons-inl fcons-inr
 
- module _  {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f) where
-  postulate
-   vcomp : composable (fcons A B) (fcons B C) (fcons A C)
-  module _ (cf : Cell (fcons A B)) (cg : Cell (fcons B C)) where postulate
-   vcomp-inl : cset cf → cset (compose cf cg vcomp)
-   vcomp-inr : cset cg → cset (compose cf cg vcomp)
-   vcomp-set : isPushout (include cf ∘ fcons-inr) (include cg ∘ fcons-inl) vcomp-inl vcomp-inr
-
- module _ (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
-          (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
-          where
-  postulate
-   hzcomp : composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
-  module _ (cα : Cell (fcons m1 n1)) (cβ : Cell (fcons m2 n2)) where postulate
-   hzcomp-inl : cset cα → cset (compose cα cβ hzcomp)
-   hzcomp-inr : cset cβ → cset (compose cα cβ hzcomp)
-   hzcomp-set : isPushout {!!} {!!} hzcomp-inl hzcomp-inr
+  vcomp : {f : Frame} (A : Cell f) (B : Cell f) (C : Cell f)
+      → composable (fcons A B) (fcons B C) (fcons A C)
+  hzcomp : (f1 f2 f3 : Frame) (k : composable f1 f2 f3)
+      (m1 : Cell f1) (n1 : Cell f1) (m2 : Cell f2) (n2 : Cell f2)
+      → composable (fcons m1 n1) (fcons m2 n2) (fcons (compose m1 m2 k) (compose n1 n2 k))
