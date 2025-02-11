@@ -85,14 +85,31 @@ module Composition where
  leftMap b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
  rightMap b1 b2 (vcomp A B C) csx = b2 .Bd (inl csx)
  rightMap b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) csx = {!!}
+
  composeBd b1 b2 (vcomp A B C) (inl x) = inl1 (b1 .Bd (inl2 x)) where
---  inl1 : Cr b1 → Pushout ((leftMap b1 b2 (vcomp A B C)) (rightMap b1 b2 (vcomp A B C))
   inl1 : Cr b1 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
   inl1 = inl
 
   inl2 : Cr A → Pushout (A .Bd) (B .Bd)
   inl2 = inl
- composeBd b1 b2 (vcomp A B C) (inr x) = inr (b2 .Bd (inr x))
- composeBd b1 b2 (vcomp A B C) (push a i) = {!!}
+ composeBd b1 b2 (vcomp A B C) (inr x) = inr1 (b2 .Bd (inr2 x)) where
+  inr1 : Cr b2 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
+  inr1 = inr
+
+  inr2 : Cr C → Pushout (B .Bd) (C .Bd)
+  inr2 = inr
+
+-- For the path case we need
+-- inl1 (b1 .Bd (inl2 (A .Bd a))) ≡ inr1 (b2 .Bd (inr2 (C .Bd a)))
+ composeBd b1 b2 (k@(vcomp A B C)) (push a i) =
+    (cong (λ q → cinl (b1 .Bd q)) (push a)
+     ∙ push (B .Bd a)
+     ∙ cong (λ q → cinr (b2 .Bd q)) (push a)) i where
+  -- This type information is necessary
+  cinl : b1 .Cr → composeSet b1 b2 k
+  cinl = inl
+  cinr : b2 .Cr → composeSet b1 b2 k
+  cinr = inr
+
  composeBd b1 b2 (hzcomp f1 f2 f3 k m1 n1 m2 n2) = {!!}
  compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
