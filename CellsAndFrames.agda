@@ -105,8 +105,11 @@ module Composition where
  outputFrame1 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
  outputFrame2 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
 
+ -- XXX I don't think these are true
  outputFrame1Inc : {f1 f2 : Frame} (k : composable f1 f2) → Cr (outputFrame1 k) → fset f1
  outputFrame2Inc : {f1 f2 : Frame} (k : composable f1 f2) → Cr (outputFrame2 k) → fset f2
+
+ underCommon : {f1 f2 : Frame} (k : composable f1 f2) → fset (outputUnderFrame k) → fset (commonFrame k)
 
  composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
  compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
@@ -132,6 +135,7 @@ module Composition where
  outputFrame2Inc (vcomp A B C) x = sinr x
  outputFrame2Inc (hzcomp f1 f2 k m1 n1 m2 n2) x = {!!}
 
+
  outputFrame k = fcons (outputFrame1 k) (outputFrame2 k)
 
  composeSet b1 b2 k = SymPush (leftMap b1 b2 k) (rightMap b1 b2 k)
@@ -145,6 +149,11 @@ module Composition where
  rightFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = smid (rightFmap k csx)
 
  compose α β k = mkCell (composeSet α β k) (composeBd α β k)
+
+ -- underCommon : {f1 f2 : Frame} (k : composable f1 f2) → fset (outputUnderFrame k) → fset (commonFrame k)
+ -- XXX I don't know if this is true??
+ underCommon (vcomp A B C) x = x
+ underCommon (hzcomp f1 f2 k m1 n1 m2 n2) x = underCommon k {!!}
 
  composeBd cf cg (vcomp A B C) (sinl x) = inl1 (cf .Bd (inl2 x)) where
   inl1 : Cr cf → SymPush (λ csx → cf .Bd (sinr csx)) (λ csx → cg .Bd (sinl csx))
@@ -190,9 +199,9 @@ module Composition where
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (smid x)) = smid x -- n1 ∩ n2
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushl a i)) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushr a i)) = {!!}
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (sinl x)) = sinl (Bd α (smid {!!})) -- dom _1 (_ ∈ {m,n})
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (sinl x)) = {!!} -- dom _1 (_ ∈ {m,n})
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (sinr x)) = {!!} -- cod _2 (_ ∈ {m,n})
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (smid x)) = {!!} -- cod _1 = dom _2 (_ ∈ {m,n})
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (smid x)) = smid (commonCell k .Bd (underCommon k x)) -- cod _1 = dom _2 (_ ∈ {m,n})
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (spushl a i)) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (spushr a i)) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushl a i) = {!!}
