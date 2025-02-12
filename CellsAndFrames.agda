@@ -104,6 +104,7 @@ module Composition where
  composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
  compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
  composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
+-- outputBd : fset (outputFrame k) → composeSet
 
  leftMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b1
  rightMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b2
@@ -159,8 +160,16 @@ module Composition where
   lemma : sinr (rightMap cf cg (vcomp A B C) (Bd B a)) ≡ sinr (cg .Bd (sinr (C .Bd a)))
   lemma i = sinr (Bd cg ((sym (spushl a) ∙ spushr a) i))
 
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl x) = {!!}
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr x) = {!!}
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid x) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl (sinl x)) = sinl (Bd α (sinl x)) -- m1
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl (sinr x)) = sinr (Bd β (sinl x)) -- m2
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl (smid x)) = smid x -- m1 ∩ m2
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl (spushl a i)) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl (spushr a i)) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (sinl x)) = sinl (Bd α (sinr x)) -- n1
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (sinr x)) = sinr (Bd β (sinr x)) -- n2
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (smid x)) = smid x -- n1 ∩ n2
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushl a i)) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushr a i)) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid x) =  {!!} -- dom m1,n1 ∪ cod m2,n2
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushl a i) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushr a i) = {!!}
