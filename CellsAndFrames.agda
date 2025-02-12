@@ -165,6 +165,10 @@ module Composition where
   -- cinr : cg .Cr → composeSet cf cg k
   -- cinr = inr
 
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl x) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr x) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid x) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushl a i) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushr a i) = {!!}
 
  compose α β k = mkCell (composeSet α β k) (composeBd α β k)
