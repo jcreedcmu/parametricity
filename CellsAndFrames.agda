@@ -30,6 +30,17 @@ data Unit : Set where
 data two : Set where
  t0 t1 : two
 
+-- A pushout with a definitional term that's "right in the middle"
+-- of the two injections for convenience
+data SymPush {ℓ ℓ' ℓ''} {A : Type ℓ} {B : Type ℓ'} {C : Type ℓ''}
+             (f : A → B) (g : A → C) : Type (ℓ-max ℓ (ℓ-max ℓ' ℓ'')) where
+  sinl : B → SymPush f g
+  sinr : C → SymPush f g
+  smid : A → SymPush f g
+  spushl : (a : A) → smid a ≡ sinl (f a)
+  spushr : (a : A) → smid a ≡ sinr (g a)
+
+
 module Basic where
  data Frame : Set₁
  record Cell (f : Frame) : Set₁
@@ -42,7 +53,7 @@ module Basic where
   Cr : Set
   Bd : fset f → Cr
  fset fnil = Void
- fset (fcons c1 c2) = Pushout (c1 .Cell.Bd) (c2 .Cell.Bd)
+ fset (fcons c1 c2) = SymPush (c1 .Cell.Bd) (c2 .Cell.Bd)
 open Basic
 
 data subFrames : Frame → Set₁ where
@@ -101,40 +112,59 @@ module Composition where
  outputFrame (vcomp A B C) = fcons A C
  outputFrame (hzcomp f1 f2 k m1 n1 m2 n2) = fcons (compose m1 m2 k) (compose n1 n2 k)
 
- composeSet b1 b2 k = Pushout (leftMap b1 b2 k) (rightMap b1 b2 k)
+ composeSet b1 b2 k = SymPush (leftMap b1 b2 k) (rightMap b1 b2 k)
 
  leftMap b1 b2 k csx = b1 .Bd (leftFmap k csx)
  rightMap b1 b2 k csx = b2 .Bd (rightFmap k csx)
 
- leftFmap (vcomp A B C) csx = inr csx
- leftFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = inl (m1 .Bd (leftFmap k csx)) -- asymmetric! why not n1?
- rightFmap (vcomp A B C) csx = inl csx
- rightFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = {!!}
+ leftFmap (vcomp A B C) csx = sinr csx
+ leftFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = smid (leftFmap k csx)
+ rightFmap (vcomp A B C) csx = sinl csx
+ rightFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = smid (rightFmap k csx)
 
- composeBd b1 b2 (vcomp A B C) (inl x) = inl1 (b1 .Bd (inl2 x)) where
-  inl1 : Cr b1 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
-  inl1 = inl
+ composeBd cf cg (vcomp A B C) (sinl x) = inl1 (cf .Bd (inl2 x)) where
+  inl1 : Cr cf → SymPush (λ csx → cf .Bd (sinr csx)) (λ csx → cg .Bd (sinl csx))
+  inl1 = sinl
 
-  inl2 : Cr A → Pushout (A .Bd) (B .Bd)
-  inl2 = inl
- composeBd b1 b2 (vcomp A B C) (inr x) = inr1 (b2 .Bd (inr2 x)) where
-  inr1 : Cr b2 → Pushout (λ csx → b1 .Bd (inr csx)) (λ csx → b2 .Bd (inl csx))
-  inr1 = inr
+  inl2 : Cr A → SymPush (A .Bd) (B .Bd)
+  inl2 = sinl
+ composeBd cf cg (vcomp A B C) (sinr x) = inr1 (cg .Bd (inr2 x)) where
+  inr1 : Cr cg → SymPush (λ csx → cf .Bd (sinr csx)) (λ csx → cg .Bd (sinl csx))
+  inr1 = sinr
 
-  inr2 : Cr C → Pushout (B .Bd) (C .Bd)
-  inr2 = inr
+  inr2 : Cr C → SymPush (B .Bd) (C .Bd)
+  inr2 = sinr
+
+ composeBd cf cg (k@(vcomp A B C)) (smid x) = rv where
+  -- rv : composeSet cf cg (vcomp A B C)
+  rv : SymPush (λ csx → cf .Bd (sinr csx)) (λ csx → cg .Bd (sinl csx))
+  rv = smid (Bd B x)
 
 -- For the path case we need
--- inl1 (b1 .Bd (inl2 (A .Bd a))) ≡ inr1 (b2 .Bd (inr2 (C .Bd a)))
- composeBd b1 b2 (k@(vcomp A B C)) (push a i) =
-    (cong (λ q → cinl (b1 .Bd q)) (push a)
-     ∙ push (B .Bd a)
-     ∙ cong (λ q → cinr (b2 .Bd q)) (push a)) i where
-  -- This type information is necessary
-  cinl : b1 .Cr → composeSet b1 b2 k
-  cinl = inl
-  cinr : b2 .Cr → composeSet b1 b2 k
-  cinr = inr
+-- inl1 (cf .Bd (inl2 (A .Bd a))) ≡ inr1 (cg .Bd (inr2 (C .Bd a)))
 
- composeBd b1 b2 (hzcomp f1 f2 k m1 n1 m2 n2) = {!!}
- compose b1 b2 k = mkCell (composeSet b1 b2 k) (composeBd b1 b2 k)
+-- need:
+-- i = i0 ⊢ smid (B .Bd a)
+-- i = i1 ⊢ sinl (cf .Bd (sinl (A .Bd a)))
+ composeBd cf cg (k@(vcomp A B C)) (spushl a i) = (spushl (Bd B a) ∙ lemma) i where
+  lemma : sinl (leftMap cf cg (vcomp A B C) (Bd B a)) ≡ sinl (cf .Bd (sinl (A .Bd a)))
+  lemma i = sinl (Bd cf ((sym (spushr a) ∙ spushl a) i))
+-- need:
+-- i = i0 ⊢ smid (B .Bd a)
+-- i = i1 ⊢ sinr (b2 .Bd (sinr (C .Bd a)))
+ composeBd cf cg (k@(vcomp A B C)) (spushr a i) = (spushr (Bd B a) ∙ lemma) i where
+  lemma : sinr (rightMap cf cg (vcomp A B C) (Bd B a)) ≡ sinr (cg .Bd (sinr (C .Bd a)))
+  lemma i = sinr (Bd cg ((sym (spushl a) ∙ spushr a) i))
+
+  --   (cong (λ q → cinl (cf .Bd q)) (push a)
+  --    ∙ push (B .Bd a)
+  --    ∙ cong (λ q → cinr (cg .Bd q)) (push a)) i where
+  -- -- This type information is necessary
+  -- cinl : cf .Cr → composeSet cf cg k
+  -- cinl = inl
+  -- cinr : cg .Cr → composeSet cf cg k
+  -- cinr = inr
+
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) = {!!}
+
+ compose α β k = mkCell (composeSet α β k) (composeBd α β k)
