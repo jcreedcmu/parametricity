@@ -102,8 +102,9 @@ module Composition where
 
  outputFrame : {f1 f2 : Frame} → composable f1 f2 → Frame
  composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
- composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
  compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
+ composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
+
  leftMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b1
  rightMap : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → commonSet k → Cr b2
  leftFmap : {f1 f2 : Frame} (k : composable f1 f2) → commonSet k → fset f1
@@ -121,6 +122,8 @@ module Composition where
  leftFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = smid (leftFmap k csx)
  rightFmap (vcomp A B C) csx = sinl csx
  rightFmap (hzcomp f1 f2 k m1 n1 m2 n2) csx = smid (rightFmap k csx)
+
+ compose α β k = mkCell (composeSet α β k) (composeBd α β k)
 
  composeBd cf cg (vcomp A B C) (sinl x) = inl1 (cf .Bd (inl2 x)) where
   inl1 : Cr cf → SymPush (λ csx → cf .Bd (sinr csx)) (λ csx → cg .Bd (sinl csx))
@@ -156,19 +159,8 @@ module Composition where
   lemma : sinr (rightMap cf cg (vcomp A B C) (Bd B a)) ≡ sinr (cg .Bd (sinr (C .Bd a)))
   lemma i = sinr (Bd cg ((sym (spushl a) ∙ spushr a) i))
 
-  --   (cong (λ q → cinl (cf .Bd q)) (push a)
-  --    ∙ push (B .Bd a)
-  --    ∙ cong (λ q → cinr (cg .Bd q)) (push a)) i where
-  -- -- This type information is necessary
-  -- cinl : cf .Cr → composeSet cf cg k
-  -- cinl = inl
-  -- cinr : cg .Cr → composeSet cf cg k
-  -- cinr = inr
-
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinl x) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr x) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid x) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushl a i) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushr a i) = {!!}
-
- compose α β k = mkCell (composeSet α β k) (composeBd α β k)
