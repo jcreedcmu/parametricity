@@ -105,6 +105,9 @@ module Composition where
  outputFrame1 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
  outputFrame2 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
 
+ outputFrame1Inc : {f1 f2 : Frame} (k : composable f1 f2) → Cr (outputFrame1 k) → fset f1
+ outputFrame2Inc : {f1 f2 : Frame} (k : composable f1 f2) → Cr (outputFrame2 k) → fset f2
+
  composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
  compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
  composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
@@ -123,6 +126,11 @@ module Composition where
 
  outputFrame2 (vcomp A B C) = C
  outputFrame2 (hzcomp f1 f2 k m1 n1 m2 n2) = compose n1 n2 k
+
+ outputFrame1Inc (vcomp A B C) x = sinl x
+ outputFrame1Inc (hzcomp f1 f2 k m1 n1 m2 n2) x = {!!}
+ outputFrame2Inc (vcomp A B C) x = sinr x
+ outputFrame2Inc (hzcomp f1 f2 k m1 n1 m2 n2) x = {!!}
 
  outputFrame k = fcons (outputFrame1 k) (outputFrame2 k)
 
@@ -182,6 +190,10 @@ module Composition where
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (smid x)) = smid x -- n1 ∩ n2
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushl a i)) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (sinr (spushr a i)) = {!!}
- composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid x) =  {!!} -- dom m1,n1 ∪ cod m2,n2
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (sinl x)) = sinl (Bd α (smid {!!})) -- dom _1 (_ ∈ {m,n})
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (sinr x)) = {!!} -- cod _2 (_ ∈ {m,n})
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (smid x)) = {!!} -- cod _1 = dom _2 (_ ∈ {m,n})
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (spushl a i)) = {!!}
+ composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (smid (spushr a i)) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushl a i) = {!!}
  composeBd α β (hzcomp f1 f2 k m1 n1 m2 n2) (spushr a i) = {!!}
