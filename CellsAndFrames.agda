@@ -101,6 +101,10 @@ module Composition where
  open CommonElements
 
  outputFrame : {f1 f2 : Frame} → composable f1 f2 → Frame
+ outputUnderFrame : {f1 f2 : Frame} → composable f1 f2 → Frame
+ outputFrame1 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
+ outputFrame2 : {f1 f2 : Frame} (k : composable f1 f2) → Cell (outputUnderFrame k)
+
  composeSet : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Set
  compose : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → Cell (outputFrame k)
  composeBd : {f1 f2 : Frame} (b1 : Cell f1) (b2 : Cell f2) (k : composable f1 f2) → fset (outputFrame k) → composeSet b1 b2 k
@@ -111,8 +115,16 @@ module Composition where
  leftFmap : {f1 f2 : Frame} (k : composable f1 f2) → commonSet k → fset f1
  rightFmap : {f1 f2 : Frame} (k : composable f1 f2) → commonSet k → fset f2
 
- outputFrame (vcomp A B C) = fcons A C
- outputFrame (hzcomp f1 f2 k m1 n1 m2 n2) = fcons (compose m1 m2 k) (compose n1 n2 k)
+ outputUnderFrame (vcomp {f} A B C) = f
+ outputUnderFrame (hzcomp f1 f2 k m1 n1 m2 n2) = outputFrame k
+
+ outputFrame1 (vcomp A B C) = A
+ outputFrame1 (hzcomp f1 f2 k m1 n1 m2 n2) = compose m1 m2 k
+
+ outputFrame2 (vcomp A B C) = C
+ outputFrame2 (hzcomp f1 f2 k m1 n1 m2 n2) = compose n1 n2 k
+
+ outputFrame k = fcons (outputFrame1 k) (outputFrame2 k)
 
  composeSet b1 b2 k = SymPush (leftMap b1 b2 k) (rightMap b1 b2 k)
 
