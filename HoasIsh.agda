@@ -17,9 +17,7 @@ open import Cubical.Functions.Embedding
 open import Cubical.HITs.Pushout
 open import Function.Base
 
--- At the very, very outside we assume someone chose the shape
--- of parametricity we're working with; S = 2 means binary relations.
-module HoasIsh (S : Set) where
+module HoasIsh where
 
 data Void : Set where
 
@@ -49,25 +47,25 @@ Some constructions will be in the context of
 W is the type of worlds. There is an empty world e.
 
 Some constructions will further be in the context of
-    (𝕀 : W → Set) (embed : S → 𝕀 e) (⋯ maybe also assume that isEquiv embed ⋯)
+    (𝕀 : W → Set) (E : 𝕀 e → Set) (EisProp : isProp E) (⋯ maybe also assume that isEquiv E ⋯)
 𝕀 is the interval type, which is substructural, in that it is indexed
-by w. We assume that at the empty type there at least a way of getting
-S into 𝕀 e; perhaps even 𝕀 e ≡ S.
+by w. We assume that at the empty world there is a way of identifying the boundary points.
+perhaps even 𝕀 e ≡ S.
 
 This is a provisional guess at what I want to assume about 𝕀. Another
 alternative that seems about as reasonable is that we can *always*
-(i.e. for any w) get S into 𝕀 w, maybe as an embedding, and at e that
-map then turns into an equivalence. I'm waiting for theorems to show
-up to force my hand. It was attempts to construct a universe that made
-me think that 𝕀 turning into exactly S might be what I want. This
+(i.e. for any w) get S into 𝕀 w, maybe always as an embedding, and at
+e that map then turns into an equivalence. I'm waiting for theorems to
+show up to force my hand. It was attempts to construct a universe that
+made me think that 𝕀 turning into exactly S might be what I want. This
 seems to give a lot of control, as a copy of 𝕀 glued to neighboring
 pieces of typal material sort of conveniently "disappears".
 
 -}
 
-module _ (R : Set) (A : S → Set) (f : (r : R) (s : S) → A s) where
- module _ (W : Set) (e : W) (𝕀 : W → Set) (embed : S → 𝕀 e) where
+module _ (W : Set) (emp : W) (𝕀 : W → Set) (E : 𝕀 emp → Set) (EisProp : (i : 𝕀 emp) → isProp (E i)) where
+ module _ (R : Set) (A : {i : 𝕀 emp} (e : E i) → Set) (f : {i : 𝕀 emp} (r : R) (e : E i) → A e) where
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gstrand : (w : W) (i : 𝕀 w) (r : R) → Gel w i
-      gpoint : (s : S) (a : A s) → Gel e (embed s)
-      gpath : (s : S) (r : R) → gstrand e (embed s) r ≡ gpoint s (f r s)
+      gpoint : {i : 𝕀 emp} {e : E i} (a : A e) → Gel emp i
+      gpath : {i : 𝕀 emp} {e : E i} (r : R) → gstrand emp i r ≡ gpoint (f r e)
