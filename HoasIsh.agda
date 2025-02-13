@@ -55,9 +55,19 @@ other w, but I haven't needed this yet.
 
 -}
 
-module _ (W : Set) (emp : W) (𝕀 : W → Set) where
+module GelType (W : Set) (emp : W) (𝕀 : W → Set) where
  module _ (R : Set) (A : (i : 𝕀 emp) → Set) (f : (i : 𝕀 emp) (r : R) → A i) where
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gstrand : (w : W) (i : 𝕀 w) (r : R) → Gel w i
       gpoint : (i : 𝕀 emp) (a : A i) → Gel emp i
       gpath : (i : 𝕀 emp) (r : R) → gstrand emp i r ≡ gpoint i (f i r)
+
+{- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
+ - when it comes time to do iterated internalized parametricity! -}
+module Hide where
+ module _ (𝕁 : Set) (E : 𝕁 → Set) where
+  module _ (R : Set) (A : {j : 𝕁} (e : E j) → Set) (f : {j : 𝕁} (e : E j) (r : R) → A e) where
+   data Gel (j : 𝕁) : Set where
+       gstrand : (r : R) → Gel j
+       gpoint : (e : E j) (a : A e) → Gel j
+       gpath : (e : E j) (r : R) → gstrand r ≡ gpoint e (f e r)
