@@ -63,7 +63,8 @@ module GelType (W : Set) (emp : W) (𝕀 : W → Set) where
       gpath : (i : 𝕀 emp) (r : R) → gstrand emp i r ≡ gpoint i (f i r)
 
 {- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
- - when it comes time to do iterated internalized parametricity! -}
+ - when it comes time to do iterated internalized parametricity! Although... maybe not.
+ - I could represent the monoid operation relationally. -}
 module Hide where
  module _ (𝕁 : Set) (E : 𝕁 → Set) where
   module _ (R : Set) (A : {j : 𝕁} (e : E j) → Set) (f : {j : 𝕁} (e : E j) (r : R) → A e) where
