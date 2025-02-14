@@ -55,30 +55,39 @@ other w, but I haven't needed this yet.
 
 -}
 
-module GelType (W : Set) (e : W) (𝕀 : W → Set)
-               (R : Set) (A : (i : 𝕀 e) → Set) (f : (s : 𝕀 e) (r : R) → A s)
+module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
+               (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
                where
 
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gel : (w : W) (i : 𝕀 w) (r : R) → Gel w i
-      gbound : (s : 𝕀 e) (a : A s) → Gel e s
-      gpath : (s : 𝕀 e) (r : R) → gel e s r ≡ gbound s (f s r)
+      gbound : (s : S) (a : A s) → Gel e (q s)
+      gpath : (s : S) (r : R) → gel e (q s) r ≡ gbound s (f s r)
 
+module GelPostpone (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s) where
+  open GelType R A f
   postulate
-    ungel : ((w : W) (i : 𝕀 w) → Gel w i) → R
-    bound-equiv : (s : 𝕀 e) → isEquiv (gbound s)
-    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : 𝕀 e)
-         → f s (ungel g) ≡ invIsEq (bound-equiv s) (g e s)
+    ungel : ((W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
+            (w : W) (i : 𝕀 w) → Gel W e 𝕀 q qe w i) → R
+    get-bound : (s : S) →
+                (g : (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
+                     → Gel W e 𝕀 q qe e (q s))
+                → A s
+    ungel-bd : (g : (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
+                    (w : W) (i : 𝕀 w) → Gel W e 𝕀 q qe w i)
+               (s : S)
+         → (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
+         → f s (ungel g) ≡ get-bound s (λ W e 𝕀 q qe → g W e 𝕀 q qe e (q s))
 
-module FreeThm
-  (W : Set) (e : W) (𝕀 : W → Set)
-  (R : Set) (A : (i : 𝕀 e) → Set) (f : (s : 𝕀 e) (r : R) → A s)
-  (idf : (X : Set) → X → X) (r : R) where
- module _  where
-  open GelType W e 𝕀 R A f
+-- module FreeThm
+--   (W : Set) (e : W) (𝕀 : W → Set)
+--   (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
+--   (idf : (X : Set) → X → X) (r : R) where
+--  module _  where
+--   open GelType W e 𝕀 R A f
 
-  package : (w : W) (i : 𝕀 w) → Gel w i
-  package w i = idf (Gel w i) (gel w i r)
+--   package : (w : W) (i : 𝕀 w) → Gel w i
+--   package w i = idf (Gel w i) (gel w i r)
 
-  output : R
-  output = ungel package
+--   output : R
+--   output = ?
