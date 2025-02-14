@@ -17,7 +17,7 @@ open import Cubical.Functions.Embedding
 open import Cubical.HITs.Pushout
 open import Function.Base
 
-module HoasIsh where
+module HoasIsh (S : Set) where
 
 data Void : Set where
 
@@ -55,20 +55,48 @@ other w, but I haven't needed this yet.
 
 -}
 
-module GelType (W : Set) (emp : W) (𝕀 : W → Set) where
- module _ (R : Set) (A : (i : 𝕀 emp) → Set) (f : (i : 𝕀 emp) (r : R) → A i) where
-  data Gel : (w : W) (i : 𝕀 w) → Set where
-      gstrand : (w : W) (i : 𝕀 w) (r : R) → Gel w i
-      gpoint : (i : 𝕀 emp) (a : A i) → Gel emp i
-      gpath : (i : 𝕀 emp) (r : R) → gstrand emp i r ≡ gpoint i (f i r)
+module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
+               (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
 
-{- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
- - when it comes time to do iterated internalized parametricity! Although... maybe not.
- - I could represent the monoid operation relationally. -}
-module Hide where
- module _ (𝕁 : Set) (E : 𝕁 → Set) where
-  module _ (R : Set) (A : {j : 𝕁} (e : E j) → Set) (f : {j : 𝕁} (e : E j) (r : R) → A e) where
-   data Gel (j : 𝕁) : Set where
-       gstrand : (r : R) → Gel j
-       gpoint : (e : E j) (a : A e) → Gel j
-       gpath : (e : E j) (r : R) → gstrand r ≡ gpoint e (f e r)
+  data Gel : (w : W) (i : 𝕀 w) → Set where
+      gel : (w : W) (i : 𝕀 w) (r : R) → Gel w i
+      gbound : (s : S) (a : A s) → Gel emp (inc s)
+      gpath : (s : S) (r : R) → gel emp (inc s) r ≡ gbound s (f s r)
+
+  getBound2 : {w : W} {i : 𝕀 w} (s : S) (p : w ≡ emp) (q : subst 𝕀 p i ≡ inc s) → Gel w i → A s
+  getBound2 {w} {i} s p q (gel .w .i r) = f s r
+  getBound2 {w} {.(inc s₁)} s p q (gbound s₁ a) = {!!}
+  getBound2 {w} {.(inc s₁)} s p q (gpath s₁ r i) = {!!}
+
+  getBound : (s : S) → Gel emp (inc s) → A s
+  getBound s g = {!!}
+
+  postulate
+    ungel : ((w : W) (i : 𝕀 w) → Gel w i) → R
+    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : S) → f s (ungel g) ≡ getBound s (g emp (inc s))
+
+-- {- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
+--  - when it comes time to do iterated internalized parametricity! Although... maybe not.
+--  - I could represent the monoid operation relationally. -}
+-- module Hide where
+--  module _ (𝕁 : Set) (E : 𝕁 → Set) where
+--   module _ (R : Set) (A : {j : 𝕁} (e : E j) → Set) (f : {j : 𝕁} (e : E j) (r : R) → A e) where
+--    data Gel (j : 𝕁) : Set where
+--        gel : (r : R) → Gel j
+--        gbound : (e : E j) (a : A e) → Gel j
+--        gpath : (e : E j) (r : R) → gel r ≡ gbound e (f e r)
+
+{-
+I want a parametricity theorem for (X : Set) → X → X.
+So I want to substitute Gel w i for X, and gel w i r for the X argument.
+-}
+module FreeThm (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
+               (idf : (X : Set) → X → X) where
+ module _ (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
+  open GelType R A f W emp 𝕀 inc
+
+  package : R → (w : W) (i : 𝕀 w) → Gel w i
+  package r w i = idf (Gel w i) (gel w i r)
+
+  output : R → R
+  output r = ungel (package r)
