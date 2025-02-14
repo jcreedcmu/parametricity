@@ -55,48 +55,30 @@ other w, but I haven't needed this yet.
 
 -}
 
-module GelType (W : Set) (emp : W) (𝕀 : W → Set)
-               (R : Set) (A : (i : 𝕀 emp) → Set) (f : (s : 𝕀 emp) (r : R) → A s)
+module GelType (W : Set) (e : W) (𝕀 : W → Set)
+               (R : Set) (A : (i : 𝕀 e) → Set) (f : (s : 𝕀 e) (r : R) → A s)
                where
 
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gel : (w : W) (i : 𝕀 w) (r : R) → Gel w i
-      gbound : (s : 𝕀 emp) (a : A s) → Gel emp s
-      gpath : (s : 𝕀 emp) (r : R) → gel emp s r ≡ gbound s (f s r)
-
-  getBound : {w : W} {i : 𝕀 w} (p : w ≡ emp) → Gel w i → A (subst 𝕀 p i)
-  getBound p (gel w i r) = f (subst 𝕀 p i) r
-  getBound p (gbound _ a) = {!a!}
-  getBound p (gpath s r i) = {!!}
-
-
+      gbound : (s : 𝕀 e) (a : A s) → Gel e s
+      gpath : (s : 𝕀 e) (r : R) → gel e s r ≡ gbound s (f s r)
 
   postulate
     ungel : ((w : W) (i : 𝕀 w) → Gel w i) → R
---    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : S) → f s (ungel g) ≡ ?
+    bound-equiv : (s : 𝕀 e) → isEquiv (gbound s)
+    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : 𝕀 e)
+         → f s (ungel g) ≡ invIsEq (bound-equiv s) (g e s)
 
--- {- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
---  - when it comes time to do iterated internalized parametricity! Although... maybe not.
---  - I could represent the monoid operation relationally. -}
--- module Hide where
---  module _ (𝕁 : Set) (E : 𝕁 → Set) where
---   module _ (R : Set) (A : {j : 𝕁} (e : E j) → Set) (f : {j : 𝕁} (e : E j) (r : R) → A e) where
---    data Gel (j : 𝕁) : Set where
---        gel : (r : R) → Gel j
---        gbound : (e : E j) (a : A e) → Gel j
---        gpath : (e : E j) (r : R) → gel r ≡ gbound e (f e r)
+module FreeThm
+  (W : Set) (e : W) (𝕀 : W → Set)
+  (R : Set) (A : (i : 𝕀 e) → Set) (f : (s : 𝕀 e) (r : R) → A s)
+  (idf : (X : Set) → X → X) (r : R) where
+ module _  where
+  open GelType W e 𝕀 R A f
 
-{-
-I want a parametricity theorem for (X : Set) → X → X.
-So I want to substitute Gel w i for X, and gel w i r for the X argument.
--}
--- module FreeThm (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
---                (idf : (X : Set) → X → X) where
---  module _ (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
---   open GelType R A f W emp 𝕀 inc
+  package : (w : W) (i : 𝕀 w) → Gel w i
+  package w i = idf (Gel w i) (gel w i r)
 
---   package : R → (w : W) (i : 𝕀 w) → Gel w i
---   package r w i = idf (Gel w i) (gel w i r)
-
---   output : R → R
---   output r = ungel (package r)
+  output : R
+  output = ungel package
