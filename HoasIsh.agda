@@ -55,25 +55,25 @@ other w, but I haven't needed this yet.
 
 -}
 
-module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
-               (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
+module GelType (W : Set) (emp : W) (𝕀 : W → Set)
+               (R : Set) (A : (i : 𝕀 emp) → Set) (f : (s : 𝕀 emp) (r : R) → A s)
+               where
 
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gel : (w : W) (i : 𝕀 w) (r : R) → Gel w i
-      gbound : (s : S) (a : A s) → Gel emp (inc s)
-      gpath : (s : S) (r : R) → gel emp (inc s) r ≡ gbound s (f s r)
+      gbound : (s : 𝕀 emp) (a : A s) → Gel emp s
+      gpath : (s : 𝕀 emp) (r : R) → gel emp s r ≡ gbound s (f s r)
 
-  getBound2 : {w : W} {i : 𝕀 w} (s : S) (p : w ≡ emp) (q : subst 𝕀 p i ≡ inc s) → Gel w i → A s
-  getBound2 {w} {i} s p q (gel .w .i r) = f s r
-  getBound2 {w} {.(inc s₁)} s p q (gbound s₁ a) = {!!}
-  getBound2 {w} {.(inc s₁)} s p q (gpath s₁ r i) = {!!}
+  getBound : {w : W} {i : 𝕀 w} (p : w ≡ emp) → Gel w i → A (subst 𝕀 p i)
+  getBound p (gel w i r) = f (subst 𝕀 p i) r
+  getBound p (gbound _ a) = {!a!}
+  getBound p (gpath s r i) = {!!}
 
-  getBound : (s : S) → Gel emp (inc s) → A s
-  getBound s g = {!!}
+
 
   postulate
     ungel : ((w : W) (i : 𝕀 w) → Gel w i) → R
-    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : S) → f s (ungel g) ≡ getBound s (g emp (inc s))
+--    ungel-bd : (g : (w : W) (i : 𝕀 w) → Gel w i) (s : S) → f s (ungel g) ≡ ?
 
 -- {- I could have imagined 𝕁 = Σ W 𝕀, but I think this will be harder to reason about
 --  - when it comes time to do iterated internalized parametricity! Although... maybe not.
@@ -90,13 +90,13 @@ module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
 I want a parametricity theorem for (X : Set) → X → X.
 So I want to substitute Gel w i for X, and gel w i r for the X argument.
 -}
-module FreeThm (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
-               (idf : (X : Set) → X → X) where
- module _ (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
-  open GelType R A f W emp 𝕀 inc
+-- module FreeThm (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
+--                (idf : (X : Set) → X → X) where
+--  module _ (W : Set) (emp : W) (𝕀 : W → Set) (inc : S → 𝕀 emp) where
+--   open GelType R A f W emp 𝕀 inc
 
-  package : R → (w : W) (i : 𝕀 w) → Gel w i
-  package r w i = idf (Gel w i) (gel w i r)
+--   package : R → (w : W) (i : 𝕀 w) → Gel w i
+--   package r w i = idf (Gel w i) (gel w i r)
 
-  output : R → R
-  output r = ungel (package r)
+--   output : R → R
+--   output r = ungel (package r)
