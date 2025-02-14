@@ -55,29 +55,38 @@ other w, but I haven't needed this yet.
 
 -}
 
-module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s)
-               (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
-               where
+record Frame : Set₁ where field
+ W : Set
+ e : W
+ 𝕀 : W → Set
+ q : S → 𝕀 e
+ qe : isEquiv q
+
+module GelType (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s) (ϕ : Frame) where
+  open Frame ϕ
 
   data Gel : (w : W) (i : 𝕀 w) → Set where
       gel : (w : W) (i : 𝕀 w) (r : R) → Gel w i
       gbound : (s : S) (a : A s) → Gel e (q s)
       gpath : (s : S) (r : R) → gel e (q s) r ≡ gbound s (f s r)
 
+  Bgel : (s : S) → Set
+  Bgel s = Gel e (q s)
+
+  Ggel : Set
+  Ggel = (w : W) (i : 𝕀 w) → Gel w i
+
+  Atb : (s : S) → Ggel → Bgel s
+  Atb s g = g e (q s)
+
 module GelPostpone (R : Set) (A : (i : S) → Set) (f : (s : S) (r : R) → A s) where
   open GelType R A f
+  open Frame
   postulate
-    ungel : ((W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
-            (w : W) (i : 𝕀 w) → Gel W e 𝕀 q qe w i) → R
-    get-bound : (s : S) →
-                (g : (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
-                     → Gel W e 𝕀 q qe e (q s))
-                → A s
-    ungel-bd : (g : (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
-                    (w : W) (i : 𝕀 w) → Gel W e 𝕀 q qe w i)
-               (s : S)
-         → (W : Set) (e : W) (𝕀 : W → Set) (q : S → 𝕀 e) (qe : isEquiv q)
-         → f s (ungel g) ≡ get-bound s (λ W e 𝕀 q qe → g W e 𝕀 q qe e (q s))
+    ungel : ((ϕ : Frame) → Ggel ϕ) → R
+    get-bound : (s : S) → (g : (ϕ : Frame) → Bgel ϕ s) → A s
+    ungel-bd : (g : (ϕ : Frame) → Ggel ϕ) (s : S)
+         → f s (ungel g) ≡ get-bound s (λ ϕ → Atb ϕ s (g ϕ))
 
 -- module FreeThm
 --   (W : Set) (e : W) (𝕀 : W → Set)
