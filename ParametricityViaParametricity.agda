@@ -49,6 +49,9 @@ module Param (S : Set) where
   related/→ : (s : S) (A1 A2 : M → Set) (fr : A1 !r → A2 !r) (fa : A1 (!a s) → A2 (!a s))
                → related s (λ μ → A1 μ → A2 μ) fr fa ≡ ((xr : A1 !r) (xa : A1 (!a s)) → related s A1 xr xa → related s A2 (fr xr) (fa xa))
 
+  related/Pi : (s : S) (A1 : M → Set) (A2 : (μ : M) → A1 μ → Set) (fr : (x : A1 !r) → A2 !r x) (fa : (x : A1 (!a s)) → A2 (!a s) x)
+               → related s (λ μ → (x : A1 μ) → A2 μ x) fr fa ≡ ((xr : A1 !r) (xa : A1 (!a s)) → related s A1 xr xa → {!!})
+
 module Thm where
  S = Unit
  open Param S
