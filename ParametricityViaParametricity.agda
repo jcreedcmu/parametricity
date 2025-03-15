@@ -6,6 +6,7 @@ open import Agda.Builtin.Equality  renaming (_≡_ to _≡p_ ; refl to reflp)
 open import Agda.Builtin.Equality.Rewrite
 open import Cubical.Data.Equality.Conversion using (pathToEq ; eqToPath)
 open import Cubical.Data.Sigma hiding (Path)
+open import Cubical.Data.Unit
 open import Cubical.Data.Nat hiding (Unit ; _·_)
 open import Cubical.Data.Empty renaming (rec to aborti)
 open import Cubical.Data.Equality using () renaming (sym to symp)
@@ -18,7 +19,7 @@ open import Function.Base
 
 module ParametricityViaParametricity where
 
-module _ (S : Set) where
+module Shape (S : Set) where
  postulate
   M : Set
   !r : M
@@ -45,7 +46,16 @@ module _ (S : Set) where
   related/→ : (s : S) (A1 A2 : M → Set) (fr : A1 !r → A2 !r) (fa : A1 (!a s) → A2 (!a s))
                → related s (λ μ → A1 μ → A2 μ) fr fa ≡ ((xr : A1 !r) (xa : A1 (!a s)) → related s A1 xr xa → related s A2 (fr xr) (fa xa))
 
- module _ (idf : (X : Set) → X → X) (R : Set) (A : S → Set) (p : R → (s : S) → A s) where
+module Thm where
+ S = Unit
+ open Shape S
+ module _ (idf : (X : Set) → X → X) (Y : Set) (y : Y) where
+
+  R = Unit
+  A : S → Set
+  A _ = Y
+  p : R → (s : S) → A s
+  p _ _ = y
 
   G : M → Set
   G = Gel R A p
@@ -53,7 +63,10 @@ module _ (S : Set) where
   pivot : (μ : M) → G μ → G μ
   pivot μ = idf (G μ)
 
-  thm : (s : S) (xr : R) → p (idf R xr) s ≡ idf (A s) (p xr s)
+  thm : (s : Unit) (xr : R) → p (idf R xr) s ≡ idf (A s) (p xr s)
   thm s xr = transport (related/G s R A p (idf R xr) (idf (A s) (p xr s)))
                          (transport (related/→ s G G (pivot !r) (pivot (!a s))) (param s (λ μ → G μ → G μ) pivot)
                             xr (p xr s) (transport (sym (related/G s R A p xr (p xr s))) refl))
+
+  thm' : y ≡ idf Y y
+  thm' = thm tt tt
