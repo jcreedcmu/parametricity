@@ -53,20 +53,7 @@ module _ (S : Set) where
   pivot : (μ : M) → G μ → G μ
   pivot μ = idf (G μ)
 
-  paramPivot : (s : S) → related s (λ μ → G μ → G μ) (pivot !r) (pivot (!a s))
-  paramPivot s = param s (λ μ → G μ → G μ) pivot
-
-  paramPivot→ : (s : S) (xr : G !r) (xa : G (!a s)) →
-      related s G xr xa → related s G (idf R xr) (idf (A s) xa)
-  paramPivot→ s = transport (related/→ s G G (pivot !r) (pivot (!a s))) (paramPivot s)
-
-  paramPivot→2 : (s : S) (xr : G !r) (xa : G (!a s)) →
-      (p xr s ≡ xa) → related s G (idf R xr) (idf (A s) xa)
-  paramPivot→2 s xr xa q = paramPivot→ s xr xa (transport (sym (related/G s R A p xr xa)) q)
-
-  paramPivot→3 : (s : S) (xr : G !r) (xa : G (!a s)) →
-      (p xr s ≡ xa) → p (idf R xr) s ≡ (idf (A s) xa)
-  paramPivot→3 s xr xa q = transport (related/G s R A p (idf R xr) (idf (A s) xa)) (paramPivot→2 s xr xa q)
-
-  paramPivot→4 : (s : S) (xr : R) → p (idf R xr) s ≡ idf (A s) (p xr s)
-  paramPivot→4 s xr = paramPivot→3 s xr (p xr s) refl
+  thm : (s : S) (xr : R) → p (idf R xr) s ≡ idf (A s) (p xr s)
+  thm s xr = transport (related/G s R A p (idf R xr) (idf (A s) (p xr s)))
+                         (transport (related/→ s G G (pivot !r) (pivot (!a s))) (param s (λ μ → G μ → G μ) pivot)
+                            xr (p xr s) (transport (sym (related/G s R A p xr (p xr s))) refl))
