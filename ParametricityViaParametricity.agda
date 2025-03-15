@@ -36,25 +36,37 @@ module _ (S : Set) where
 
  -- Now for the stuff that actually uses parametricity
  postulate
-  related : (s : S) (T : M → Set) (x : (μ : M) → T μ) → Set
-  param : (s : S) (T : M → Set) (x : (μ : M) → T μ)→ related s T x
+  related : (s : S) (T : M → Set) (xr : T !r) (xa : T (!a s)) → Set
+  param : (s : S) (T : M → Set) (x : (μ : M) → T μ)→ related s T (x !r) (x (!a s))
 
-  related/K : (D : Set) (t : M → D) (s : S) → related s (λ μ → D) t ≡ (t !r ≡ t (!a s))
-  related/G : (R : Set) (A : S → Set) (p : R → (s : S) → A s) (t : (μ : M) → Gel R A p μ)
-              (s : S) → related s (Gel R A p) t ≡ (p (t !r) s ≡ t (!a s))
-  related/→ : (A1 A2 : M → Set) (f : (μ : M) → A1 μ → A2 μ)
-              (s : S) → related s (λ μ → A1 μ → A2 μ) f ≡ ((x : (μ : M) → A1 μ) → related s A1 x → related s A2 λ μ →  f μ (x μ))
+  related/K : (s : S) (D : Set) (xr xa : D) → related s (λ μ → D) xr xa ≡ (xr ≡ xa)
+  related/G : (s : S) (R : Set) (A : S → Set) (p : R → (s : S) → A s) (xr : R) (xa : A s)
+               → related s (Gel R A p) xr xa ≡ (p xr s ≡ xa)
+  related/→ : (s : S) (A1 A2 : M → Set) (fr : A1 !r → A2 !r) (fa : A1 (!a s) → A2 (!a s))
+               → related s (λ μ → A1 μ → A2 μ) fr fa ≡ ((xr : A1 !r) (xa : A1 (!a s)) → related s A1 xr xa → related s A2 (fr xr) (fa xa))
 
- module _ (q : (X : Set) → X → X) (R : Set) (A : S → Set) (p : R → (s : S) → A s) where
+ module _ (idf : (X : Set) → X → X) (R : Set) (A : S → Set) (p : R → (s : S) → A s) where
 
   G : M → Set
   G = Gel R A p
 
   pivot : (μ : M) → G μ → G μ
-  pivot μ = q (G μ)
+  pivot μ = idf (G μ)
 
-  paramPivot : (s : S) → related s (λ μ → G μ → G μ) pivot
+  paramPivot : (s : S) → related s (λ μ → G μ → G μ) (pivot !r) (pivot (!a s))
   paramPivot s = param s (λ μ → G μ → G μ) pivot
 
-  paramPivot→ : (s : S) (x : (μ : M) → G μ) → related s G x → related s G (λ μ → pivot μ (x μ))
-  paramPivot→ s = transport (related/→ G G pivot  s) (paramPivot s)
+  paramPivot→ : (s : S) (xr : G !r) (xa : G (!a s)) →
+      related s G xr xa → related s G (idf R xr) (idf (A s) xa)
+  paramPivot→ s = transport (related/→ s G G (pivot !r) (pivot (!a s))) (paramPivot s)
+
+  paramPivot→2 : (s : S) (xr : G !r) (xa : G (!a s)) →
+      (p xr s ≡ xa) → related s G (idf R xr) (idf (A s) xa)
+  paramPivot→2 s xr xa q = paramPivot→ s xr xa (transport (sym (related/G s R A p xr xa)) q)
+
+  paramPivot→3 : (s : S) (xr : G !r) (xa : G (!a s)) →
+      (p xr s ≡ xa) → p (idf R xr) s ≡ (idf (A s) xa)
+  paramPivot→3 s xr xa q = transport (related/G s R A p (idf R xr) (idf (A s) xa)) (paramPivot→2 s xr xa q)
+
+  paramPivot→4 : (s : S) (xr : R) → p (idf R xr) s ≡ idf (A s) (p xr s)
+  paramPivot→4 s xr = paramPivot→3 s xr (p xr s) refl
