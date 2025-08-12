@@ -1,19 +1,21 @@
 module Opetope where
 
-data T₀ : Set where
- Leaf₀ : T₀
- Node₀ : T₀ → T₀
+module Basics where
+  data T₀ : Set where
+   Leaf₀ : T₀
+   Node₀ : T₀ → T₀
 
-data isUnit₀ : T₀ → Set where
- isUnit₀/ : isUnit₀ (Node₀ Leaf₀)
+  data isUnit₀ : T₀ → Set where
+   isUnit₀/ : isUnit₀ (Node₀ Leaf₀)
 
-data locs₀ : T₀ → Set where
- here₀ : (t : T₀) → locs₀ (Node₀ t)
- next₀ : (t : T₀) → locs₀ t → locs₀ (Node₀ t)
+  data locs₀ : T₀ → Set where
+   here₀ : (t : T₀) → locs₀ (Node₀ t)
+   next₀ : (t : T₀) → locs₀ t → locs₀ (Node₀ t)
 
-data sums₀ : {t : T₀} → (locs₀ t → T₀) → T₀ → Set where
+  data sums₀ : {t : T₀} → (locs₀ t → T₀) → T₀ → Set where
 
 module Containment where
+  open Basics
   data T₁ : T₀ → Set where
    Leaf₁ : (t : T₀) → isUnit₀ t → T₁ t
    Node₁ : (t : T₀) (a : locs₀ t → T₀) (k : (p : locs₀ t) → T₁ (a p)) (t' : T₀) → sums₀ a t' → T₁ t'
@@ -64,6 +66,7 @@ module Containment where
 -- contains = {!!}
 
 module Locations where
+  open Basics
   data T₁ : T₀ → Set where
    Leaf₁ : (t : T₀) → isUnit₀ t → T₁ t
    Node₁ : (t : T₀) (a : locs₀ t → T₀) (k : (p : locs₀ t) → T₁ (a p)) (t' : T₀) → sums₀ a t' → T₁ t'
@@ -100,23 +103,86 @@ module Locations where
            (k : (ℓ : locs₂ t₂) → T₃ (a ℓ))
            → T₃ (sum₂ a)
 
+module LessIndex where
+  open Basics
+  sum₀ : (t : T₀) (a : locs₀ t → T₀) → T₀
+  sum₀ = {!!}
 
-data T : Set
-isUnit : T → Set
-locs : T → Set
-∂ : T → T → Set
-locBound : {t : T} (ℓ : locs t) → T
+  data T₁ : Set
+  data ∂₁ : T₁ → T₀ → Set
 
-data T where
- Leaf : (t : T) → isUnit t → T
- Node : (t : T)
-     (a : locs t → T) -- for each location, give a (n-1)-dim tree for what it eventually expands to
-     (k : locs t → T) -- for each location, give an n-dim tree for how it expands
-     (a' : (ℓ : locs t) → ∂ (a ℓ) (locBound ℓ))
-     (k' : (ℓ : locs t) → ∂ (k ℓ) (a ℓ))
-     → T
+  data T₁ where
+   Leaf₁ : (t : T₀) → isUnit₀ t → T₁
+   Node₁ : (t : T₀)
+       (a : locs₀ t → T₀)
+       (k : (p : locs₀ t) → T₁) (k' : (p : locs₀ t) → ∂₁ (k p) (a p)) → T₁
+  data ∂₁ where
+   Leaf∂₁ : (t : T₀) (u : isUnit₀ t) → ∂₁ (Leaf₁ t u) t
+   Node∂₁ : (t : T₀)
+       (a : locs₀ t → T₀)
+       (k : (p : locs₀ t) → T₁) (k' : (p : locs₀ t) → ∂₁ (k p) (a p)) →
+       ∂₁ (Node₁ t a k k') (sum₀ t a)
 
-isUnit = {!!}
-locs = {!!}
-∂ = {!!}
-locBound = {!!}
+  data isUnit₁ : T₁ → Set where
+  data locs₁ : T₁ → Set where
+   here₁ : (t : T₀)
+       (a : locs₀ t → T₀)
+       (k : (ℓ : locs₀ t) → T₁) (k' : (ℓ : locs₀ t) → ∂₁ (k ℓ) (a ℓ))
+       → locs₁ (Node₁ t a k k')
+   next₁ : (t : T₀)
+       (a : locs₀ t → T₀)
+       (k : (ℓ : locs₀ t) → T₁) (k' : (ℓ : locs₀ t) → ∂₁ (k ℓ) (a ℓ))
+       (ℓ : locs₀ t)
+       → locs₁ (k ℓ) → locs₁ (Node₁ t a k k')
+
+  locBound₁ : {t₁ : T₁} (ℓ : locs₁ t₁) → T₀
+  locBound₁ ℓ = {!!}
+
+  data T₂ : Set
+  ∂₂ : T₂ → T₁ → Set
+
+  data T₂ where
+   Leaf₂ : (t₁ : T₁) → isUnit₁ t₁ → T₂
+   Node₂ : (t₁ : T₁)
+           (a : (ℓ : locs₁ t₁) → T₁) (a' : (ℓ : locs₁ t₁) → ∂₁ (a ℓ) (locBound₁ ℓ))
+           (k : (ℓ : locs₁ t₁) → T₂) (k' : (ℓ : locs₁ t₁) → ∂₂ (k ℓ) (a ℓ))
+           → T₂
+  ∂₂ = {!!}
+
+  data isUnit₂ : T₂ → Set where
+  data locs₂ : T₂ → Set where
+  locBound₂ : {t₂ : T₂} (ℓ : locs₂ t₂) → T₁
+  locBound₂ ℓ = {!!}
+
+
+  data T₃ : Set
+  ∂₃ : T₃ → T₂ → Set
+
+  data T₃ where
+   Leaf₃ : (t₂ : T₂) → isUnit₂ t₂ → T₃
+   Node₃ : (t₂ : T₂)
+           (a : (ℓ : locs₂ t₂) → T₂) (a' : (ℓ : locs₂ t₂) → ∂₂ (a ℓ) (locBound₂ ℓ))
+           (k : (ℓ : locs₂ t₂) → T₃) (k' : (ℓ : locs₂ t₂) → ∂₃ (k ℓ) (a ℓ))
+           → T₃
+  ∂₃ = {!!}
+
+module NoIndex where
+ data T : Set
+ isUnit : T → Set
+ locs : T → Set
+ ∂ : T → T → Set
+ locBound : {t : T} (ℓ : locs t) → T
+
+ data T where
+  Leaf : (t : T) → isUnit t → T
+  Node : (t : T)
+      (a : locs t → T) -- for each location, give a (n-1)-dim tree for what it eventually expands to
+      (k : locs t → T) -- for each location, give an n-dim tree for how it expands
+      (a' : (ℓ : locs t) → ∂ (a ℓ) (locBound ℓ))
+      (k' : (ℓ : locs t) → ∂ (k ℓ) (a ℓ))
+      → T
+
+ isUnit = {!!}
+ locs = {!!}
+ ∂ = {!!}
+ locBound = {!!}
