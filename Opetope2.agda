@@ -1,39 +1,58 @@
 module Opetope2 where
-open import Agda.Primitive
 
-record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
-  constructor _,_
-  field
-    fst : A
-    snd : B fst
-Σ-syntax : ∀ {a b} (A : Set a) → (A → Set b) → Set (a ⊔ b)
-Σ-syntax = Σ
-syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
+data List (A : Set) : Set where
+ nil : List A
+ cons : A → List A → List A
 
-module _ (C₀ : Set) where
+concat : {A : Set} → List A → List A
+concat = {!!}
 
- S₁ = C₀ → C₀ → Set
+flat : {A : Set} → List (List A) → List A
+flat = {!!}
 
- module _ {C₁ : S₁} where
-  data T₀ : S₁ where
-   Leaf₀ : (c : C₀) → T₀ c c
-   Node₀ : {a b c : C₀} (kids : T₀ b c) (first : C₁ a b) → T₀ a c
+map : {A B : Set} → (A → B) → List A → List B
+map = {!!}
 
- module _ (C₁ : S₁) where
+-- a pretree (or higher pretree)
+data T : Set where
+ leaf : T
 
-  record B₂ : Set where
-   constructor mkB₂
-   field
-    {c} {c'} : C₀
-    f : C₁ c c'
-    f' : T₀ {C₁} c c'
+ -- a node of an n-dimensional pretree says with an (n-1)-dimensional
+ -- pretree `t` what the first expansion step looks like, and then with a
+ -- list of n-dimensional subpretrees `ts` specifies the remaining
+ -- subpretrees. Some compatibility conditions are required to filter
+ -- out the legimate trees. These are hard to encode intrinsically,
+ -- so we represent them extrinsically.
+ node : (t : T) (ts : List T) → T
 
-  S₂ = B₂ → Set
 
-  η : {c c' : C₀} → C₁ c c' → T₀ {C₁} c c'
-  η = {!!}
+-- Addresses within a tree, i.e. locations of nodes
+data Addr : T → Set
+-- Addresses within a list of trees, i.e. locations of nodes in one of the trees
+data Addrs : List T → Set
 
-  module _ {C₂ : S₂} where
-   data T₁ : S₂ where
-    Leaf₁ : (c c' : C₀) (f : C₁ c c') → T₁ (mkB₂ f (η f))
-    Node₁ : (c c' : C₀) (f : C₁ c c') (kids : T₀ {C₁ = λ c c' → Σ[ f ∈ C₁ c c' ] Σ[ f' ∈ T₀ c c' ] T₁ (mkB₂ f f')} c c') → T₁ (mkB₂ f {!!})
+data Addr where
+ here : (t : T) (ts : List T) → Addr (node t ts)
+ desc : (t : T) (ts : List T) → Addrs ts → Addr (node t ts)
+
+data Addrs where
+ hd : (t : T) (ts : List T) → Addr t → Addrs (cons t ts)
+ tl : (t : T) (ts : List T) → Addrs ts → Addrs (cons t ts)
+
+-- Given a tree and an address, get returns what node shape that
+-- address is pointing to.
+get : (t : T) (a : Addr t) → T
+gets : (ts : List T) (a : Addrs ts) → T
+
+get (node t x) (here .t .x) = t
+get (node t x) (desc .t .x a) = gets x a
+gets (cons x xs) (hd .x .xs a) = get x a
+gets (cons x xs) (tl .x .xs a) = gets xs a
+
+data Check : T → T → Set where
+
+
+allAddrs : (t : T) → List (Addr t)
+allAddrs leaf = nil
+allAddrs (node t ts) =
+  cons (here t ts) {!!}
