@@ -67,5 +67,5 @@ module _ (h : H) (p : P h) (h* : H* h) (p* : P* h p h*) where
  split η₂ x₂ inl = x₂
  split η₂ x₂ (inr s) = η₂ s
 
- h_values : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → split η₂ x₂ (h inr inl) ≡ h η₂ x₂
- h_values η₂ x₂ = h* (λ x y → split η₂ x₂ x ≡ y) inr η₂ (λ s → refl) inl x₂ refl
+ h_values : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → h η₂ x₂ ≡ split η₂ x₂ (h inr inl)
+ h_values η₂ x₂ = h* (λ x y → y ≡ split η₂ x₂ x) inr η₂ (λ s → refl) inl x₂ refl
