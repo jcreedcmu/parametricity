@@ -69,3 +69,20 @@ module _ (h : H) (p : P h) (h* : H* h) (p* : P* h p h*) where
 
  h_values : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → h η₂ x₂ ≡ split η₂ x₂ (h inr inl)
  h_values η₂ x₂ = h* (λ x y → y ≡ split η₂ x₂ x) inr η₂ (λ s → refl) inl x₂ refl
+
+ p1 : (X₁ X₂ : Set) (f : X₁ → X₂)
+    (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (s : S¹) → f (η₁ s) ≡ (η₂ s))
+    (s : S¹)
+    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ η₂ η* (η₁ s) (η₂ s) (η* s)) (p η₁ s) (p η₂ s) ≡ η* s
+ p1 X₁ X₂ f η₁ η₂ η* s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ η₂ η* s
+
+ p2 : (X₁ X₂ : Set) (f : X₁ → X₂)
+    (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (λ (s : S¹) → f (η₁ s)) ≡ η₂)
+    (s : S¹)
+    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ η₂ (λ s i → η* i s) (η₁ s) (η₂ s) (λ i → η* i s)) (p η₁ s) (p η₂ s) ≡ (λ i → η* i s)
+ p2 X₁ X₂ f η₁ η₂ η* s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ η₂ (λ s i → η* i s) s
+
+ p3 : (X₁ X₂ : Set) (f : X₁ → X₂)
+    (η₁ : S¹ → X₁) (s : S¹)
+    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ (f ∘ η₁) (λ s → refl) (η₁ s) ((f ∘ η₁) s) refl) (p η₁ s) (p (f ∘ η₁) s) ≡ refl
+ p3 X₁ X₂ f η₁ s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ (f ∘ η₁) (λ s → refl) s
