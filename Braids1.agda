@@ -28,121 +28,105 @@ module Braids1 where
    h : (X : Set) (η : X → X) (x : X) → X
    p : (X : Set) (η : X → X) (s : S¹) → h (η s) ≡ η s
 
- Then we could prove h X η ≡ id, and p X η x s ≡ refl.
+ Then we could prove
+
+  h! : h X η ≡ id
+  p! : p X η s ≡ refl (over the path h!)
+
+ The meaning of h and p being parametric is witnessed by the terms h*
+ and p* below, respectively.
 
 -}
 
--- The type of functions induced by a choice of X and η
-H : Set₁
-H = {X : Set} (η : S¹ → X) (x : X) → X
 
--- The type of proofs that h : H preserves η
-P : (h : H) → Set₁
-P h = {X : Set} (η : S¹ → X) (s : S¹) → h η (η s) ≡ η s
-
--- The type of proofs that an h : H is in the relation
-H* : (h : H) → Set₁
-H* h = {X₁ X₂ : Set} (R : X₁ → X₂ → Set)
+postulate
+ h : {X : Set} (η : S¹ → X) (x : X) → X
+ p : {X : Set} (η : S¹ → X) (s : S¹) → h η (η s) ≡ η s
+ h* : {X₁ X₂ : Set} (R : X₁ → X₂ → Set)
        (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (s : S¹) → R (η₁ s) (η₂ s))
        (x₁ : X₁) (x₂ : X₂) → R x₁ x₂ → R (h η₁ x₁) (h η₂ x₂)
 
-reltrans : {X₁ X₂ : Set} {R : X₁ → X₂ → Set} {x₁ y₁ : X₁} {x₂ y₂ : X₂}
+reltrans : (X₁ X₂ : Set) (R : X₁ → X₂ → Set) (x₁ y₁ : X₁) (x₂ y₂ : X₂)
            → R x₁ x₂ → x₁ ≡ y₁ → x₂ ≡ y₂ → R y₁ y₂
-reltrans {R = R} r p q = transport (λ i → R (p i) (q i)) r
+reltrans X₁ X₂ R x₁ y₁ x₂ y₂ r p q = transport (λ i → R (p i) (q i)) r
 
 freltrans : {X₁ X₂ : Set} {f : X₁ → X₂} {x₁ y₁ : X₁} {x₂ y₂ : X₂}
            → f x₁ ≡ x₂ → x₁ ≡ y₁ → x₂ ≡ y₂ → f y₁ ≡ y₂
-freltrans {f = f} p q r = reltrans {R = λ x y → f x ≡ y} p q r
+freltrans {f = f} p q r = reltrans _ _ (λ x y → f x ≡ y) _ _ _ _ p q r
 
 freltrans2 : {X₁ X₂ : Set} {f : X₁ → X₂} {x₁ y₁ : X₁} {x₂ y₂ : X₂}
            → f x₁ ≡ x₂ → x₁ ≡ y₁ → x₂ ≡ y₂ → f y₁ ≡ y₂
 freltrans2 {f = f} p q r = sym (cong f q) ∙ p ∙ r
 
 freltrans-eq : {X₁ X₂ : Set} {f : X₁ → X₂} {x₁ y₁ : X₁} {x₂ y₂ : X₂}
-           (p : f x₁ ≡ x₂) (q : x₁ ≡ y₁) (r : x₂ ≡ y₂) → freltrans {f = f} p q r ≡ freltrans2 p q r
-freltrans-eq p q r = {!!}
+           (p : f x₁ ≡ x₂) (q : x₁ ≡ y₁) (r : x₂ ≡ y₂) → freltrans2 {f = f} p q r ≡ freltrans p q r
+freltrans-eq = {!!}
 
-
-
-P* : (h : H) (p : P h) (h* : H* h) → Set₁
-P* h p h* =
+postulate
+ p* :
     (X₁ X₂ : Set) (R : X₁ → X₂ → Set)
     (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (s : S¹) → R (η₁ s) (η₂ s))
     (s : S¹)
-    → reltrans {R = R} (h* R η₁ η₂ η* (η₁ s) (η₂ s) (η* s)) (p η₁ s) (p η₂ s) ≡ η* s
+    → reltrans X₁ X₂ R (h η₁ (η₁ s)) (η₁ s) (h η₂ (η₂ s)) (η₂ s)
+       (h* R η₁ η₂ η* (η₁ s) (η₂ s) (η* s)) (p η₁ s) (p η₂ s) ≡ η* s
 
-module _ (h : H) (p : P h) (h* : H* h) (p* : P* h p h*) where
+data S+ : Set where
+ inl : S+
+ inr : S¹ → S+
 
- data S+ : Set where
-  inl : S+
-  inr : S¹ → S+
+-- just a convenient name for the S+ eliminator
+split : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → S+ → X₂
+split η₂ x₂ inl = x₂
+split η₂ x₂ (inr s) = η₂ s
 
- split : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → S+ → X₂
- split η₂ x₂ inl = x₂
- split η₂ x₂ (inr s) = η₂ s
+spls : {X : Set} (η : S¹ → X) (s : S¹) → S+ → X → Type
+spls η s a b = split η (η s) a ≡ b
 
- h_values : {X₂ : Set} (η₂ : S¹ → X₂) (x₂ : X₂) → h η₂ x₂ ≡ split η₂ x₂ (h inr inl)
- h_values η₂ x₂ = h* (λ x y → y ≡ split η₂ x₂ x) inr η₂ (λ s → refl) inl x₂ refl
+-- This is an important lemma on the way to proving h!. We find that
+-- the values of h globally are determined by one particular value,
+-- that of `h {S+} inr inl`.
+h_values : {X : Set} (η : S¹ → X) (x : X) → split η x (h inr inl) ≡ h η x
+h_values η x = h* (λ a b → split η x a ≡ b) inr η (λ s → refl) inl x refl
 
- -- replace relation with function
- p1 : (X₁ X₂ : Set) (f : X₁ → X₂)
-    (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (s : S¹) → f (η₁ s) ≡ (η₂ s))
-    (s : S¹)
-    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ η₂ η* (η₁ s) (η₂ s) (η* s)) (p η₁ s) (p η₂ s) ≡ η* s
- p1 X₁ X₂ f η₁ η₂ η* s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ η₂ η* s
 
- -- assume equal functions instead of pointwise equal functions (i.e. "unapply extensionality")
- p2 : (X₁ X₂ : Set) (f : X₁ → X₂)
-    (η₁ : S¹ → X₁) (η₂ : S¹ → X₂) (η* : (λ (s : S¹) → f (η₁ s)) ≡ η₂)
-    (s : S¹)
-    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ η₂ (λ s i → η* i s) (η₁ s) (η₂ s) (λ i → η* i s)) (p η₁ s) (p η₂ s) ≡ (λ i → η* i s)
- p2 X₁ X₂ f η₁ η₂ η* s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ η₂ (λ s i → η* i s) s
+p*-lem : (X : Set) (η : S¹ → X) (s : S¹)
+    → freltrans {f = split η (η s)} (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) (p inr s) (p η s) ≡ refl
+p*-lem X η s = p* S+ X (spls η s) inr η (λ s → refl) s
 
- -- replace η₂ with what it must be
- p3 : (X₁ X₂ : Set) (f : X₁ → X₂)
-    (η₁ : S¹ → X₁) (s : S¹)
-    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) η₁ (f ∘ η₁) (λ s → refl) (η₁ s) ((f ∘ η₁) s) refl) (p η₁ s) (p (f ∘ η₁) s) ≡ refl
- p3 X₁ X₂ f η₁ s = p* X₁ X₂ (λ x y → f x ≡ y) η₁ (f ∘ η₁) (λ s → refl) s
+p*-lem2 : (X : Set) (η : S¹ → X) (s : S¹)
+    → sym (cong (split η (η s)) (p inr s)) ∙ (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (p η s) ≡ refl
+p*-lem2 X η s = freltrans-eq {f = split η (η s)} (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) (p inr s) (p η s) ∙ (p*-lem X η s)
 
- -- try replacing X₁ with S¹, η₁ with id
- p4 : (X₂ : Set) (f : S¹ → X₂)
-     (s : S¹)
-    → reltrans {R = λ x y → f x ≡ y} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s) ≡ refl
- p4 X₂ f s = p* S¹ X₂ (λ x y → f x ≡ y) id f (λ s → refl) s
+p*-lem3 : (X : Set) (η : S¹ → X) (s : S¹)
+    →  (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (p η s) ≡ (cong (split η (η s)) (p inr s))
+p*-lem3 X η s = {!!}
 
- -- try using freltrans
- p5 : (X₂ : Set) (f : S¹ → X₂)
-     (s : S¹)
-    → freltrans {f = f} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s) ≡ refl
- p5 X₂ f s = p* S¹ X₂ (λ x y → f x ≡ y) id f (λ s → refl) s
+p*-lem4 : (X : Set) (η : S¹ → X) (s : S¹)
+    → p η s ≡ sym (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (cong (split η (η s)) (p inr s))
+p*-lem4 X η s = {!!}
 
- -- lemma for the below
- p6a : (X₂ : Set) (f : S¹ → X₂) (s : S¹) →
-      freltrans {f = f} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s)
-    ≡ freltrans2 {f = f} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s)
- p6a X₂ f s = (freltrans-eq {f = f} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s))
 
- -- try using freltrans2
- p6 : (X₂ : Set) (f : S¹ → X₂)
-     (s : S¹)
-    → freltrans2 {f = f} (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) (p id s) (p f s) ≡ refl
- p6 X₂ f s = sym (p6a X₂ f s) ∙ p* S¹ X₂ (λ x y → f x ≡ y) id f (λ s → refl) s
 
- -- expand out def'n of freltrans2
- p7 : (X₂ : Set) (f : S¹ → X₂) (s : S¹)
-    → sym (cong f (p id s)) ∙ (h* (λ x y → f x ≡ y) id f (λ s → refl) (id s) (f s) refl) ∙ (p f s) ≡ refl
- p7 X₂ f s = sym (p6a X₂ f s) ∙ p* S¹ X₂ (λ x y → f x ≡ y) id f (λ s → refl) s
 
- -- rename
- p8 : (X₂ : Set) (η₂ : S¹ → X₂) (s : S¹)
-    → sym (cong η₂ (p id s)) ∙ (h* (λ x y → η₂ x ≡ y) id η₂ (λ s → refl) (id s) (η₂ s) refl) ∙ (p η₂ s) ≡ refl
- p8 X₂ η₂ s = sym (p6a X₂ η₂ s) ∙ p* S¹ X₂ (λ x y → η₂ x ≡ y) id η₂ (λ s → refl) s
+k : h {S+} inr inl ≡ inl
+k = {!!}
 
- -- lemma for the below
- p9a : {A : Set} {a b c : A} (p : b ≡ a) (q : b ≡ c) (r : c ≡ a) → sym p ∙ q ∙ r ≡ refl → r ≡ sym q ∙ p
- p9a = {!!}
+h! : {X : Set} (η : S¹ → X) (x : X) → h η x ≡ x
+h! η x = sym (h_values η x) ∙ cong (split η x) k
 
- -- rearrange
- p9 : (X₂ : Set) (η₂ : S¹ → X₂) (s : S¹)
-    → p η₂ s ≡ (sym (h* (λ x y → η₂ x ≡ y) id η₂ (λ s → refl) (id s) (η₂ s) refl)) ∙ cong η₂ (p id s)
- p9 X₂ η₂ s = p9a (cong η₂ (p id s)) (h* (λ x y → η₂ x ≡ y) id η₂ (λ s → refl) (id s) (η₂ s) refl) (p η₂ s) (p8 X₂ η₂ s)
+
+p!-lemma2 : {X : Set} (η : S¹ → X) (s : S¹) → sym (h* (spls η s) inr η (λ s → refl) inl (η s) refl) ∙ cong (split η (η s)) k ≡ p η s
+p!-lemma2 = {!!}
+
+p!-lemma : {X : Set} (η : S¹ → X) (s : S¹) → h! η (η s) ≡ p η s
+p!-lemma η s = p!-lemma2 η s
+
+sq-lemma : {A : Set} {a b : A} (p : a ≡ b) → Square p refl p refl
+sq-lemma p i j = p (i ∨ j)
+
+-- diagram for p!:
+-- https://q.uiver.app/#q=WzAsNCxbMCwwLCJoXFwgKFxcZXRhXFwgcykiXSxbMSwwLCJcXGV0YVxcIHMiXSxbMCwxLCJcXGV0YVxcIHMiXSxbMSwxLCJcXGV0YVxcIHMiXSxbMCwxLCJwXFwgcyIsMCx7ImxldmVsIjoyLCJzdHlsZSI6eyJoZWFkIjp7Im5hbWUiOiJub25lIn19fV0sWzIsMywiXFxtYXRoc2Z7cmVmbH0iLDIseyJsZXZlbCI6Miwic3R5bGUiOnsiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFswLDIsImhfIVxcIChcXGV0YVxcIHMpIiwyLHsibGV2ZWwiOjIsInN0eWxlIjp7ImhlYWQiOnsibmFtZSI6Im5vbmUifX19XSxbMSwzLCJcXG1hdGhzZntyZWZsfSIsMCx7ImxldmVsIjoyLCJzdHlsZSI6eyJoZWFkIjp7Im5hbWUiOiJub25lIn19fV1d
+
+-- Goal:
+p! : {X : Set} (η : S¹ → X) (s : S¹) → Square (h! η (η s)) refl (p η s) refl
+p! {X} η s = subst (λ z → Square (h! η (η s)) refl z refl) (p!-lemma η s) (sq-lemma (h! η (η s)))
