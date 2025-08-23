@@ -88,35 +88,45 @@ spls η s a b = split η (η s) a ≡ b
 h_values : {X : Set} (η : S¹ → X) (x : X) → split η x (h inr inl) ≡ h η x
 h_values η x = h* (λ a b → split η x a ≡ b) inr η (λ s → refl) inl x refl
 
+p*-test :
+    (X : Set) (f : S+ → X) (η : S¹ → X) (η* : (s : S¹) → f (inr s) ≡ (η s)) (s : S¹)
+    → freltrans {f = f} (h* (λ a b → f a ≡ b) inr η η* (inr s) (η s) (η* s)) (p inr s) (p η s) ≡ η* s
+p*-test X f η η* s = p* S+ X (λ a b → f a ≡ b) inr η η* s
 
-p*-lem : (X : Set) (η : S¹ → X) (s : S¹)
-    → freltrans {f = split η (η s)} (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) (p inr s) (p η s) ≡ refl
-p*-lem X η s = p* S+ X (spls η s) inr η (λ s → refl) s
+p*-test2 :
+    (X : Set) (x : X) (η : S¹ → X) (s : S¹)
+    → freltrans {f = (split η x)} (h* (λ a b → (split η x) a ≡ b) inr η (λ _ → refl) (inr s) (η s) refl) (p inr s) (p η s) ≡ refl
+p*-test2 X x η s = p* S+ X (λ a b → (split η x) a ≡ b) inr η (λ _ → refl) s
 
-p*-lem2 : (X : Set) (η : S¹ → X) (s : S¹)
-    → sym (cong (split η (η s)) (p inr s)) ∙ (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (p η s) ≡ refl
-p*-lem2 X η s = freltrans-eq {f = split η (η s)} (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) (p inr s) (p η s) ∙ (p*-lem X η s)
+p*-test3 :
+    (X : Set) (x : X) (η : S¹ → X) (s : S¹)
+    → sym (cong (split η x) (p inr s)) ∙ (h* (λ a b → (split η x) a ≡ b) inr η (λ _ → refl) (inr s) (η s) refl) ∙ (p η s) ≡ refl
+p*-test3 X x η s = freltrans-eq {f = split η x} (h* (λ a b → (split η x) a ≡ b) inr η (λ _ → refl) (inr s) (η s) refl) (p inr s) (p η s) ∙ p*-test2 X x η s
 
-p*-lem3 : (X : Set) (η : S¹ → X) (s : S¹)
-    →  (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (p η s) ≡ (cong (split η (η s)) (p inr s))
-p*-lem3 X η s = {!!}
+p*-test4 :
+    (X : Set) (x : X) (η : S¹ → X) (s : S¹)
+    → p η s ≡ sym (h* (λ a b → (split η x) a ≡ b) inr η (λ _ → refl) (inr s) (η s) refl) ∙ (cong (split η x) (p inr s))
+p*-test4 X x η s = {!!}
 
 p*-lem4 : (X : Set) (η : S¹ → X) (s : S¹)
     → p η s ≡ sym (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (cong (split η (η s)) (p inr s))
-p*-lem4 X η s = {!!}
-
-
-
+p*-lem4 X η s = p*-test4 X (η s) η s
 
 k : h {S+} inr inl ≡ inl
 k = {!!}
 
+simp : (X : Set) (η : S¹ → X) (s : S¹) → cong (split η (η s)) k ≡ {!!}
+simp = {!!}
+crucial-lemma : (X : Set) (η : S¹ → X) (s : S¹) →
+                sym (h* (spls η s) inr η (λ s → refl) (inr s) (η s) refl) ∙ (cong (split η (η s)) (p inr s)) ≡
+                sym (h* (spls η s) inr η (λ s → refl) inl (η s) refl) ∙ cong (split η (η s)) k
+crucial-lemma = {!!}
+
 h! : {X : Set} (η : S¹ → X) (x : X) → h η x ≡ x
 h! η x = sym (h_values η x) ∙ cong (split η x) k
 
-
 p!-lemma2 : {X : Set} (η : S¹ → X) (s : S¹) → sym (h* (spls η s) inr η (λ s → refl) inl (η s) refl) ∙ cong (split η (η s)) k ≡ p η s
-p!-lemma2 = {!!}
+p!-lemma2 {X} η s = sym (p*-lem4 X η s ∙ crucial-lemma X η s)
 
 p!-lemma : {X : Set} (η : S¹ → X) (s : S¹) → h! η (η s) ≡ p η s
 p!-lemma η s = p!-lemma2 η s
